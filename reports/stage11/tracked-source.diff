@@ -1,0 +1,462 @@
+diff --git a/src/main/java/com/example/janken/controller/GameController.java b/src/main/java/com/example/janken/controller/GameController.java
+index 83d54a5..315c00b 100644
+--- a/src/main/java/com/example/janken/controller/GameController.java
++++ b/src/main/java/com/example/janken/controller/GameController.java
+@@ -19,6 +19,10 @@ public class GameController {
+     public String play(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
+         return screens.play(request.getSession(false), matchId, model);
+     }
++    @GetMapping("/round-result")
++    public String roundResult(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
++        return screens.roundResult(request.getSession(false), matchId, model);
++    }
+     @PostMapping("/play")
+     public String submitHand(@ModelAttribute HandSelectionForm form, HttpServletRequest request) {
+         return "redirect:/play?matchId=" + matches.submitHand(request.getSession(false), form);
+diff --git a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+index 585fa6c..4f14265 100644
+--- a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
++++ b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+@@ -46,12 +46,6 @@ public class HtmlErrorHandler {
+             default -> form = new LoginForm();
+         }
+         response.setStatus(error.getStatus());
+-        try {
+-            return screens.error(request.getSession(false), form, error, model);
+-        } catch (GameOperationException unavailableScreen) {
+-            if (!request.getRequestURI().equals("/play")) { throw unavailableScreen; }
+-            // 結果画面は第11段階。仮画面を作らず、業務エラーのHTTPステータスを維持する。
+-            return null;
+-        }
++        return screens.error(request.getSession(false), form, error, model);
+     }
+ }
+diff --git a/src/main/java/com/example/janken/controller/ScreenRenderer.java b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+index d98f56c..353e056 100644
+--- a/src/main/java/com/example/janken/controller/ScreenRenderer.java
++++ b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+@@ -25,8 +25,16 @@ public class ScreenRenderer {
+     }
+ 
+     public String play(HttpSession session, String matchId, Model model) {
++        return matchPage(session, matchId, "play", model);
++    }
++
++    public String roundResult(HttpSession session, String matchId, Model model) {
++        return matchPage(session, matchId, "round-result", model);
++    }
++
++    private String matchPage(HttpSession session, String matchId, String template, Model model) {
+         ScreenService.Screen screen = screens.current(session);
+-        if (!screen.template().equals("play")) { return "redirect:" + screen.path(); }
++        if (!screen.template().equals(template)) { return "redirect:" + screen.path(); }
+         // 無指定なら本人の現在対戦を表示。異なるIDは本人の現在URLへ誘導する。
+         if (matchId != null && !matchId.equals(screen.model().get("matchId"))) {
+             return "redirect:" + screen.path();
+diff --git a/src/main/java/com/example/janken/service/ScreenService.java b/src/main/java/com/example/janken/service/ScreenService.java
+index 90409a6..f51ff6b 100644
+--- a/src/main/java/com/example/janken/service/ScreenService.java
++++ b/src/main/java/com/example/janken/service/ScreenService.java
+@@ -1,6 +1,10 @@
+ package com.example.janken.service;
+ 
+ import com.example.janken.domain.GameUser;
++import com.example.janken.domain.RoundResult;
++import com.example.janken.domain.enums.MatchEndType;
++import java.util.List;
++import java.util.UUID;
+ import com.example.janken.domain.HandSelection;
+ import com.example.janken.domain.enums.SelectedHandType;
+ import com.example.janken.domain.GameMatch;
+@@ -69,6 +73,7 @@ public class ScreenService {
+             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
+             model.put("roomId", room.getId().toString());
+             model.put("roomName", room.getName());
++            model.put("selfUserId", user.getId().toString());
+             model.put("isHost", user.getId().equals(room.getHostUserId()));
+             java.util.List<MemberView> members = room.getMemberIds().stream().map(id -> {
+                 GameUser member = users.findById(id).orElseThrow(GameOperationException::invalidState);
+@@ -109,11 +114,13 @@ public class ScreenService {
+                 .orElseThrow(GameOperationException::invalidState);
+         MatchParticipant participant = match.getParticipants().get(user.getId());
+         if (!room.getId().equals(match.getRoomId()) || participant == null || !participant.isActive()
+-                || match.getState() != MatchState.SELECTING_HAND
++                || (match.getState() != MatchState.SELECTING_HAND && match.getState() != MatchState.ROUND_RESULT)
+                 || match.getCurrentRound() == null) { throw GameOperationException.invalidState(); }
+         model.put("roomId", match.getRoomId().toString());
+         model.put("matchId", match.getId().toString());
+         model.put("roundNumber", match.getCurrentRound().getRoundNumber());
++        if (match.getState() == MatchState.ROUND_RESULT) { return roundResultScreen(match, model); }
++        model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
+         model.put("targetWins", match.getTargetWins());
+         model.put("preventConsecutiveSameOriginalHand", match.isPreventConsecutiveSameOriginalHand());
+         model.put("matchParticipant", true);
+@@ -137,6 +144,35 @@ public class ScreenService {
+         return screen("/play?matchId=" + match.getId(), "play", model);
+     }
+ 
++
++    public record ResultView(UUID userId, String username, String handName, boolean wonRound) { }
++    public record ScoreView(UUID userId, String username, int score) { }
++    public record HistoryView(int roundNumber, List<ResultView> results, boolean hasRoundWinner) { }
++
++    private HistoryView historyView(RoundResult result) {
++        return new HistoryView(result.getRoundNumber(), result.getEntries().stream()
++                .map(e -> new ResultView(e.getUserId(), e.getUsername(), e.getHandName(), e.isWonRound())).toList(),
++                result.isHasWinner());
++    }
++
++    private Screen roundResultScreen(GameMatch match, Map<String, Object> model) {
++        RoundResult result = match.getRoundHistory().stream()
++                .filter(r -> r.getRoundNumber() == match.getCurrentRound().getRoundNumber())
++                .findFirst().orElseThrow(GameOperationException::invalidState);
++        HistoryView copied = historyView(result);
++        model.put("results", copied.results());
++        // 累積勝数は履歴へ保存せず、現在の参加者から結果の各行に対応するコピーを作る。
++        model.put("scores", copied.results().stream().map(e -> {
++            MatchParticipant p = match.getParticipants().get(e.userId());
++            if (p == null) { throw GameOperationException.invalidState(); }
++            return new ScoreView(p.getUserId(), p.getUsername(), p.getScore());
++        }).toList());
++        model.put("hasRoundWinner", result.isHasWinner());
++        model.put("transitionAt", match.getTransitionAt() == null ? null : match.getTransitionAt().toString());
++        model.put("matchFinished", match.getPendingEndType() == MatchEndType.NORMAL);
++        return screen("/round-result?matchId=" + match.getId(), "round-result", model);
++    }
++
+     private void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
+         OriginalHand hand = user.getOriginalHand();
+         OriginalHandForm form = new OriginalHandForm();
+diff --git a/src/main/resources/static/css/style.css b/src/main/resources/static/css/style.css
+index cbd5e4e..bb3c7e8 100644
+--- a/src/main/resources/static/css/style.css
++++ b/src/main/resources/static/css/style.css
+@@ -13,3 +13,9 @@ li { margin: .5rem 0; }
+ .original-hand { margin-bottom: 1.5rem; }
+ select { padding: .6rem; margin: .5rem 0; }
+ #original-hand-panel { border: 1px solid #b6bec6; padding: 1rem; margin-top: .75rem; }
++
++[hidden] { display: none !important; }
++.round-winner { font-weight: bold; background: #edf5ff; outline: 2px solid #42638c; }
++.table-scroll { overflow-x: auto; }
++table { width: 100%; border-collapse: collapse; }
++th, td { padding: .75rem; border: 1px solid #b6bec6; text-align: left; }
+diff --git a/src/main/resources/static/js/original-hand.js b/src/main/resources/static/js/original-hand.js
+index cb3b03b..3665c50 100644
+--- a/src/main/resources/static/js/original-hand.js
++++ b/src/main/resources/static/js/original-hand.js
+@@ -1,17 +1,24 @@
+ 'use strict';
+-
+-const originalHandPanel = document.getElementById('original-hand-panel');
+-const openOriginalHand = document.getElementById('open-original-hand');
+-const closeOriginalHand = document.getElementById('close-original-hand');
+-
+-openOriginalHand.addEventListener('click', () => {
+-    originalHandPanel.hidden = false;
+-    openOriginalHand.setAttribute('aria-expanded', 'true');
+-    document.getElementById('original-hand-name').focus();
+-});
+-closeOriginalHand.addEventListener('click', () => {
+-    // 入力を消さずに閉じる。もう一度開いたときも同じ値を編集できる。
+-    originalHandPanel.hidden = true;
+-    openOriginalHand.setAttribute('aria-expanded', 'false');
+-    openOriginalHand.focus();
+-});
++(() => {
++    // READY→待機に変わったときに取得した編集部分にも、同じ開閉操作を設定する。
++    const init = () => {
++        const panel = document.getElementById('original-hand-panel');
++        const open = document.getElementById('open-original-hand');
++        const close = document.getElementById('close-original-hand');
++        if (!panel || !open || !close || open.dataset.initialized) return;
++        open.dataset.initialized = 'true';
++        open.addEventListener('click', () => {
++            panel.hidden = false;
++            open.setAttribute('aria-expanded', 'true');
++            document.getElementById('original-hand-name').focus();
++        });
++        close.addEventListener('click', () => {
++            // 入力を消さずに閉じる。再度開いても同じ値を編集できる。
++            panel.hidden = true;
++            open.setAttribute('aria-expanded', 'false');
++            open.focus();
++        });
++    };
++    window.initOriginalHandEditor = init;
++    init();
++})();
+diff --git a/src/main/resources/static/js/room.js b/src/main/resources/static/js/room.js
+index a8b895d..c0ca841 100644
+--- a/src/main/resources/static/js/room.js
++++ b/src/main/resources/static/js/room.js
+@@ -1,14 +1,123 @@
+ 'use strict';
++(() => {
++    const page = document.querySelector('main[data-page="room"]');
++    const copyButton = document.getElementById('copy-room-name');
++    copyButton.addEventListener('click', async () => {
++        const message = document.getElementById('copy-message');
++        try {
++            await navigator.clipboard.writeText(document.getElementById('display-room-name').textContent);
++            message.textContent = 'ルーム名をコピーしました';
++        } catch (error) {
++            message.textContent = 'コピーできませんでした。ルーム名を選択してコピーしてください。';
++        }
++    });
++    let ruleDirty = false;
++    let latestStatus = null;
++    let fetchingEditor = false;
++    const ruleEditor = document.getElementById('rule-editor');
++    ruleEditor.addEventListener('input', () => { ruleDirty = true; });
++    ruleEditor.addEventListener('change', () => { ruleDirty = true; });
+ 
+-const copyButton = document.getElementById('copy-room-name');
+-copyButton.addEventListener('click', async () => {
+-    const message = document.getElementById('copy-message');
+-    try {
+-        // 表示用の名前だけを読み取る。hiddenの内部roomIdには触れない。
+-        const roomName = document.getElementById('display-room-name').textContent;
+-        await navigator.clipboard.writeText(roomName);
+-        message.textContent = 'ルーム名をコピーしました';
+-    } catch (error) {
+-        message.textContent = 'コピーできませんでした。ルーム名を選択してコピーしてください。';
+-    }
+-});
++    const actionForm = (url, label, roomId) => {
++        const form = document.createElement('form');
++        form.method = 'post'; form.action = url;
++        const hidden = document.createElement('input');
++        hidden.type = 'hidden'; hidden.name = 'roomId'; hidden.value = roomId;
++        const button = document.createElement('button');
++        button.type = 'submit'; button.textContent = label;
++        form.append(hidden, button);
++        return form;
++    };
++    const ensureRules = (room) => {
++        let form = ruleEditor.querySelector('form');
++        if (form) return form;
++        form = actionForm('/room/rules', 'ルール変更', room.id);
++        const label = document.createElement('label');
++        label.textContent = '先取勝数';
++        const wins = document.createElement('input');
++        wins.name = 'targetWins'; wins.type = 'text'; wins.inputMode = 'numeric';
++        label.append(wins);
++        const preventLabel = document.createElement('label');
++        const prevent = document.createElement('input');
++        prevent.type = 'checkbox'; prevent.name = 'preventConsecutiveSameOriginalHand'; prevent.value = 'true';
++        preventLabel.append(prevent, document.createTextNode('同一オリジナル手の連続使用を禁止する'));
++        form.insertBefore(label, form.lastChild); form.insertBefore(preventLabel, form.lastChild);
++        ruleEditor.append(form);
++        return form;
++    };
++    const syncEditor = async (status) => {
++        const allowed = status.userState === 'ROOM_WAITING';
++        const open = document.getElementById('open-original-hand');
++        const panel = document.getElementById('original-hand-panel');
++        if (open && panel) {
++            open.hidden = !allowed;
++            open.disabled = !allowed;
++            // 許可された入力値を保持し、READY中だけ編集・送信を無効化する。
++            panel.querySelectorAll('input,select,button').forEach(control => { control.disabled = !allowed; });
++            if (!allowed) { panel.hidden = true; open.setAttribute('aria-expanded', 'false'); }
++            return;
++        }
++        if (!allowed || fetchingEditor) return;
++        fetchingEditor = true;
++        try {
++            // 初期READY画面は本人相性の編集Modelを持たないため、許可を得た時だけ部分取得する。
++            const response = await fetch('/room', { credentials: 'same-origin', cache: 'no-store' });
++            if (!response.ok || latestStatus.userState !== 'ROOM_WAITING'
++                    || latestStatus.currentRoomId !== page.dataset.roomId) return;
++            const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
++            if (latestStatus.userState !== 'ROOM_WAITING' || latestStatus.currentRoomId !== page.dataset.roomId) return;
++            const editor = parsed.querySelector('.original-hand');
++            if (!editor?.querySelector('#original-hand-panel')) return;
++            page.querySelector('.original-hand').replaceWith(document.importNode(editor, true));
++            window.initOriginalHandEditor();
++        } catch (error) {
++            // 次回確認で再取得する。
++        } finally { fetchingEditor = false; }
++    };
++    document.addEventListener('janken:status', ({ detail: status }) => {
++        if (status.currentRoomId !== page.dataset.roomId || !status.room
++                || !['ROOM_WAITING', 'READY'].includes(status.userState)) return;
++        latestStatus = status;
++        const room = status.room;
++        document.getElementById('display-room-name').textContent = room.name;
++        const members = document.getElementById('room-members');
++        members.replaceChildren(...room.members.map(member => {
++            const row = document.createElement('li');
++            const name = document.createElement('span');
++            name.textContent = member.username; row.append(name);
++            for (const label of [
++                member.isHost ? '（ホスト）' : '',
++                member.userState === 'READY' ? '（準備完了）' : '',
++                member.userState === 'PLAYING' ? '（現在対戦中）' : ''
++            ]) {
++                if (!label) continue;
++                const mark = document.createElement('strong'); mark.textContent = label; row.append(mark);
++            }
++            return row;
++        }));
++        const ready = document.getElementById('ready-action');
++        const nextReady = actionForm(status.userState === 'READY' ? '/room/ready/cancel' : '/room/ready',
++                status.userState === 'READY' ? '準備取消' : '準備完了', room.id);
++        nextReady.id = 'ready-action'; ready.replaceWith(nextReady);
++        const running = status.roomState === 'PLAYING';
++        document.getElementById('match-running').hidden = !running;
++        const isHost = room.hostUserId === page.dataset.selfUserId;
++        const start = document.getElementById('start-action');
++        const canStart = isHost && !running && room.members.filter(m => m.userState === 'READY').length >= 2;
++        start.replaceChildren(...(canStart ? [actionForm('/room/start', '対戦開始', room.id)] : []));
++        document.getElementById('display-target-wins').textContent = room.targetWins;
++        document.getElementById('display-prevent-consecutive').textContent = room.preventConsecutiveSameOriginalHand ? 'ON' : 'OFF';
++        const canEditRules = isHost && !running;
++        ruleEditor.hidden = !canEditRules;
++        const ruleForm = canEditRules ? ensureRules(room) : ruleEditor.querySelector('form');
++        if (ruleForm) {
++            ruleForm.querySelectorAll('input,button').forEach(control => { control.disabled = !canEditRules; });
++            if (!ruleDirty) {
++                ruleForm.querySelector('[name="targetWins"]').value = room.targetWins;
++                ruleForm.querySelector('[type="checkbox"]').checked = room.preventConsecutiveSameOriginalHand;
++            }
++        }
++        syncEditor(status);
++        page.dataset.userState = status.userState;
++    });
++})();
+diff --git a/src/main/resources/templates/play.html b/src/main/resources/templates/play.html
+index ea0ed3f..32c3325 100644
+--- a/src/main/resources/templates/play.html
++++ b/src/main/resources/templates/play.html
+@@ -1,8 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
++<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/play.js}"></script></head>
+ <body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
+-<main th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber}">
++<main data-page="play" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-self-hand-confirmed=${selfHandConfirmed}">
+ <section th:replace="~{login :: errors}"></section>
+ <h1>第<span th:text="${roundNumber}"></span>ラウンド</h1>
+ <p th:if="${matchParticipant}">あなたは対戦参加者です。</p>
+@@ -10,8 +10,20 @@
+ <p>現在の勝数：<span th:text="${score}"></span></p>
+ <p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+ <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
++<section>
++<button id="toggle-round-history" type="button" aria-controls="round-history" aria-expanded="false">ラウンド履歴を表示</button>
++<div id="round-history" hidden>
++<h2>ラウンド履歴</h2>
++<section th:each="round : ${roundHistory}">
++<h3>第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
++<ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
++<span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong>
++</li></ul><p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
++</section></div>
++</section>
+ <h2>手を選択</h2>
+-<p th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
++<p id="self-hand-status" th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
++<p id="self-hand-status" th:unless="${selfHandConfirmed}" aria-live="polite"></p>
+ <p th:if="${hasConsecutiveUseRestriction}">前のラウンドと同じオリジナル手は選択できません。</p>
+ <!-- 画面で無効化しても、POSTの最終判定は共有ロック内のMatchServiceで行う。 -->
+ <div>
+diff --git a/src/main/resources/templates/room.html b/src/main/resources/templates/room.html
+index 165c484..ec1eeb1 100644
+--- a/src/main/resources/templates/room.html
++++ b/src/main/resources/templates/room.html
+@@ -1,8 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/room.js}"></script><script defer th:src="@{/js/original-hand.js}"></script></head>
++<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/room.js}"></script><script defer th:src="@{/js/original-hand.js}"></script><script defer th:src="@{/js/status-polling.js}"></script></head>
+ <body><header th:replace="~{rooms :: header}"></header>
+-<main><h1>ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
++<main data-page="room" th:attr="data-room-id=${roomId},data-self-user-id=${selfUserId},data-user-state=${userState}"><h1>ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
+ <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
+ <section th:replace="~{fragments/original-hand :: editor}"></section>
+ <button id="copy-room-name" type="button">ルーム名をコピー</button>
+@@ -12,28 +12,28 @@
+ <ul th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomId']}" th:text="${message}"></li></ul>
+ <button type="submit">ルームを退出</button>
+ </form>
+-<form th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
++<form id="ready-action" th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
+ <input type="hidden" th:field="*{roomId}"><button type="submit">準備完了</button>
+ </form>
+-<form th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
++<form id="ready-action" th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
+ <input type="hidden" th:field="*{roomId}"><button type="submit">準備取消</button>
+ </form>
+-<p th:if="${matchRunning}">対戦が進行中です。</p>
+-<form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
++<p id="match-running" th:hidden="${!matchRunning}">対戦が進行中です。</p>
++<div id="start-action"><form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
+ <input type="hidden" name="roomId" th:value="${roomId}"><button type="submit">対戦開始</button>
+-</form>
++</form></div>
+ <section><h2>対戦ルール</h2>
+-<p>先取勝数：<span th:text="${targetWins}"></span></p>
+-<p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+-<form th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
++<p>先取勝数：<span id="display-target-wins" th:text="${targetWins}"></span></p>
++<p>同一オリジナル手の連続使用を禁止する：<span id="display-prevent-consecutive" th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
++<div id="rule-editor"><form th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
+ <input type="hidden" th:field="*{roomId}">
+ <label for="targetWins">先取勝数</label>
+ <input type="text" inputmode="numeric" th:field="*{targetWins}" aria-describedby="targetWins-errors">
+ <ul id="targetWins-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['targetWins']}" th:text="${message}"></li></ul>
+ <label><input type="checkbox" th:field="*{preventConsecutiveSameOriginalHand}">同一オリジナル手の連続使用を禁止する</label>
+ <button type="submit">ルール変更</button>
+-</form>
++</form></div>
+ <p>通常のグー・チョキ・パーは連続して選択できます。</p>
+ </section>
+-<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
++<h2>参加者一覧</h2><ul id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
+ </main></body></html>
+diff --git a/src/main/resources/templates/rooms.html b/src/main/resources/templates/rooms.html
+index fba81a0..30af24b 100644
+--- a/src/main/resources/templates/rooms.html
++++ b/src/main/resources/templates/rooms.html
+@@ -1,9 +1,9 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム作成・参加 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/original-hand.js}"></script></head>
++<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム作成・参加 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/original-hand.js}"></script><script defer th:src="@{/js/status-polling.js}"></script></head>
+ <body>
+ <header th:fragment="header"><strong>簡易自由律じゃんけん</strong><span th:text="${username}"></span><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+-<main><h1>ルーム作成・参加</h1>
++<main data-page="rooms"><h1>ルーム作成・参加</h1>
+ <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
+ <section th:replace="~{fragments/original-hand :: editor}"></section>
+ <form method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">
+diff --git a/src/test/java/com/example/janken/controller/StageFourWebTests.java b/src/test/java/com/example/janken/controller/StageFourWebTests.java
+index 45ea1db..6c9e5de 100644
+--- a/src/test/java/com/example/janken/controller/StageFourWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageFourWebTests.java
+@@ -151,7 +151,8 @@ class StageFourWebTests {
+         redirect(http(a,"/rooms/enter","roomName="+encoded),"/room");
+         String hostHtml=http(a,"/room",null).body(); String id=hiddenRoom(hostHtml);
+         assertTrue(hostHtml.contains("共有&lt;部屋&gt;")); assertTrue(hostHtml.contains("（ホスト）"));
+-        assertEquals(4,hostHtml.split(id,-1).length-1); // 内部IDは退出・保存・準備・ルールのhiddenにだけ現れる。
++        assertEquals(5,hostHtml.split(id,-1).length-1); // hidden4個と状態同期用data-room-id。利用者向け表示にはしない。
++        assertTrue(hostHtml.contains("data-room-id=\""+id+"\""));
+         assertFalse(hostHtml.contains("/api/status")); assertTrue(hostHtml.contains("準備完了"));
+         redirect(http(b,"/login","username=Member"),"/rooms");
+         redirect(http(b,"/rooms/enter","roomName="+encoded),"/room"); assertEquals(id,hiddenRoom(http(b,"/room",null).body()));
+diff --git a/src/test/java/com/example/janken/controller/StageNineWebTests.java b/src/test/java/com/example/janken/controller/StageNineWebTests.java
+index 9287d54..3a5520d 100644
+--- a/src/test/java/com/example/janken/controller/StageNineWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageNineWebTests.java
+@@ -95,7 +95,7 @@ class StageNineWebTests {
+     String normalBody(String matchId,String hand) {return "matchId="+matchId+"&roundNumber=1&type=NORMAL&normalHand="+hand;}
+     @Test void realHttpSubmitDuplicateAndFinalState() throws Exception {
+         var a=browser(); var b=browser(); String mid=startHttp(a,b)[1]; String play="/play?matchId="+mid;
+-        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(5,count(initial,"<button")); assertFalse(initial.contains("disabled"));
++        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(6,count(initial,"<button")); // 手選択5個＋第11段階の履歴開閉。 assertFalse(initial.contains("disabled"));
+         redirect(http(a,"/play",normalBody(mid,"ROCK")),play);
+         String self=http(a,play,null).body(); assertTrue(self.contains("確定済みの手：<strong>グー</strong>")); assertTrue(self.contains("他の参加者の確定を待っています")); assertEquals(5,count(self,"disabled=\"disabled\""));
+         String other=http(b,play,null).body(); assertFalse(other.contains("確定済みの手：")); assertFalse(other.contains("disabled"));

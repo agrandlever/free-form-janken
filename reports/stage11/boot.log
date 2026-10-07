@@ -1,0 +1,44 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources
+> Task :classes
+> Task :resolveMainClassName
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-10-07T13:52:23.473+09:00  INFO 900 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Starting JankenApplication using Java 21.0.11 with PID 900 (C:\exPractice\free-form-janken\build\classes\java\main started by CodexSandboxOffline in C:\exPractice\free-form-janken)
+2026-10-07T13:52:23.478+09:00  INFO 900 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-07T13:52:32.819+09:00  INFO 900 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 18011 (http)
+2026-10-07T13:52:32.843+09:00  INFO 900 --- [free-form-janken] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-07T13:52:32.843+09:00  INFO 900 --- [free-form-janken] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-10-07T13:52:32.947+09:00  INFO 900 --- [free-form-janken] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 9351 ms
+2026-10-07T13:52:33.702+09:00  INFO 900 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18011 (http) with context path '/'
+2026-10-07T13:52:33.706+09:00  INFO 900 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Started JankenApplication in 11.046 seconds (process running for 11.591)
+2026-10-07T13:52:42.280+09:00  INFO 900 --- [free-form-janken] [io-18011-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-07T13:52:42.280+09:00  INFO 900 --- [free-form-janken] [io-18011-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-07T13:52:42.281+09:00  INFO 900 --- [free-form-janken] [io-18011-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+
+> Task :bootRun FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bootRun'.
+> Process 'command 'C:\pleiades\2026-06\java\21\bin\java.exe'' finished with non-zero exit value -1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 3m 27s
+4 actionable tasks: 3 executed, 1 up-to-date

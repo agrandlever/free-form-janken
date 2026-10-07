@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
+<body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
+<main data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
+<section th:replace="~{login :: errors}"></section>
+<h1>第<span th:text="${roundNumber}"></span>ラウンド結果</h1>
+<div class="table-scroll"><table><thead><tr><th scope="col">参加者</th><th scope="col">選択した手</th><th scope="col">ラウンド結果</th><th scope="col">現在の累積勝数</th></tr></thead>
+<tbody><tr th:each="entry : ${results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
+<td th:text="${entry.username}"></td><td th:text="${entry.handName}"></td><td><strong th:if="${entry.wonRound}">勝利</strong><span th:unless="${entry.wonRound}">—</span></td>
+<td><th:block th:each="score : ${scores}" th:if="${score.userId == entry.userId}"><span th:text="${score.score}"></span>勝</th:block></td>
+</tr></tbody></table></div>
+<p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
+<p id="transition-count" role="status" th:text="${matchFinished ? '対戦結果まで：時刻を確認中' : '次のラウンドまで：時刻を確認中'}"></p>
+</main></body></html>

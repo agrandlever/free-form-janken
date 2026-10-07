@@ -1,6 +1,10 @@
 package com.example.janken.service;
 
 import com.example.janken.domain.GameUser;
+import com.example.janken.domain.RoundResult;
+import com.example.janken.domain.enums.MatchEndType;
+import java.util.List;
+import java.util.UUID;
 import com.example.janken.domain.HandSelection;
 import com.example.janken.domain.enums.SelectedHandType;
 import com.example.janken.domain.GameMatch;
@@ -69,6 +73,7 @@ public class ScreenService {
             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
             model.put("roomId", room.getId().toString());
             model.put("roomName", room.getName());
+            model.put("selfUserId", user.getId().toString());
             model.put("isHost", user.getId().equals(room.getHostUserId()));
             java.util.List<MemberView> members = room.getMemberIds().stream().map(id -> {
                 GameUser member = users.findById(id).orElseThrow(GameOperationException::invalidState);
@@ -109,11 +114,13 @@ public class ScreenService {
                 .orElseThrow(GameOperationException::invalidState);
         MatchParticipant participant = match.getParticipants().get(user.getId());
         if (!room.getId().equals(match.getRoomId()) || participant == null || !participant.isActive()
-                || match.getState() != MatchState.SELECTING_HAND
+                || (match.getState() != MatchState.SELECTING_HAND && match.getState() != MatchState.ROUND_RESULT)
                 || match.getCurrentRound() == null) { throw GameOperationException.invalidState(); }
         model.put("roomId", match.getRoomId().toString());
         model.put("matchId", match.getId().toString());
         model.put("roundNumber", match.getCurrentRound().getRoundNumber());
+        if (match.getState() == MatchState.ROUND_RESULT) { return roundResultScreen(match, model); }
+        model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
         model.put("targetWins", match.getTargetWins());
         model.put("preventConsecutiveSameOriginalHand", match.isPreventConsecutiveSameOriginalHand());
         model.put("matchParticipant", true);
@@ -135,6 +142,35 @@ public class ScreenService {
         model.put("selfHandConfirmed", self != null);
         model.put("selfSelectedHandName", self == null ? null : RoundJudgeService.handName(self, match.getOriginalHands()));
         return screen("/play?matchId=" + match.getId(), "play", model);
+    }
+
+
+    public record ResultView(UUID userId, String username, String handName, boolean wonRound) { }
+    public record ScoreView(UUID userId, String username, int score) { }
+    public record HistoryView(int roundNumber, List<ResultView> results, boolean hasRoundWinner) { }
+
+    private HistoryView historyView(RoundResult result) {
+        return new HistoryView(result.getRoundNumber(), result.getEntries().stream()
+                .map(e -> new ResultView(e.getUserId(), e.getUsername(), e.getHandName(), e.isWonRound())).toList(),
+                result.isHasWinner());
+    }
+
+    private Screen roundResultScreen(GameMatch match, Map<String, Object> model) {
+        RoundResult result = match.getRoundHistory().stream()
+                .filter(r -> r.getRoundNumber() == match.getCurrentRound().getRoundNumber())
+                .findFirst().orElseThrow(GameOperationException::invalidState);
+        HistoryView copied = historyView(result);
+        model.put("results", copied.results());
+        // 累積勝数は履歴へ保存せず、現在の参加者から結果の各行に対応するコピーを作る。
+        model.put("scores", copied.results().stream().map(e -> {
+            MatchParticipant p = match.getParticipants().get(e.userId());
+            if (p == null) { throw GameOperationException.invalidState(); }
+            return new ScoreView(p.getUserId(), p.getUsername(), p.getScore());
+        }).toList());
+        model.put("hasRoundWinner", result.isHasWinner());
+        model.put("transitionAt", match.getTransitionAt() == null ? null : match.getTransitionAt().toString());
+        model.put("matchFinished", match.getPendingEndType() == MatchEndType.NORMAL);
+        return screen("/round-result?matchId=" + match.getId(), "round-result", model);
     }
 
     private void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {

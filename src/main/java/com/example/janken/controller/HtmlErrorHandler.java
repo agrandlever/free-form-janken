@@ -46,12 +46,6 @@ public class HtmlErrorHandler {
             default -> form = new LoginForm();
         }
         response.setStatus(error.getStatus());
-        try {
-            return screens.error(request.getSession(false), form, error, model);
-        } catch (GameOperationException unavailableScreen) {
-            if (!request.getRequestURI().equals("/play")) { throw unavailableScreen; }
-            // 結果画面は第11段階。仮画面を作らず、業務エラーのHTTPステータスを維持する。
-            return null;
-        }
+        return screens.error(request.getSession(false), form, error, model);
     }
 }

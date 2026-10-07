@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/play.js}"></script></head>
 <body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
-<main th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber}">
+<main data-page="play" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-self-hand-confirmed=${selfHandConfirmed}">
 <section th:replace="~{login :: errors}"></section>
 <h1>第<span th:text="${roundNumber}"></span>ラウンド</h1>
 <p th:if="${matchParticipant}">あなたは対戦参加者です。</p>
@@ -10,8 +10,20 @@
 <p>現在の勝数：<span th:text="${score}"></span></p>
 <p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
 <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
+<section>
+<button id="toggle-round-history" type="button" aria-controls="round-history" aria-expanded="false">ラウンド履歴を表示</button>
+<div id="round-history" hidden>
+<h2>ラウンド履歴</h2>
+<section th:each="round : ${roundHistory}">
+<h3>第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
+<ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
+<span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong>
+</li></ul><p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
+</section></div>
+</section>
 <h2>手を選択</h2>
-<p th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
+<p id="self-hand-status" th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
+<p id="self-hand-status" th:unless="${selfHandConfirmed}" aria-live="polite"></p>
 <p th:if="${hasConsecutiveUseRestriction}">前のラウンドと同じオリジナル手は選択できません。</p>
 <!-- 画面で無効化しても、POSTの最終判定は共有ロック内のMatchServiceで行う。 -->
 <div>

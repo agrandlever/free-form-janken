@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/room.js}"></script><script defer th:src="@{/js/original-hand.js}"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/room.js}"></script><script defer th:src="@{/js/original-hand.js}"></script><script defer th:src="@{/js/status-polling.js}"></script></head>
 <body><header th:replace="~{rooms :: header}"></header>
-<main><h1>ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
+<main data-page="room" th:attr="data-room-id=${roomId},data-self-user-id=${selfUserId},data-user-state=${userState}"><h1>ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <section th:replace="~{fragments/original-hand :: editor}"></section>
 <button id="copy-room-name" type="button">ルーム名をコピー</button>
@@ -12,28 +12,28 @@
 <ul th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomId']}" th:text="${message}"></li></ul>
 <button type="submit">ルームを退出</button>
 </form>
-<form th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
+<form id="ready-action" th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button type="submit">準備完了</button>
 </form>
-<form th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
+<form id="ready-action" th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button type="submit">準備取消</button>
 </form>
-<p th:if="${matchRunning}">対戦が進行中です。</p>
-<form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
+<p id="match-running" th:hidden="${!matchRunning}">対戦が進行中です。</p>
+<div id="start-action"><form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
 <input type="hidden" name="roomId" th:value="${roomId}"><button type="submit">対戦開始</button>
-</form>
+</form></div>
 <section><h2>対戦ルール</h2>
-<p>先取勝数：<span th:text="${targetWins}"></span></p>
-<p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
-<form th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
+<p>先取勝数：<span id="display-target-wins" th:text="${targetWins}"></span></p>
+<p>同一オリジナル手の連続使用を禁止する：<span id="display-prevent-consecutive" th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+<div id="rule-editor"><form th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
 <input type="hidden" th:field="*{roomId}">
 <label for="targetWins">先取勝数</label>
 <input type="text" inputmode="numeric" th:field="*{targetWins}" aria-describedby="targetWins-errors">
 <ul id="targetWins-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['targetWins']}" th:text="${message}"></li></ul>
 <label><input type="checkbox" th:field="*{preventConsecutiveSameOriginalHand}">同一オリジナル手の連続使用を禁止する</label>
 <button type="submit">ルール変更</button>
-</form>
+</form></div>
 <p>通常のグー・チョキ・パーは連続して選択できます。</p>
 </section>
-<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
+<h2>参加者一覧</h2><ul id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
 </main></body></html>

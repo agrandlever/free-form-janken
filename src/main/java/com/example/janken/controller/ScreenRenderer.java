@@ -25,8 +25,16 @@ public class ScreenRenderer {
     }
 
     public String play(HttpSession session, String matchId, Model model) {
+        return matchPage(session, matchId, "play", model);
+    }
+
+    public String roundResult(HttpSession session, String matchId, Model model) {
+        return matchPage(session, matchId, "round-result", model);
+    }
+
+    private String matchPage(HttpSession session, String matchId, String template, Model model) {
         ScreenService.Screen screen = screens.current(session);
-        if (!screen.template().equals("play")) { return "redirect:" + screen.path(); }
+        if (!screen.template().equals(template)) { return "redirect:" + screen.path(); }
         // 無指定なら本人の現在対戦を表示。異なるIDは本人の現在URLへ誘導する。
         if (matchId != null && !matchId.equals(screen.model().get("matchId"))) {
             return "redirect:" + screen.path();

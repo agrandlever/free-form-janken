@@ -13,3 +13,9 @@ li { margin: .5rem 0; }
 .original-hand { margin-bottom: 1.5rem; }
 select { padding: .6rem; margin: .5rem 0; }
 #original-hand-panel { border: 1px solid #b6bec6; padding: 1rem; margin-top: .75rem; }
+
+[hidden] { display: none !important; }
+.round-winner { font-weight: bold; background: #edf5ff; outline: 2px solid #42638c; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: .75rem; border: 1px solid #b6bec6; text-align: left; }

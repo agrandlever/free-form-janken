@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム作成・参加 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/original-hand.js}"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム作成・参加 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/original-hand.js}"></script><script defer th:src="@{/js/status-polling.js}"></script></head>
 <body>
 <header th:fragment="header"><strong>簡易自由律じゃんけん</strong><span th:text="${username}"></span><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
-<main><h1>ルーム作成・参加</h1>
+<main data-page="rooms"><h1>ルーム作成・参加</h1>
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <section th:replace="~{fragments/original-hand :: editor}"></section>
 <form method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">

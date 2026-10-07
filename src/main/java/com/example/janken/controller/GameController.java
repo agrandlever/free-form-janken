@@ -19,6 +19,10 @@ public class GameController {
     public String play(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
         return screens.play(request.getSession(false), matchId, model);
     }
+    @GetMapping("/round-result")
+    public String roundResult(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
+        return screens.roundResult(request.getSession(false), matchId, model);
+    }
     @PostMapping("/play")
     public String submitHand(@ModelAttribute HandSelectionForm form, HttpServletRequest request) {
         return "redirect:/play?matchId=" + matches.submitHand(request.getSession(false), form);
