@@ -1,0 +1,260 @@
+第4段階 実装完了報告
+確認日：2026-10-07（日本時間）
+対象：06_実装設計書_簡易自由律じゃんけん.md「第4段階：ログイン・ルームの基本操作」
+結論：第4段階完了。第5段階以降には進んでいません。
+
+1. 作成・変更したファイル
+新規ソース21ファイル：
+・src/main/java/com/example/janken/config/TimeConfiguration.java
+・src/main/java/com/example/janken/controller/AuthController.java
+・src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+・src/main/java/com/example/janken/controller/RoomController.java
+・src/main/java/com/example/janken/controller/ScreenRenderer.java
+・src/main/java/com/example/janken/form/LoginForm.java
+・src/main/java/com/example/janken/form/RoomActionForm.java
+・src/main/java/com/example/janken/form/RoomEnterForm.java
+・src/main/java/com/example/janken/service/AuthService.java
+・src/main/java/com/example/janken/service/GameOperationException.java
+・src/main/java/com/example/janken/service/NameInput.java
+・src/main/java/com/example/janken/service/RoomService.java
+・src/main/java/com/example/janken/service/ScreenService.java
+・src/main/java/com/example/janken/service/SessionUserAccess.java
+・src/main/resources/static/css/style.css
+・src/main/resources/static/js/room.js
+・src/main/resources/templates/login.html
+・src/main/resources/templates/room.html
+・src/main/resources/templates/rooms.html
+・src/test/java/com/example/janken/controller/StageFourWebTests.java
+・src/test/java/com/example/janken/service/StageFourServiceTests.java
+変更ソース1ファイル：
+・src/main/resources/application.properties（Cookieによるセッション識別を設定）
+報告書：reports/stage4-completion.txt
+動作確認用の一時ファイル：build/stage4-smoke.ps1（ソースではなく確認用生成領域）
+既存Domain・Store・GameStateLock・Gradle設定は変更していません。
+
+2. AuthServiceの実装範囲
+login：同一セッションの既存ログインを先に確認し、共通文字列判定後、新規UUIDのGameUserを生成します。
+usernameはstrip後の値、state=ROOM_NONE、currentRoomId=null、originalHand=null、lastSeenAt=Clock.instant()です。
+HTTPセッションへUUIDを関連付け、UserStoreへ保存します。同名ユーザーは別セッションで許可します。
+再ログイン拒否時は既存ユーザー・所属・セッション関連付けを変更しません。
+logout：①ではセッション終了、②ではRoomServiceの退出処理を先に完了してからセッション終了とUserStore削除を行います。
+③・④のログアウト処理、対戦途中退出処理は実装していません。
+UserStoreから削除する判断は、実装設計書5節がGameUserの役割を「現在ログイン中のユーザー状態」としているためです。
+ログアウト済みユーザーの無期限蓄積を避け、終了したログインをUserStoreから復元できなくします。
+
+3. RoomServiceの実装範囲
+enterRoom、leaveRoom、transferHostだけを実装しました。transferHostは退出処理から呼ぶprivateメソッドです。
+入室は、ログイン確認→①・currentRoomId=null確認→strip・コードポイント検証→検索→満員確認→必要なら作成→参加登録→所属・時刻設定→②、を1つの共有ロック区間で行います。
+新規Roomは新規UUID、整形後の名前、操作者がホスト、先取3、連続禁止false、対戦IDの2項目nullです。
+既存Roomが8人なら409 / ROOM_FULLで拒否し、別Roomを作りません。
+退出は②・要求roomIdと所属の一致・Room内メンバーであることを確認してから更新します。
+memberIdsから除外し①・currentRoomId=nullへ変更します。残存者がいるホスト退出では参加順の先頭へ移譲し、0人なら本体と名前索引を削除します。
+手動退出でログイン・id・username・originalHandを維持します。
+ready、cancelReady、updateRules、startMatchは未実装です。MatchServiceの参照もありません。
+
+4. HTTPセッションでのユーザー識別方法
+セッション属性gameUserIdに内部UUIDを保存します。表示用usernameや送信されたユーザーIDで本人を切り替えません。
+SessionUserAccessがUserStoreとの照合を行います。存在しないユーザー・終了済みセッションは未ログインとして扱います。
+ログアウトではHttpSession.invalidate()でセッション全体を終了します。
+server.servlet.session.tracking-modes=cookieにより、JSESSIONID Cookieで識別します。
+ログイン直後のリダイレクトURLに;jsessionidが付加される標準動作を避け、設計のURLへ誘導します。
+
+5. Clock基盤の実装方法
+TimeConfiguration.gameClock()がClock.systemUTC()をSpring Bean（共有する部品）として提供します。
+AuthServiceとRoomServiceへコンストラクターで注入します。
+時刻は共有ロック内で取得します。入室時は1回だけ取得し、joinedRoomAtとlastSeenAtへ同じInstantを設定します。
+サービス単体テストでは制御可能なTestClock、Web統合テストでは@Primaryの固定Clock Beanを使用しました。
+
+6. 文字列の共通判定
+NameInput.normalize(input, field, label)で共通化しました。
+nullは空として扱い、String.strip()後のvalue.codePointCount(0, value.length())が1～20か判定します。
+整形済み値を保存・検索・表示に使用します。不正入力では400 / VALIDATION_ERRORと項目エラーを返します。
+@SizeやJavaScript、HTML maxlengthを最終判定に使用していません。
+HTMLにもmaxlength=20を設定せず、補助平面文字20個の送信を妨げません。
+OriginalHandの入力判定・禁止名処理は追加していません。
+
+7. Formの内容
+LoginForm：String username。
+RoomEnterForm：String roomName。
+RoomActionForm：String roomId。POST /room/leaveで使用します。
+各Formは入力値保持用のgetter/setterだけを持ち、最終検証はServiceで共通部品を使います。
+RoomEnterFormに@Validによる先行拒否を設けず、状態確認→入力検証の優先順を保ちます。
+RoomRuleForm、OriginalHandForm等は作成していません。
+
+8. AuthControllerの実装エンドポイント
+GET /：未ログインはlogin、それ以外は正規画面へ302。
+POST /login：成功は302 /rooms。
+POST /logout：成功は302 /。
+
+9. RoomControllerの実装エンドポイント
+GET /rooms：①のルーム作成・参加画面。
+POST /rooms/enter：成功は302 /room。
+GET /room：②の現在ルーム。
+POST /room/leave：成功は302 /rooms。
+他のエンドポイントは追加していません。
+
+10. GET／POSTアクセス制御
+ScreenServiceが共有ロック内でログイン状態と現在の正規画面を判断し、表示コピーを生成します。
+GETではScreenRendererが要求画面と正規画面を比較し、不一致なら302で誘導します。
+未ログイン：GET /は表示、GET /rooms・/roomは302 /。
+①：GET /roomsを表示、GET /・/roomは302 /rooms。
+②：GET /roomを表示、GET /・/roomsは302 /room。
+POST /login以外は、各Serviceの最初にSessionUserAccess.require()でログインを確認します。
+未ログインは401 / LOGIN_REQUIREDでloginを表示し、入力検証・状態更新へ進みません。
+③・④や未導入画面のアクセス制御は先行実装していません。
+
+11. エラーコード・HTTPステータス・再表示
+400 / VALIDATION_ERROR：不正なusername・roomName、操作可能状態でroomId未指定・空・UUID形式不正。
+401 / LOGIN_REQUIRED：未ログインの実装済み状態変更POST。
+409 / INVALID_STATE：同一セッション再ログイン、①・未所属でない入室、②以外の退出、形式が有効な古い／別RoomのroomIdによる退出。
+409 / ROOM_FULL：8人参加済みRoomへの入室。
+GameOperationExceptionがコード・ステータス・メッセージ・項目エラーを保持します。
+HtmlErrorHandlerとScreenRendererで、errorCode、errorMessages、fieldErrors、form、通常Modelを再構築し、同じエラーステータスでHTMLを返します。
+許可された同じ画面では入力を個別Formにも再設定します。旧画面が不適切なら現在の正規画面でエラーを表示します。
+退出の古い／不正roomIdはgeneric formに保持しますが、hiddenには現在の検証済みroomIdを設定し、不正IDを再利用しません。
+
+12. HTMLの実装内容
+login.html：アプリ名、username入力、ログイン、共通エラー表示、username項目エラー。
+rooms.html：共通ヘッダー、現在username、ログアウト、roomName入力、ルームへ入る、入力・業務エラー。
+room.html：共通ヘッダー、現在username、ログアウト、roomName、コピー、成功表示、退出、参加順の一覧、ホスト表示。
+roomIdは退出フォームのhiddenにのみ出力します。参加者表示コピーには内部ユーザーIDを含めません。
+共通ヘッダーはrooms.html、共通エラーはlogin.htmlのThymeleafフラグメントを再利用します。
+style.cssは基本的な中央配置・入力表示・エラー表示・狭い画面での折り返しを担当します。
+準備・ルール変更・対戦開始・観戦・オリジナル手操作UIはありません。
+
+13. ルーム名コピー
+room.jsは表示用roomNameの要素からtextContentを読み、navigator.clipboard.writeText(roomName)へ渡します。
+hidden roomIdは読み取りません。成功時に「ルーム名をコピーしました」を表示します。
+失敗時は手動コピーを案内します。サーバー状態は変更しません。
+HTML／JavaScriptの実装を確認しました。新しいJavaScript自動テスト基盤は導入していません。
+実ブラウザーでのクリップボード操作は未実施で、次の手動確認項目を残します（ユーザーが許容した確認方法）。
+・localhostまたはHTTPSでログイン・入室し、コピーを押す。
+・貼り付け先に表示名だけが入ること、成功文言が出ること、内部roomIdが入らないことを確認する。
+・コピー権限を拒否した場合の失敗文言を確認する。
+
+14. GameStateLockで保護した処理
+ログインの既存セッション確認・時刻取得・生成・セッション関連付け・UserStore登録。
+ログアウトの現在ユーザー確認・退出・移譲／削除・セッション終了・UserStore削除。
+入室の状態・所属確認から名前検証・検索・作成・人数確認・参加登録・ユーザー更新まで全体。
+退出の状態・所属・メンバー確認から除外・ユーザー更新・ホスト移譲・本体／索引削除まで全体。
+画面のアクセス確認・Store参照・Domain値の表示用コピー生成。
+すべて第3段階の同じGameStateLockインスタンスで保護します。
+ログアウトがRoomServiceを呼ぶときも外側のロックを保持し続けます。synchronizedの再入は同じロックで、排他区間の分割ではありません。
+Store独自ロックやRoom単位ロックは追加していません。ControllerはStore／変更可能Domainを直接読み書きしません。
+
+15. 同時実行テストの内容と結果
+CountDownLatchで2要求を同時に開始し、Futureの完了を待って整合性を検証しました。
+各20回、計80回すべて成功：
+・TC-009：同名の未存在Roomへ2ユーザーが入室→Roomは1件、両者が同じRoomに参加。
+・TC-104：7人Roomへ2ユーザーが入室→1要求成功、1要求ROOM_FULL、8人、拒否側は①・未所属。
+・TC-105：同一ユーザーが別Roomへ入室→1要求成功、1要求INVALID_STATE、空Room・二重所属なし。
+・TC-106：最後の退出と同名入室→どちらの順でもRoom1件、名前索引・所属・memberIds一致、ホスト整合。
+
+16. その他の第4段階テスト
+StageFourServiceTests：105件成功（上記80回を含む）。
+StageFourWebTests：10件成功。MockMvcでController経由のModel契約、実HTTPでCookie・HTML描画・基本フローを確認。
+新規テストは計115件、既存17件と合わせて132件成功。
+対象TC：001～009、011～012、077～079、104～106、110、113、116～117、122～123、127～129の第4段階で実行可能な部分。
+TC-010は前記の実装確認・手動確認項目として扱いました。
+確認内容：null／空／空白、半角・タブ・全角空白のstrip、1・20・21コードポイント、絵文字、同名別セッション、再ログイン拒否、入室初期値、名前検索、満員、固定時刻、非ホスト／ホスト／最後の退出、本人情報維持、古いID、ログアウト、未ログイン／①／②のGET、POST検証優先順、エラーModel、表示コピーの独立性。
+後続段階の準備・対戦・切断・状態確認APIはテスト対象にしていません。
+
+17. compileJava結果
+Gradle WrapperによるcompileJava：BUILD SUCCESSFUL（終了コード0）。
+Java 21 / Spring Boot 4.1.1を使用しました。
+
+18. test結果
+Gradle Wrapperによる最終の全test：BUILD SUCCESSFUL（終了コード0）。
+132件、失敗0、エラー0、スキップ0。
+レポート：build/reports/tests/test/index.html。
+途中で判明したテストのimport不足・テスト用Viewのリダイレクト処理、および実HTTPでのURLセッション追跡は修正済みです。
+
+19. Spring Boot起動結果
+実HTTP統合テストではRANDOM_PORTで実際のTomcat／Spring Bootを起動し、固定Clock Beanへの差し替えも確認しました。
+別途、Gradle WrapperのbootRunで本番用Clockを使う通常起動に成功しました。
+8080番ポートで基本フロー確認後、Ctrl+Cでサーバーを終了しました。
+確認用アプリケーションPID 25436が存在しないことも確認しています。Gradle Daemonはアプリケーションサーバーとは別です。
+
+20. 基本フロー確認結果
+実HTTP統合テストと通常bootRunの両方で成功しました。
+ログイン→Room作成→別Cookieセッションで同じRoomへ参加→ホスト退出→残存ユーザーへのホスト移譲→最後のユーザー退出→ログアウト。
+通常起動では同名Roomの再作成で内部IDが変わることも確認し、削除後の名前再利用を検証しました。
+実HTTPテストではRoomStore本体・名前索引の削除を直接確認し、旧CookieのGET拒否／POST401、他セッションのログイン維持も確認しました。
+HTML内の特殊文字のエスケープとroomIdの出力箇所がhidden1か所だけであることも確認しました。
+
+21. 第0～3段階の既存実装
+既存Domain・Enum・UserStore・RoomStore・GameStateLock・起動クラス・Gradle設定は変更していません。
+既存17件のテストがすべて成功し、既存実装を意図せず壊していないことを確認しました。
+application.propertiesには必要なセッション追跡設定だけを追加しました。
+
+22. docs/の変更
+6設計書は変更していません。git diffでdocs/の差分がないことを確認しました。
+第4段階対象に関する設計書間の矛盾は見つかっていません。
+
+23. bin/の生成物変化
+新規26件：class21件、HTML3件、JavaScript1件、CSS1件。
+更新1件：bin/main/application.properties。
+追加された生成物：
+・bin/main/com/example/janken/config/TimeConfiguration.class
+・bin/main/com/example/janken/controller/AuthController.class
+・bin/main/com/example/janken/controller/HtmlErrorHandler.class
+・bin/main/com/example/janken/controller/RoomController.class
+・bin/main/com/example/janken/controller/ScreenRenderer.class
+・bin/main/com/example/janken/form/LoginForm.class
+・bin/main/com/example/janken/form/RoomActionForm.class
+・bin/main/com/example/janken/form/RoomEnterForm.class
+・bin/main/com/example/janken/service/AuthService.class
+・bin/main/com/example/janken/service/GameOperationException.class
+・bin/main/com/example/janken/service/NameInput.class
+・bin/main/com/example/janken/service/RoomService.class
+・bin/main/com/example/janken/service/ScreenService$MemberView.class
+・bin/main/com/example/janken/service/ScreenService$Screen.class
+・bin/main/com/example/janken/service/ScreenService.class
+・bin/main/com/example/janken/service/SessionUserAccess.class
+・bin/main/static/css/style.css
+・bin/main/static/js/room.js
+・bin/main/templates/login.html
+・bin/main/templates/room.html
+・bin/main/templates/rooms.html
+・bin/test/com/example/janken/controller/StageFourWebTests$1.class
+・bin/test/com/example/janken/controller/StageFourWebTests$FixedTime.class
+・bin/test/com/example/janken/controller/StageFourWebTests.class
+・bin/test/com/example/janken/service/StageFourServiceTests$TestClock.class
+・bin/test/com/example/janken/service/StageFourServiceTests.class
+すべてのclassに対応するJavaソースが存在し、バイナリ内のSourceFile名も一致することを確認しました（内部record・匿名クラス・テスト用Clockを含む）。
+HTML／JavaScript／CSSとapplication.propertiesはsrc/main/resourcesの生成元と内容一致を確認しました。
+生成元を確認できましたが、生成した具体的なIDEプロセスまでは特定していません。
+bin/には読み取り確認だけを行い、意図的な編集・削除はしていません。.gitignoreの変更やbin削除もしていません。
+
+24. 第5段階以降の未実装
+OriginalHandService／Form／作成・更新・削除、準備・取消・ルール変更・対戦開始、対戦Domain／Store／Service、StatusService／API／ポーリング、Scheduler／@EnableScheduling、対戦・ラウンド結果・対戦結果画面は追加していません。
+既存の第2段階OriginalHandは保持確認用テストでのみ利用し、新しい操作機能は実装していません。
+第4段階完了後も第5段階へ進んでいません。
+
+25. git diff／変更概要
+作業開始時のgit statusはクリーンでした。
+ソースは新規21件＋application.properties変更1件。新規ファイルは未追跡のため、git diff --statだけには現れません。
+追加で本報告書と前記bin生成物の変化があります。変更をコミット・ステージしていません。
+git diff --checkは成功し、空白エラーはありません。GitのLF→CRLF案内はありました。
+既存のdocs/・.gitignore・Domain・Store・Gradle Wrapper／設定に差分はありません。
+
+26. 設計書でクラス名等が固定されていない実装判断
+・TimeConfiguration：共有Clock Beanの最小構成。Instantで比較するためUTC Clockを使用。
+・NameInput：username／roomNameのstripとコードポイント判定を重複させないための最小共通部品。
+・SessionUserAccess：内部UUIDのセッション識別、UserStore照合、共通LOGIN_REQUIRED判定。呼び出し側がGameStateLockを保持。
+・ScreenService：①・②だけの正規画面判断と表示用コピー生成。内部MemberView／Screen recordで可変Domain参照を画面へ渡さない。
+・ScreenRenderer：GET誘導とPOSTエラー再表示の共通処理。正規画面が変わった場合も最新画面Modelを使用。
+・GameOperationException：HTTPステータス、errorCode、項目エラーをServiceからHTML処理へ渡す業務エラー表現。
+・HtmlErrorHandler：実装済み2Controllerだけの業務例外をHTMLへ変換。後続API用JSON処理は追加しない。
+・Formは単純な入力保持用とし、検証の重複や順序逆転を避けるためServiceが最終判定を担当。
+・roomIdはStringで受け、操作可能状態を確認してからUUID形式を判定。不足／形式不正は共通APIの入力不正400、形式有効な対象不一致は409。
+・退出でjoinedRoomAt／lastSeenAtは維持し、設計書にない退出時の時刻更新・解除は追加しない。次の入室時に両方を設定し直す。
+・ログアウト済みGameUserはUserStoreから削除。現在ログイン中の状態管理というDomain責務と整合する整理方法。
+・HTTPセッション追跡はCookieだけに限定。標準のURL書換えを無効にして正規リダイレクトURLを維持。
+・古い／不正roomIdをエラー再表示のhiddenへ戻さず、現在所属の検証済みIDを使用。generic formには要求値を残す。
+・transferHostはprivateとし、退出と同じロックを保持して実行する。任意のホスト変更APIは追加しない。
+・共通ヘッダー／エラー表示は既存3画面内のフラグメントで共有し、余分な画面を作らない。
+・room.jsにはコピーと成功／失敗表示だけを実装。CSSは必要な基本表示に限定。
+いずれも第4段階に必要な範囲で、後続仕様の先取りをしていません。
+
+最終判定：第4段階完了

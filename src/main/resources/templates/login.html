@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body><main>
+<h1>簡易自由律じゃんけん</h1>
+<section th:fragment="errors" th:if="${errorCode != null}" role="alert" class="errors">
+<p th:text="${errorCode}"></p><ul><li th:each="message : ${errorMessages}" th:text="${message}"></li></ul>
+</section>
+<form method="post" th:action="@{/login}" th:object="${loginForm}">
+<label for="username">ユーザー名（前後の空白を除いて1～20文字）</label>
+<input id="username" type="text" th:field="*{username}" autocomplete="nickname" aria-describedby="username-errors">
+<ul id="username-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['username']}" th:text="${message}"></li></ul>
+<button type="submit">ログイン</button>
+</form>
+</main></body></html>

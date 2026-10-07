@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム作成・参加 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<header th:fragment="header"><strong>簡易自由律じゃんけん</strong><span th:text="${username}"></span><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+<main><h1>ルーム作成・参加</h1>
+<section th:replace="~{login :: errors}"></section>
+<form method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">
+<label for="roomName">ルーム名（前後の空白を除いて1～20文字）</label>
+<input id="roomName" type="text" th:field="*{roomName}" aria-describedby="roomName-errors">
+<ul id="roomName-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomName']}" th:text="${message}"></li></ul>
+<button type="submit">ルームへ入る</button>
+</form>
+</main></body></html>
