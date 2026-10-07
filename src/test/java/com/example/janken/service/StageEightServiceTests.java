@@ -28,7 +28,7 @@ class StageEightServiceTests {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users);
         clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService()));
+        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
         auth = new AuthService(lock, users, access, service, clock);
         hands = new OriginalHandService(lock, access, rooms);
     }
@@ -152,7 +152,7 @@ class StageEightServiceTests {
     @Test void startRequiresLoginAndMatchServiceRequiresHeldLock() {
         error(401,"LOGIN_REQUIRED",()->service.startMatch(null,null));
         var sessions=prepared(2,true); var host=sessions.getFirst();
-        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService())
+        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()))
                 .startMatch(room(host),sessions.stream().map(this::user).toList()));
         assertTrue(matches.findAll().isEmpty()); assertNull(room(host).getCurrentMatchId());
     }
@@ -168,7 +168,7 @@ class StageEightServiceTests {
     @Test void clockFailureDuringConstructionLeavesNoPartialState() {
         var sessions=prepared(2,true); var host=sessions.getFirst(); var r=room(host);
         Clock broken=org.mockito.Mockito.mock(Clock.class); org.mockito.Mockito.when(broken.instant()).thenThrow(new IllegalStateException("clock"));
-        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService()));
+        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
         assertThrows(IllegalStateException.class,()->failing.startMatch(host,id(host)));
         assertTrue(matches.findAll().isEmpty()); assertNull(r.getCurrentMatchId());
         sessions.forEach(s->assertEquals(UserState.READY,user(s).getState()));
@@ -183,6 +183,13 @@ class StageEightServiceTests {
             case "rules" -> ()->service.updateRules(host,rules(id,"5",true)); case "start" -> ()->service.startMatch(host,id);
                 case "leave" -> ()->service.leaveRoom(host,id); default -> ()->auth.logout(host);
         };
+        if (operation.equals("leave") || operation.equals("logout")) {
+            action.run();
+            assertEquals(UserState.ROOM_NONE, u.getState()); assertNull(u.getCurrentRoomId());
+            assertEquals(MatchState.MATCH_RESULT, m.getState()); assertEquals(com.example.janken.domain.enums.MatchEndType.ABORTED, m.getEndType());
+            assertFalse(m.getParticipants().get(u.getId()).isActive()); assertSame(old, u.getOriginalHand());
+            assertEquals(operation.equals("logout"), host.isInvalid()); return;
+        }
         error(409,"INVALID_STATE",action); assertFalse(host.isInvalid()); assertSame(u,user(host));
         assertSame(old,u.getOriginalHand()); assertEquals(UserState.PLAYING,u.getState());
         assertEquals(m.getId(),r.getCurrentMatchId()); assertEquals(1,matches.findAll().size());
@@ -225,7 +232,14 @@ class StageEightServiceTests {
                 if(operation.equals("cancel")) { assertEquals(UserState.ROOM_WAITING,user(other).getState()); }
                 else { assertNull(u.getCurrentRoomId()); assertFalse(r.getMemberIds().contains(u.getId())); assertEquals(user(other).getId(),r.getHostUserId()); }
             } else {
-                var m=matches.findAll().getFirst(); assertEquals(m.getId(),r.getCurrentMatchId());
+                var m=matches.findAll().getFirst();
+                if (operation.equals("leave") || operation.equals("logout")) {
+                    assertEquals(List.of("OK", "OK"), out);
+                    assertEquals(MatchState.MATCH_RESULT, m.getState()); assertNull(r.getCurrentMatchId());
+                    assertEquals(UserState.ROOM_NONE, u.getState()); assertEquals(UserState.ROOM_WAITING, user(other).getState());
+                    assertFalse(m.getParticipants().get(u.getId()).isActive()); continue;
+                }
+                assertEquals(m.getId(),r.getCurrentMatchId());
                 if (operation.equals("start")) {
                     assertEquals(1,Collections.frequency(out,"OK")); assertEquals(1,Collections.frequency(out,"INVALID_STATE"));
                 } else { assertEquals("OK",out.getFirst()); }
@@ -347,7 +361,7 @@ class StageEightServiceTests {
             }
             String followingResult = secondResult.get(5, TimeUnit.SECONDS);
             assertEquals("OK", firstResult);
-            if (operation.equals("ready")) {
+            if (operation.equals("ready") || (startFirst && (operation.equals("leave") || operation.equals("logout")))) {
                 assertEquals("OK", followingResult);
             } else if (!startFirst && operation.equals("rules")) {
                 assertEquals("OK", followingResult);
@@ -360,6 +374,12 @@ class StageEightServiceTests {
             assertEquals(started ? 1 : 0, matches.findAll().size());
             if (started) {
                 GameMatch match = matches.findAll().getFirst();
+                if (operation.equals("leave") || operation.equals("logout")) {
+                    assertEquals(MatchState.MATCH_RESULT, match.getState()); assertNull(r.getCurrentMatchId());
+                    assertEquals(UserState.ROOM_NONE, hostUser.getState()); assertEquals(UserState.ROOM_WAITING, otherUser.getState());
+                    assertEquals(otherUser.getId(), r.getHostUserId()); assertEquals(operation.equals("logout"), host.isInvalid());
+                    return;
+                }
                 assertEquals(match.getId(), r.getCurrentMatchId());
                 assertEquals(UserState.PLAYING, hostUser.getState());
                 assertEquals(UserState.PLAYING, otherUser.getState());

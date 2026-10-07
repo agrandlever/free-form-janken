@@ -23,7 +23,7 @@ class StageTenServiceTests {
     void fixture(boolean prevent) {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore(); matches = new MatchStore();
         access = new SessionUserAccess(users);
-        service = new MatchService(lock, matches, Clock.fixed(now, ZoneOffset.UTC), rooms, access, new RoundJudgeService());
+        service = new MatchService(lock, matches, Clock.fixed(now, ZoneOffset.UTC), rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
         room = new Room(UUID.randomUUID(), "R", UUID.randomUUID()); rooms.save(room);
         match = new GameMatch(UUID.randomUUID(), room.getId(), "R", 3, prevent);
         match.setCurrentRound(new Round(1, now)); room.setCurrentMatchId(match.getId()); matches.save(match);

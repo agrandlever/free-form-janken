@@ -119,6 +119,9 @@ public class ScreenService {
         model.put("roomId", match.getRoomId().toString());
         model.put("matchId", match.getId().toString());
         model.put("roundNumber", match.getCurrentRound().getRoundNumber());
+        RoomActionForm leave = new RoomActionForm();
+        leave.setRoomId(room.getId().toString());
+        model.put("roomActionForm", leave);
         if (match.getState() == MatchState.ROUND_RESULT) { return roundResultScreen(match, model); }
         model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
         model.put("targetWins", match.getTargetWins());

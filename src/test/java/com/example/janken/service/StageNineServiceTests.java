@@ -23,7 +23,7 @@ class StageNineServiceTests {
     void fixture(int count,int target,boolean prevent) {
         lock=new GameStateLock(); users=new UserStore(); rooms=new RoomStore(); matches=new MatchStore(); access=new SessionUserAccess(users);
         clock=mock(Clock.class); when(clock.instant()).thenReturn(now); judge=spy(new RoundJudgeService());
-        service=new MatchService(lock,matches,clock,rooms,access,judge);
+        service=new MatchService(lock,matches,clock,rooms,access,judge, users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
         room=new Room(UUID.randomUUID(),"R",UUID.randomUUID()); rooms.save(room);
         match=new GameMatch(UUID.randomUUID(),room.getId(),"R",target,prevent); match.setCurrentRound(new Round(1,now));
         room.setCurrentMatchId(match.getId()); matches.save(match); sessions=new ArrayList<>();
@@ -87,7 +87,7 @@ class StageNineServiceTests {
         error(409,()->service.submitHand(sessions.getFirst(),f)); assertTrue(match.getRoundHistory().isEmpty());
     }
     void whenMatchIdMismatch(GameMatch wrong) {
-        var store=mock(MatchStore.class); when(store.findById(match.getId())).thenReturn(Optional.of(wrong)); service=new MatchService(lock,store,clock,rooms,access,judge);
+        var store=mock(MatchStore.class); when(store.findById(match.getId())).thenReturn(Optional.of(wrong)); service=new MatchService(lock,store,clock,rooms,access,judge, users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
     }
     @ParameterizedTest @EnumSource(value=UserState.class,names={"ROOM_NONE","ROOM_WAITING","READY"})
     void onlyPlaying(UserState state) { access.require(sessions.getFirst()).setState(state); error(409,()->service.submitHand(sessions.getFirst(),form("bad",null,null))); }

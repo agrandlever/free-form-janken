@@ -21,7 +21,7 @@ class StageElevenServiceTests {
     @BeforeEach void setup() {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore(); matches = new MatchStore();
         access = new SessionUserAccess(users);
-        status = new StatusService(lock, access, users, rooms, matches, Clock.fixed(now, ZoneOffset.UTC));
+        status = new StatusService(lock, access, users, rooms, matches, Clock.fixed(now, ZoneOffset.UTC), new MatchResultStore());
         screens = new ScreenService(lock, access, rooms, users, matches);
         self = new GameUser(UUID.randomUUID(), "Alice", now.minusSeconds(30));
         other = new GameUser(UUID.randomUUID(), "Bob", now.minusSeconds(30));
@@ -165,7 +165,7 @@ class StageElevenServiceTests {
         doAnswer(i->{assertTrue(Thread.holdsLock(lock));return i.callRealMethod();}).when(guardedMatches).findById(any());
         var guardedSelf=spy(self);users.save(guardedSelf);
         doAnswer(i->{assertTrue(Thread.holdsLock(lock));return i.callRealMethod();}).when(guardedSelf).setLastSeenAt(any());
-        var service=new StatusService(lock,new SessionUserAccess(guardedUsers),guardedUsers,guardedRooms,guardedMatches,guardedClock);
+        var service=new StatusService(lock,new SessionUserAccess(guardedUsers),guardedUsers,guardedRooms,guardedMatches,guardedClock, new MatchResultStore());
         assertEquals(match.getId(),service.status(session,match.getId().toString()).displayMatchId());
     }
     @ParameterizedTest @CsvSource({"true,false,10","false,false,5","true,true,10"})

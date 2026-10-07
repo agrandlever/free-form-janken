@@ -21,14 +21,18 @@ public class MatchService {
     private final RoomStore rooms;
     private final SessionUserAccess access;
     private final RoundJudgeService judge;
+    private final com.example.janken.store.UserStore users;
+    private final MatchResultService results;
     public MatchService(GameStateLock lock, MatchStore matches, Clock clock, RoomStore rooms,
-            SessionUserAccess access, RoundJudgeService judge) {
+            SessionUserAccess access, RoundJudgeService judge, com.example.janken.store.UserStore users, MatchResultService results) {
         this.lock = lock;
         this.matches = matches;
         this.clock = clock;
         this.rooms = rooms;
         this.access = access;
         this.judge = judge;
+        this.users = users;
+        this.results = results;
     }
 
     /** RoomServiceだけが呼ぶ。検証から登録まで外側の共有ロックを保持する。 */
@@ -158,6 +162,101 @@ public class MatchService {
             match.getPendingWinnerIds().addAll(winners);
             match.setTransitionAt(decidedAt.plusSeconds(result.isHasWinner() || !winners.isEmpty() ? 10 : 5));
             match.setState(MatchState.ROUND_RESULT);
+        }
+    }
+
+    public void advanceMatch(UUID matchId) {
+        synchronized (lock) {
+            GameMatch match = matches.findById(matchId).orElse(null);
+            if (match == null || match.getState() != MatchState.ROUND_RESULT || match.getTransitionAt() == null) { return; }
+            Instant now = clock.instant();
+            if (now.isBefore(match.getTransitionAt())) { return; }
+            if (match.getPendingEndType() == MatchEndType.NORMAL) {
+                finishNormal(matchId);
+            } else if (activeCount(match) < 2) {
+                abortMatch(matchId);
+            } else {
+                // 新しいRoundだけを生成する。score・previousHand・固定ルール・履歴は変更しない。
+                match.setCurrentRound(new Round(match.getCurrentRound().getRoundNumber() + 1, now));
+                match.setState(MatchState.SELECTING_HAND);
+                match.setTransitionAt(null);
+                match.setPendingEndType(null);
+                match.getPendingWinnerIds().clear();
+            }
+        }
+    }
+
+    public void handleParticipantLeave(UUID matchId, UUID userId) {
+        synchronized (lock) {
+            GameMatch match = matchId == null ? null : matches.findById(matchId).orElse(null);
+            if (match == null) { return; }
+            MatchParticipant participant = match.getParticipants().get(userId);
+            if (participant == null || !participant.isActive()) { return; }
+            participant.setActive(false);
+            // 終了済みの場合は参加状態だけを更新し、保存結果・終了処理には触れない。
+            if (match.getState() == MatchState.MATCH_RESULT) { return; }
+            // 勝者確定後は全員退出しても、確定結果と元の正常終了期限を守る。
+            if (match.getState() == MatchState.ROUND_RESULT && match.getPendingEndType() == MatchEndType.NORMAL) { return; }
+            if (match.getState() == MatchState.SELECTING_HAND) {
+                match.getCurrentRound().getSelections().remove(userId);
+            }
+            if (activeCount(match) < 2) {
+                abortMatch(matchId);
+            } else if (match.getState() == MatchState.SELECTING_HAND) {
+                // completeRound自身が残存者全員の確定と未判定状態を同じロック内で再確認する。
+                completeRound(match);
+            }
+            // ROUND_RESULTでは確定済みselections・履歴・加算・transitionAtに触れない。
+        }
+    }
+
+    public void finishNormal(UUID matchId) {
+        synchronized (lock) {
+            GameMatch match = matches.findById(matchId).orElse(null);
+            if (match == null || match.getState() != MatchState.ROUND_RESULT
+                    || match.getPendingEndType() != MatchEndType.NORMAL || match.getTransitionAt() == null) { return; }
+            Instant now = clock.instant();
+            if (now.isBefore(match.getTransitionAt())) { return; }
+            match.setEndType(MatchEndType.NORMAL);
+            match.getWinnerIds().clear();
+            match.getWinnerIds().addAll(List.copyOf(match.getPendingWinnerIds()));
+            finish(match, now);
+        }
+    }
+
+    public void abortMatch(UUID matchId) {
+        synchronized (lock) {
+            GameMatch match = matches.findById(matchId).orElse(null);
+            if (match == null || match.getState() == MatchState.MATCH_RESULT
+                    || match.getPendingEndType() == MatchEndType.NORMAL || match.getEndType() != null) { return; }
+            Instant now = clock.instant();
+            match.setEndType(MatchEndType.ABORTED);
+            match.getWinnerIds().clear();
+            finish(match, now);
+        }
+    }
+
+    private long activeCount(GameMatch match) {
+        return match.getParticipants().values().stream().filter(MatchParticipant::isActive).count();
+    }
+
+    private void finish(GameMatch match, Instant finishedAt) {
+        // Snapshot保存からRoom・UserState更新まで、一つの共有ロックで一回だけ完了する。
+        results.saveResult(match, finishedAt);
+        match.setState(MatchState.MATCH_RESULT);
+        match.setTransitionAt(null);
+        Room room = rooms.findById(match.getRoomId()).orElse(null);
+        if (room != null && match.getId().equals(room.getCurrentMatchId())) {
+            room.setCurrentMatchId(null);
+            room.setLastCompletedMatchId(match.getId());
+        }
+        if (room != null) {
+            match.getParticipants().keySet().forEach(id -> users.findById(id).ifPresent(user -> {
+                if (user.getState() == UserState.PLAYING && match.getRoomId().equals(user.getCurrentRoomId())
+                        && room.getMemberIds().contains(id)) {
+                    user.setState(UserState.ROOM_WAITING);
+                }
+            }));
         }
     }
 }

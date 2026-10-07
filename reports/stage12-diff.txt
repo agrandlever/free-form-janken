@@ -1,0 +1,750 @@
+diff --git a/src/main/java/com/example/janken/controller/GameController.java b/src/main/java/com/example/janken/controller/GameController.java
+index 315c00b..2d17fb2 100644
+--- a/src/main/java/com/example/janken/controller/GameController.java
++++ b/src/main/java/com/example/janken/controller/GameController.java
+@@ -3,6 +3,8 @@ package com.example.janken.controller;
+ import jakarta.servlet.http.HttpServletRequest;
+ import com.example.janken.form.HandSelectionForm;
+ import com.example.janken.service.MatchService;
++import com.example.janken.service.MatchResultService;
++import com.example.janken.form.MatchResultReturnForm;
+ import org.springframework.web.bind.annotation.ModelAttribute;
+ import org.springframework.web.bind.annotation.PostMapping;
+ import org.springframework.stereotype.Controller;
+@@ -14,7 +16,21 @@ import org.springframework.web.bind.annotation.RequestParam;
+ public class GameController {
+     private final ScreenRenderer screens;
+     private final MatchService matches;
+-    public GameController(ScreenRenderer screens, MatchService matches) { this.screens = screens; this.matches = matches; }
++    private final MatchResultService results;
++    public GameController(ScreenRenderer screens, MatchService matches, MatchResultService results) {
++        this.screens = screens; this.matches = matches; this.results = results;
++    }
++    @GetMapping("/match-result")
++    public String matchResult(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
++        var screen = results.page(request.getSession(false), matchId);
++        if (!screen.template().equals("match-result")) { return "redirect:" + screen.path(); }
++        model.addAllAttributes(screen.model());
++        return screen.template();
++    }
++    @PostMapping("/match-result/return")
++    public String returnToRoom(@ModelAttribute MatchResultReturnForm form, HttpServletRequest request) {
++        return "redirect:" + results.returnToRoom(request.getSession(false), form);
++    }
+     @GetMapping("/play")
+     public String play(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
+         return screens.play(request.getSession(false), matchId, model);
+diff --git a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+index 4f14265..2207eb7 100644
+--- a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
++++ b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+@@ -36,6 +36,12 @@ public class HtmlErrorHandler {
+                 action.setRoomId(request.getParameter("roomId"));
+                 form = action;
+             }
++            case "/match-result/return" -> {
++                var result = new com.example.janken.form.MatchResultReturnForm();
++                result.setRoomId(request.getParameter("roomId"));
++                result.setMatchId(request.getParameter("matchId"));
++                form = result;
++            }
+             case "/room/rules" -> {
+                 RoomRuleForm rules = new RoomRuleForm();
+                 rules.setRoomId(request.getParameter("roomId"));
+diff --git a/src/main/java/com/example/janken/controller/ScreenRenderer.java b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+index 353e056..4fce3d2 100644
+--- a/src/main/java/com/example/janken/controller/ScreenRenderer.java
++++ b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+@@ -15,7 +15,10 @@ import org.springframework.ui.Model;
+ @Component
+ public class ScreenRenderer {
+     private final ScreenService screens;
+-    public ScreenRenderer(ScreenService screens) { this.screens = screens; }
++    private final com.example.janken.service.MatchResultService results;
++    public ScreenRenderer(ScreenService screens, com.example.janken.service.MatchResultService results) {
++        this.screens = screens; this.results = results;
++    }
+ 
+     public String get(HttpSession session, String requestedPath, Model model) {
+         ScreenService.Screen screen = screens.current(session);
+@@ -34,7 +37,14 @@ public class ScreenRenderer {
+ 
+     private String matchPage(HttpSession session, String matchId, String template, Model model) {
+         ScreenService.Screen screen = screens.current(session);
+-        if (!screen.template().equals(template)) { return "redirect:" + screen.path(); }
++        if (!screen.template().equals(template)) {
++            if (screen.template().equals("room") && matchId != null) {
++                // 進行中の観戦は導入せず、終了保存済みの同じ対象だけ結果へ誘導する。
++                var result = results.page(session, matchId);
++                return "redirect:" + result.path();
++            }
++            return "redirect:" + screen.path();
++        }
+         // 無指定なら本人の現在対戦を表示。異なるIDは本人の現在URLへ誘導する。
+         if (matchId != null && !matchId.equals(screen.model().get("matchId"))) {
+             return "redirect:" + screen.path();
+diff --git a/src/main/java/com/example/janken/service/AuthService.java b/src/main/java/com/example/janken/service/AuthService.java
+index dbf26ae..0ca23f9 100644
+--- a/src/main/java/com/example/janken/service/AuthService.java
++++ b/src/main/java/com/example/janken/service/AuthService.java
+@@ -41,7 +41,8 @@ public class AuthService {
+     public void logout(HttpSession session) {
+         synchronized (lock) {
+             GameUser user = access.require(session);
+-            if (user.getState() == UserState.ROOM_WAITING || user.getState() == UserState.READY) {
++            if (user.getState() == UserState.ROOM_WAITING || user.getState() == UserState.READY
++                    || user.getState() == UserState.PLAYING) {
+                 rooms.leaveRoom(user);
+             } else if (user.getState() != UserState.ROOM_NONE || user.getCurrentRoomId() != null) {
+                 throw GameOperationException.invalidState();
+diff --git a/src/main/java/com/example/janken/service/MatchService.java b/src/main/java/com/example/janken/service/MatchService.java
+index 144e4be..4d22e3c 100644
+--- a/src/main/java/com/example/janken/service/MatchService.java
++++ b/src/main/java/com/example/janken/service/MatchService.java
+@@ -21,14 +21,18 @@ public class MatchService {
+     private final RoomStore rooms;
+     private final SessionUserAccess access;
+     private final RoundJudgeService judge;
++    private final com.example.janken.store.UserStore users;
++    private final MatchResultService results;
+     public MatchService(GameStateLock lock, MatchStore matches, Clock clock, RoomStore rooms,
+-            SessionUserAccess access, RoundJudgeService judge) {
++            SessionUserAccess access, RoundJudgeService judge, com.example.janken.store.UserStore users, MatchResultService results) {
+         this.lock = lock;
+         this.matches = matches;
+         this.clock = clock;
+         this.rooms = rooms;
+         this.access = access;
+         this.judge = judge;
++        this.users = users;
++        this.results = results;
+     }
+ 
+     /** RoomServiceだけが呼ぶ。検証から登録まで外側の共有ロックを保持する。 */
+@@ -160,4 +164,99 @@ public class MatchService {
+             match.setState(MatchState.ROUND_RESULT);
+         }
+     }
++
++    public void advanceMatch(UUID matchId) {
++        synchronized (lock) {
++            GameMatch match = matches.findById(matchId).orElse(null);
++            if (match == null || match.getState() != MatchState.ROUND_RESULT || match.getTransitionAt() == null) { return; }
++            Instant now = clock.instant();
++            if (now.isBefore(match.getTransitionAt())) { return; }
++            if (match.getPendingEndType() == MatchEndType.NORMAL) {
++                finishNormal(matchId);
++            } else if (activeCount(match) < 2) {
++                abortMatch(matchId);
++            } else {
++                // 新しいRoundだけを生成する。score・previousHand・固定ルール・履歴は変更しない。
++                match.setCurrentRound(new Round(match.getCurrentRound().getRoundNumber() + 1, now));
++                match.setState(MatchState.SELECTING_HAND);
++                match.setTransitionAt(null);
++                match.setPendingEndType(null);
++                match.getPendingWinnerIds().clear();
++            }
++        }
++    }
++
++    public void handleParticipantLeave(UUID matchId, UUID userId) {
++        synchronized (lock) {
++            GameMatch match = matchId == null ? null : matches.findById(matchId).orElse(null);
++            if (match == null) { return; }
++            MatchParticipant participant = match.getParticipants().get(userId);
++            if (participant == null || !participant.isActive()) { return; }
++            participant.setActive(false);
++            // 終了済みの場合は参加状態だけを更新し、保存結果・終了処理には触れない。
++            if (match.getState() == MatchState.MATCH_RESULT) { return; }
++            // 勝者確定後は全員退出しても、確定結果と元の正常終了期限を守る。
++            if (match.getState() == MatchState.ROUND_RESULT && match.getPendingEndType() == MatchEndType.NORMAL) { return; }
++            if (match.getState() == MatchState.SELECTING_HAND) {
++                match.getCurrentRound().getSelections().remove(userId);
++            }
++            if (activeCount(match) < 2) {
++                abortMatch(matchId);
++            } else if (match.getState() == MatchState.SELECTING_HAND) {
++                // completeRound自身が残存者全員の確定と未判定状態を同じロック内で再確認する。
++                completeRound(match);
++            }
++            // ROUND_RESULTでは確定済みselections・履歴・加算・transitionAtに触れない。
++        }
++    }
++
++    public void finishNormal(UUID matchId) {
++        synchronized (lock) {
++            GameMatch match = matches.findById(matchId).orElse(null);
++            if (match == null || match.getState() != MatchState.ROUND_RESULT
++                    || match.getPendingEndType() != MatchEndType.NORMAL || match.getTransitionAt() == null) { return; }
++            Instant now = clock.instant();
++            if (now.isBefore(match.getTransitionAt())) { return; }
++            match.setEndType(MatchEndType.NORMAL);
++            match.getWinnerIds().clear();
++            match.getWinnerIds().addAll(List.copyOf(match.getPendingWinnerIds()));
++            finish(match, now);
++        }
++    }
++
++    public void abortMatch(UUID matchId) {
++        synchronized (lock) {
++            GameMatch match = matches.findById(matchId).orElse(null);
++            if (match == null || match.getState() == MatchState.MATCH_RESULT
++                    || match.getPendingEndType() == MatchEndType.NORMAL || match.getEndType() != null) { return; }
++            Instant now = clock.instant();
++            match.setEndType(MatchEndType.ABORTED);
++            match.getWinnerIds().clear();
++            finish(match, now);
++        }
++    }
++
++    private long activeCount(GameMatch match) {
++        return match.getParticipants().values().stream().filter(MatchParticipant::isActive).count();
++    }
++
++    private void finish(GameMatch match, Instant finishedAt) {
++        // Snapshot保存からRoom・UserState更新まで、一つの共有ロックで一回だけ完了する。
++        results.saveResult(match, finishedAt);
++        match.setState(MatchState.MATCH_RESULT);
++        match.setTransitionAt(null);
++        Room room = rooms.findById(match.getRoomId()).orElse(null);
++        if (room != null && match.getId().equals(room.getCurrentMatchId())) {
++            room.setCurrentMatchId(null);
++            room.setLastCompletedMatchId(match.getId());
++        }
++        if (room != null) {
++            match.getParticipants().keySet().forEach(id -> users.findById(id).ifPresent(user -> {
++                if (user.getState() == UserState.PLAYING && match.getRoomId().equals(user.getCurrentRoomId())
++                        && room.getMemberIds().contains(id)) {
++                    user.setState(UserState.ROOM_WAITING);
++                }
++            }));
++        }
++    }
+ }
+diff --git a/src/main/java/com/example/janken/service/RoomService.java b/src/main/java/com/example/janken/service/RoomService.java
+index de20f5f..050c081 100644
+--- a/src/main/java/com/example/janken/service/RoomService.java
++++ b/src/main/java/com/example/janken/service/RoomService.java
+@@ -61,7 +61,7 @@ public class RoomService {
+     public void leaveRoom(HttpSession session, String roomId) {
+         synchronized (lock) {
+             GameUser user = access.require(session);
+-            if (!isRoomState(user) || user.getCurrentRoomId() == null) {
++            if (!isLeaveState(user) || user.getCurrentRoomId() == null) {
+                 throw GameOperationException.invalidState();
+             }
+             UUID target;
+@@ -79,14 +79,20 @@ public class RoomService {
+     /** ログアウトからも呼ぶ。外側のロックを解放せず、所属整理を完了する。 */
+     void leaveRoom(GameUser user) {
+         synchronized (lock) {
+-            if (!isRoomState(user) || user.getCurrentRoomId() == null) {
++            if (!isLeaveState(user) || user.getCurrentRoomId() == null) {
+                 throw GameOperationException.invalidState();
+             }
+-            Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
++            UserState beforeState = user.getState();
++            UUID beforeRoomId = user.getCurrentRoomId();
++            Room room = rooms.findById(beforeRoomId).orElseThrow(GameOperationException::invalidState);
++            UUID beforeMatchId = room.getCurrentMatchId();
+             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
+             room.getMemberIds().remove(user.getId());
+             user.setState(UserState.ROOM_NONE);
+             user.setCurrentRoomId(null);
++            if (beforeState == UserState.PLAYING) {
++                matches.handleParticipantLeave(beforeMatchId, user.getId());
++            }
+             // 時刻・本人情報は維持し、次の入室成功時に時刻を設定し直す。
+             if (room.getMemberIds().isEmpty()) {
+                 rooms.deleteById(room.getId());
+@@ -207,6 +213,10 @@ public class RoomService {
+         }
+     }
+ 
++    private boolean isLeaveState(GameUser user) {
++        return isRoomState(user) || user.getState() == UserState.PLAYING;
++    }
++
+     private boolean isRoomState(GameUser user) {
+         return user.getState() == UserState.ROOM_WAITING || user.getState() == UserState.READY;
+     }
+diff --git a/src/main/java/com/example/janken/service/ScreenService.java b/src/main/java/com/example/janken/service/ScreenService.java
+index f51ff6b..57566f0 100644
+--- a/src/main/java/com/example/janken/service/ScreenService.java
++++ b/src/main/java/com/example/janken/service/ScreenService.java
+@@ -119,6 +119,9 @@ public class ScreenService {
+         model.put("roomId", match.getRoomId().toString());
+         model.put("matchId", match.getId().toString());
+         model.put("roundNumber", match.getCurrentRound().getRoundNumber());
++        RoomActionForm leave = new RoomActionForm();
++        leave.setRoomId(room.getId().toString());
++        model.put("roomActionForm", leave);
+         if (match.getState() == MatchState.ROUND_RESULT) { return roundResultScreen(match, model); }
+         model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
+         model.put("targetWins", match.getTargetWins());
+diff --git a/src/main/java/com/example/janken/service/StatusService.java b/src/main/java/com/example/janken/service/StatusService.java
+index 67652cf..2f57137 100644
+--- a/src/main/java/com/example/janken/service/StatusService.java
++++ b/src/main/java/com/example/janken/service/StatusService.java
+@@ -18,11 +18,12 @@ public class StatusService {
+     private final RoomStore rooms;
+     private final MatchStore matches;
+     private final Clock clock;
++    private final MatchResultStore results;
+ 
+     public StatusService(GameStateLock lock, SessionUserAccess access, UserStore users,
+-            RoomStore rooms, MatchStore matches, Clock clock) {
++            RoomStore rooms, MatchStore matches, Clock clock, MatchResultStore results) {
+         this.lock = lock; this.access = access; this.users = users;
+-        this.rooms = rooms; this.matches = matches; this.clock = clock;
++        this.rooms = rooms; this.matches = matches; this.clock = clock; this.results = results;
+     }
+ 
+     public record MemberView(UUID userId, String username, UserState userState, boolean isHost) { }
+@@ -53,8 +54,10 @@ public class StatusService {
+                     || current.getState() == MatchState.MATCH_RESULT)) {
+                 throw GameOperationException.invalidState();
+             }
+-            // 第11段階は進行中GameMatchだけを解決。終了済みSnapshotの生成は後続段階。
+-            GameMatch display = room == null || requested == null ? null : matches.findById(requested).orElse(null);
++            // 終了判定は保存済みSnapshotから行う。現在対戦とは独立したタブの対象を解決する。
++            MatchResultSnapshot completed = room == null || requested == null ? null
++                    : results.findById(requested).filter(s -> s.getRoomId().equals(room.getId())).orElse(null);
++            GameMatch display = completed != null || room == null || requested == null ? null : matches.findById(requested).orElse(null);
+             if (display != null && (!room.getId().equals(display.getRoomId())
+                     || display.getState() == MatchState.MATCH_RESULT)) { display = null; }
+             Boolean confirmed = null;
+@@ -76,7 +79,8 @@ public class StatusService {
+                     room == null ? "NONE" : current == null ? "WAITING" : "PLAYING",
+                     current == null ? null : current.getId(), current == null ? null : current.getState(),
+                     roundNumber(current), transitionAt(current), room == null ? null : room.getLastCompletedMatchId(),
+-                    display == null ? null : display.getId(), display == null ? null : display.getState(),
++                    completed != null ? completed.getMatchId() : display == null ? null : display.getId(),
++                    completed != null ? MatchState.MATCH_RESULT : display == null ? null : display.getState(),
+                     roundNumber(display), transitionAt(display), confirmed, selected, roomView);
+             // 全コピー成功後にだけ正常確認とする。読み取りと更新を同じロックで完了する。
+             user.setLastSeenAt(now);
+diff --git a/src/main/resources/static/css/style.css b/src/main/resources/static/css/style.css
+index bb3c7e8..6632b26 100644
+--- a/src/main/resources/static/css/style.css
++++ b/src/main/resources/static/css/style.css
+@@ -19,3 +19,5 @@ select { padding: .6rem; margin: .5rem 0; }
+ .table-scroll { overflow-x: auto; }
+ table { width: 100%; border-collapse: collapse; }
+ th, td { padding: .75rem; border: 1px solid #b6bec6; text-align: left; }
++
++.affinity-table { min-width: 580px; }
+diff --git a/src/main/resources/static/js/status-polling.js b/src/main/resources/static/js/status-polling.js
+index 7728f12..7227179 100644
+--- a/src/main/resources/static/js/status-polling.js
++++ b/src/main/resources/static/js/status-polling.js
+@@ -12,7 +12,8 @@
+     const matchUrl = (state, id) => {
+         if (state === 'SELECTING_HAND') return '/play?matchId=' + encodeURIComponent(id);
+         if (state === 'ROUND_RESULT') return '/round-result?matchId=' + encodeURIComponent(id);
+-        return null; // 対戦終了画面は第12段階で導入する。
++        if (state === 'MATCH_RESULT') return '/match-result?matchId=' + encodeURIComponent(id);
++        return null;
+     };
+     const sync = (status) => {
+         const kind = page.dataset.page;
+@@ -23,7 +24,7 @@
+         if (status.userState === 'PLAYING') {
+             const canonical = matchUrl(status.matchState, status.currentMatchId);
+             if (!canonical) return;
+-            if (kind === 'rooms' || kind === 'room' || page.dataset.matchId !== status.currentMatchId) {
++            if (kind === 'rooms' || kind === 'room' || kind === 'match-result' || page.dataset.matchId !== status.currentMatchId) {
+                 move(canonical);
+                 return;
+             }
+@@ -42,10 +43,18 @@
+                 move(destination);
+                 return;
+             }
+-        } else if (kind !== 'room' || page.dataset.roomId !== status.currentRoomId) {
+-            // 第11段階では②・③の観戦は導入しない。
+-            move('/room');
+-            return;
++        } else {
++            if (page.dataset.roomId !== status.currentRoomId) { move('/room'); return; }
++            if (status.displayMatchId === page.dataset.matchId && status.displayMatchState === 'MATCH_RESULT'
++                    && (kind === 'play' || kind === 'round-result')) {
++                // 最新結果へ置き換えず、このタブで扱っていた対戦の終了結果へ進む。
++                move(matchUrl('MATCH_RESULT', page.dataset.matchId));
++                return;
++            }
++            if (kind === 'match-result' && status.displayMatchId === page.dataset.matchId
++                    && status.displayMatchState === 'MATCH_RESULT') {
++                // ②・③は同じ結果を維持する。lastCompletedMatchIdは表示対象に使わない。
++            } else if (kind !== 'room') { move('/room'); return; }
+         }
+         document.dispatchEvent(new CustomEvent('janken:status', { detail: status }));
+     };
+diff --git a/src/main/resources/templates/play.html b/src/main/resources/templates/play.html
+index 32c3325..b9ade11 100644
+--- a/src/main/resources/templates/play.html
++++ b/src/main/resources/templates/play.html
+@@ -1,7 +1,7 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+ <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/play.js}"></script></head>
+-<body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
++<body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+ <main data-page="play" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-self-hand-confirmed=${selfHandConfirmed}">
+ <section th:replace="~{login :: errors}"></section>
+ <h1>第<span th:text="${roundNumber}"></span>ラウンド</h1>
+@@ -38,4 +38,5 @@
+ <button type="submit" th:disabled="${selfHandConfirmed or hand.consecutiveUseRestricted}" th:text="${hand.name}"></button>
+ </form>
+ </div>
++<form method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
+ </main></body></html>
+diff --git a/src/main/resources/templates/round-result.html b/src/main/resources/templates/round-result.html
+index 61754ba..a9221f7 100644
+--- a/src/main/resources/templates/round-result.html
++++ b/src/main/resources/templates/round-result.html
+@@ -1,7 +1,7 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+ <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
+-<body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
++<body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+ <main data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
+ <section th:replace="~{login :: errors}"></section>
+ <h1>第<span th:text="${roundNumber}"></span>ラウンド結果</h1>
+@@ -12,4 +12,5 @@
+ </tr></tbody></table></div>
+ <p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
+ <p id="transition-count" role="status" th:text="${matchFinished ? '対戦結果まで：時刻を確認中' : '次のラウンドまで：時刻を確認中'}"></p>
++<form method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
+ </main></body></html>
+diff --git a/src/test/java/com/example/janken/controller/StageEightWebTests.java b/src/test/java/com/example/janken/controller/StageEightWebTests.java
+index 383a288..c1a4054 100644
+--- a/src/test/java/com/example/janken/controller/StageEightWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageEightWebTests.java
+@@ -118,7 +118,7 @@ class StageEightWebTests {
+                 assertTrue(html.contains("先取勝数：<span>5</span>")); assertTrue(html.contains("現在の勝数：<span>0</span>"));
+                 assertTrue(html.contains("あなたは対戦参加者です。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
+                 assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("ON"));
+-                for(var forbidden:List.of("/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
++                for(var forbidden:List.of("/api/status","vsRock","/original-hand/save")) {
+                     assertFalse(html.contains(forbidden),forbidden);
+                 }
+             }
+@@ -130,7 +130,7 @@ class StageEightWebTests {
+             // 開始後に③になっても、今回の段階では観戦者として通さない。
+             createAndReady(host,id,"HH"); redirect(http(host,play,null),"/room");
+         }
+-        for(var path:List.of("/room/start","/room/ready","/room/ready/cancel","/room/rules","/room/leave","/logout","/original-hand/save","/original-hand/delete")) {
++        for(var path:List.of("/room/start","/room/ready","/room/ready/cancel","/room/rules","/original-hand/save","/original-hand/delete")) {
+             String body=path.startsWith("/original-hand")?saveBody(id,"Changed"):"roomId="+id+"&targetWins=9";
+             var response=http(hostReady?host:a,path,body);
+             // 非ホストのstart/rulesは状態判定よりホスト権限確認が先。
+diff --git a/src/test/java/com/example/janken/controller/StageElevenWebTests.java b/src/test/java/com/example/janken/controller/StageElevenWebTests.java
+index 8053140..f705144 100644
+--- a/src/test/java/com/example/janken/controller/StageElevenWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageElevenWebTests.java
+@@ -178,7 +178,7 @@ class StageElevenWebTests {
+         assertEquals(handA.equals(handB),html.contains("このラウンドの勝者はいません"));
+         assertEquals(!handA.equals(handB),html.contains(">勝利</strong>"));
+         assertTrue(html.contains(finalRound?"対戦結果まで":"次のラウンドまで"));
+-        assertFalse(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
++        assertTrue(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
+         assertFalse(html.contains("vsRock"));assertFalse(html.contains("vsOriginal"));
+         var j=json(http(a,"/api/status?matchId="+mid,null));assertEquals("ROUND_RESULT",j.get("matchState").asText());
+         assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());
+diff --git a/src/test/java/com/example/janken/controller/StageNineWebTests.java b/src/test/java/com/example/janken/controller/StageNineWebTests.java
+index 3a5520d..a5d0849 100644
+--- a/src/test/java/com/example/janken/controller/StageNineWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageNineWebTests.java
+@@ -95,7 +95,7 @@ class StageNineWebTests {
+     String normalBody(String matchId,String hand) {return "matchId="+matchId+"&roundNumber=1&type=NORMAL&normalHand="+hand;}
+     @Test void realHttpSubmitDuplicateAndFinalState() throws Exception {
+         var a=browser(); var b=browser(); String mid=startHttp(a,b)[1]; String play="/play?matchId="+mid;
+-        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(6,count(initial,"<button")); // 手選択5個＋第11段階の履歴開閉。 assertFalse(initial.contains("disabled"));
++        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(8,count(initial,"<button")); // 手選択5個＋履歴開閉＋第12段階の退出・ログアウト。 assertFalse(initial.contains("disabled"));
+         redirect(http(a,"/play",normalBody(mid,"ROCK")),play);
+         String self=http(a,play,null).body(); assertTrue(self.contains("確定済みの手：<strong>グー</strong>")); assertTrue(self.contains("他の参加者の確定を待っています")); assertEquals(5,count(self,"disabled=\"disabled\""));
+         String other=http(b,play,null).body(); assertFalse(other.contains("確定済みの手：")); assertFalse(other.contains("disabled"));
+diff --git a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+index 201e6dc..6322612 100644
+--- a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
++++ b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+@@ -29,7 +29,7 @@ class OriginalHandServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
++        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, roomService, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }
+diff --git a/src/test/java/com/example/janken/service/StageEightServiceTests.java b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+index 60fbd7b..09d48c3 100644
+--- a/src/test/java/com/example/janken/service/StageEightServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+@@ -28,7 +28,7 @@ class StageEightServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService()));
++        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, service, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }
+@@ -152,7 +152,7 @@ class StageEightServiceTests {
+     @Test void startRequiresLoginAndMatchServiceRequiresHeldLock() {
+         error(401,"LOGIN_REQUIRED",()->service.startMatch(null,null));
+         var sessions=prepared(2,true); var host=sessions.getFirst();
+-        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService())
++        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()))
+                 .startMatch(room(host),sessions.stream().map(this::user).toList()));
+         assertTrue(matches.findAll().isEmpty()); assertNull(room(host).getCurrentMatchId());
+     }
+@@ -168,7 +168,7 @@ class StageEightServiceTests {
+     @Test void clockFailureDuringConstructionLeavesNoPartialState() {
+         var sessions=prepared(2,true); var host=sessions.getFirst(); var r=room(host);
+         Clock broken=org.mockito.Mockito.mock(Clock.class); org.mockito.Mockito.when(broken.instant()).thenThrow(new IllegalStateException("clock"));
+-        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService()));
++        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         assertThrows(IllegalStateException.class,()->failing.startMatch(host,id(host)));
+         assertTrue(matches.findAll().isEmpty()); assertNull(r.getCurrentMatchId());
+         sessions.forEach(s->assertEquals(UserState.READY,user(s).getState()));
+@@ -183,6 +183,13 @@ class StageEightServiceTests {
+             case "rules" -> ()->service.updateRules(host,rules(id,"5",true)); case "start" -> ()->service.startMatch(host,id);
+                 case "leave" -> ()->service.leaveRoom(host,id); default -> ()->auth.logout(host);
+         };
++        if (operation.equals("leave") || operation.equals("logout")) {
++            action.run();
++            assertEquals(UserState.ROOM_NONE, u.getState()); assertNull(u.getCurrentRoomId());
++            assertEquals(MatchState.MATCH_RESULT, m.getState()); assertEquals(com.example.janken.domain.enums.MatchEndType.ABORTED, m.getEndType());
++            assertFalse(m.getParticipants().get(u.getId()).isActive()); assertSame(old, u.getOriginalHand());
++            assertEquals(operation.equals("logout"), host.isInvalid()); return;
++        }
+         error(409,"INVALID_STATE",action); assertFalse(host.isInvalid()); assertSame(u,user(host));
+         assertSame(old,u.getOriginalHand()); assertEquals(UserState.PLAYING,u.getState());
+         assertEquals(m.getId(),r.getCurrentMatchId()); assertEquals(1,matches.findAll().size());
+@@ -225,7 +232,14 @@ class StageEightServiceTests {
+                 if(operation.equals("cancel")) { assertEquals(UserState.ROOM_WAITING,user(other).getState()); }
+                 else { assertNull(u.getCurrentRoomId()); assertFalse(r.getMemberIds().contains(u.getId())); assertEquals(user(other).getId(),r.getHostUserId()); }
+             } else {
+-                var m=matches.findAll().getFirst(); assertEquals(m.getId(),r.getCurrentMatchId());
++                var m=matches.findAll().getFirst();
++                if (operation.equals("leave") || operation.equals("logout")) {
++                    assertEquals(List.of("OK", "OK"), out);
++                    assertEquals(MatchState.MATCH_RESULT, m.getState()); assertNull(r.getCurrentMatchId());
++                    assertEquals(UserState.ROOM_NONE, u.getState()); assertEquals(UserState.ROOM_WAITING, user(other).getState());
++                    assertFalse(m.getParticipants().get(u.getId()).isActive()); continue;
++                }
++                assertEquals(m.getId(),r.getCurrentMatchId());
+                 if (operation.equals("start")) {
+                     assertEquals(1,Collections.frequency(out,"OK")); assertEquals(1,Collections.frequency(out,"INVALID_STATE"));
+                 } else { assertEquals("OK",out.getFirst()); }
+@@ -347,7 +361,7 @@ class StageEightServiceTests {
+             }
+             String followingResult = secondResult.get(5, TimeUnit.SECONDS);
+             assertEquals("OK", firstResult);
+-            if (operation.equals("ready")) {
++            if (operation.equals("ready") || (startFirst && (operation.equals("leave") || operation.equals("logout")))) {
+                 assertEquals("OK", followingResult);
+             } else if (!startFirst && operation.equals("rules")) {
+                 assertEquals("OK", followingResult);
+@@ -360,6 +374,12 @@ class StageEightServiceTests {
+             assertEquals(started ? 1 : 0, matches.findAll().size());
+             if (started) {
+                 GameMatch match = matches.findAll().getFirst();
++                if (operation.equals("leave") || operation.equals("logout")) {
++                    assertEquals(MatchState.MATCH_RESULT, match.getState()); assertNull(r.getCurrentMatchId());
++                    assertEquals(UserState.ROOM_NONE, hostUser.getState()); assertEquals(UserState.ROOM_WAITING, otherUser.getState());
++                    assertEquals(otherUser.getId(), r.getHostUserId()); assertEquals(operation.equals("logout"), host.isInvalid());
++                    return;
++                }
+                 assertEquals(match.getId(), r.getCurrentMatchId());
+                 assertEquals(UserState.PLAYING, hostUser.getState());
+                 assertEquals(UserState.PLAYING, otherUser.getState());
+diff --git a/src/test/java/com/example/janken/service/StageElevenServiceTests.java b/src/test/java/com/example/janken/service/StageElevenServiceTests.java
+index d486b65..5c571ed 100644
+--- a/src/test/java/com/example/janken/service/StageElevenServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageElevenServiceTests.java
+@@ -21,7 +21,7 @@ class StageElevenServiceTests {
+     @BeforeEach void setup() {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore(); matches = new MatchStore();
+         access = new SessionUserAccess(users);
+-        status = new StatusService(lock, access, users, rooms, matches, Clock.fixed(now, ZoneOffset.UTC));
++        status = new StatusService(lock, access, users, rooms, matches, Clock.fixed(now, ZoneOffset.UTC), new MatchResultStore());
+         screens = new ScreenService(lock, access, rooms, users, matches);
+         self = new GameUser(UUID.randomUUID(), "Alice", now.minusSeconds(30));
+         other = new GameUser(UUID.randomUUID(), "Bob", now.minusSeconds(30));
+@@ -165,7 +165,7 @@ class StageElevenServiceTests {
+         doAnswer(i->{assertTrue(Thread.holdsLock(lock));return i.callRealMethod();}).when(guardedMatches).findById(any());
+         var guardedSelf=spy(self);users.save(guardedSelf);
+         doAnswer(i->{assertTrue(Thread.holdsLock(lock));return i.callRealMethod();}).when(guardedSelf).setLastSeenAt(any());
+-        var service=new StatusService(lock,new SessionUserAccess(guardedUsers),guardedUsers,guardedRooms,guardedMatches,guardedClock);
++        var service=new StatusService(lock,new SessionUserAccess(guardedUsers),guardedUsers,guardedRooms,guardedMatches,guardedClock, new MatchResultStore());
+         assertEquals(match.getId(),service.status(session,match.getId().toString()).displayMatchId());
+     }
+     @ParameterizedTest @CsvSource({"true,false,10","false,false,5","true,true,10"})
+diff --git a/src/test/java/com/example/janken/service/StageFourServiceTests.java b/src/test/java/com/example/janken/service/StageFourServiceTests.java
+index 5757c18..aea0913 100644
+--- a/src/test/java/com/example/janken/service/StageFourServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageFourServiceTests.java
+@@ -37,7 +37,7 @@ class StageFourServiceTests {
+     @BeforeEach void setup() {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users); clock = new TestClock();
+-        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
++        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, roomService, clock);
+     }
+ 
+diff --git a/src/test/java/com/example/janken/service/StageNineServiceTests.java b/src/test/java/com/example/janken/service/StageNineServiceTests.java
+index 36c9d4c..4f41359 100644
+--- a/src/test/java/com/example/janken/service/StageNineServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageNineServiceTests.java
+@@ -23,7 +23,7 @@ class StageNineServiceTests {
+     void fixture(int count,int target,boolean prevent) {
+         lock=new GameStateLock(); users=new UserStore(); rooms=new RoomStore(); matches=new MatchStore(); access=new SessionUserAccess(users);
+         clock=mock(Clock.class); when(clock.instant()).thenReturn(now); judge=spy(new RoundJudgeService());
+-        service=new MatchService(lock,matches,clock,rooms,access,judge);
++        service=new MatchService(lock,matches,clock,rooms,access,judge, users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
+         room=new Room(UUID.randomUUID(),"R",UUID.randomUUID()); rooms.save(room);
+         match=new GameMatch(UUID.randomUUID(),room.getId(),"R",target,prevent); match.setCurrentRound(new Round(1,now));
+         room.setCurrentMatchId(match.getId()); matches.save(match); sessions=new ArrayList<>();
+@@ -87,7 +87,7 @@ class StageNineServiceTests {
+         error(409,()->service.submitHand(sessions.getFirst(),f)); assertTrue(match.getRoundHistory().isEmpty());
+     }
+     void whenMatchIdMismatch(GameMatch wrong) {
+-        var store=mock(MatchStore.class); when(store.findById(match.getId())).thenReturn(Optional.of(wrong)); service=new MatchService(lock,store,clock,rooms,access,judge);
++        var store=mock(MatchStore.class); when(store.findById(match.getId())).thenReturn(Optional.of(wrong)); service=new MatchService(lock,store,clock,rooms,access,judge, users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
+     }
+     @ParameterizedTest @EnumSource(value=UserState.class,names={"ROOM_NONE","ROOM_WAITING","READY"})
+     void onlyPlaying(UserState state) { access.require(sessions.getFirst()).setState(state); error(409,()->service.submitHand(sessions.getFirst(),form("bad",null,null))); }
+diff --git a/src/test/java/com/example/janken/service/StageSixServiceTests.java b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+index b97511f..55419a9 100644
+--- a/src/test/java/com/example/janken/service/StageSixServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+@@ -26,7 +26,7 @@ class StageSixServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
++        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, service, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }
+diff --git a/src/test/java/com/example/janken/service/StageTenServiceTests.java b/src/test/java/com/example/janken/service/StageTenServiceTests.java
+index e85f732..ff0404a 100644
+--- a/src/test/java/com/example/janken/service/StageTenServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageTenServiceTests.java
+@@ -23,7 +23,7 @@ class StageTenServiceTests {
+     void fixture(boolean prevent) {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore(); matches = new MatchStore();
+         access = new SessionUserAccess(users);
+-        service = new MatchService(lock, matches, Clock.fixed(now, ZoneOffset.UTC), rooms, access, new RoundJudgeService());
++        service = new MatchService(lock, matches, Clock.fixed(now, ZoneOffset.UTC), rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore()));
+         room = new Room(UUID.randomUUID(), "R", UUID.randomUUID()); rooms.save(room);
+         match = new GameMatch(UUID.randomUUID(), room.getId(), "R", 3, prevent);
+         match.setCurrentRound(new Round(1, now)); room.setCurrentMatchId(match.getId()); matches.save(match);
+diff --git a/src/test/js/stage11-sync.test.cjs b/src/test/js/stage11-sync.test.cjs
+index 40585e3..0277301 100644
+--- a/src/test/js/stage11-sync.test.cjs
++++ b/src/test/js/stage11-sync.test.cjs
+@@ -1,97 +1,7 @@
+ 'use strict';
+ const { test } = require('node:test');
+ const assert = require('node:assert/strict');
+-const fs = require('node:fs');
+-const vm = require('node:vm');
+-const path = require('node:path');
+-
+-// DOM（HTML要素の構造）・通信・時間を制御し、遅延応答と時計差を再現する。
+-class Element {
+-    constructor(tag = 'div') {
+-        this.tagName = tag; this.children = []; this.dataset = {}; this.attributes = {};
+-        this.hidden = false; this.disabled = false; this.listeners = {}; this.value = ''; this._text = '';
+-    }
+-    set textContent(value) { this._text = String(value); this.children = []; }
+-    get textContent() { return this._text + this.children.map(c => c.textContent).join(''); }
+-    append(...nodes) { this.children.push(...nodes); nodes.forEach(n => { n.parent = this; }); }
+-    replaceChildren(...nodes) { this.children = []; this._text = ''; this.append(...nodes); }
+-    replaceWith(node) {
+-        if (this.parent) this.parent.children[this.parent.children.indexOf(this)] = node;
+-        if (this.id) this.owner.ids[this.id] = node;
+-        node.owner = this.owner; node.parent = this.parent;
+-    }
+-    insertBefore(node, before) {
+-        this.children.splice(this.children.indexOf(before), 0, node); node.parent = this;
+-    }
+-    get lastChild() { return this.children.at(-1); }
+-    setAttribute(key, value) { this.attributes[key] = value; }
+-    addEventListener(name, fn) { (this.listeners[name] ??= []).push(fn); }
+-    emit(name, data) { for (const fn of this.listeners[name] ?? []) fn(data); }
+-    querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
+-    querySelectorAll(selector) {
+-        if (this.buttons && selector.includes('button')) return this.buttons;
+-        const all = this.children.flatMap(c => [c, ...c.querySelectorAll('*')]);
+-        const parts = selector.split(',').map(p => p.trim());
+-        return all.filter(c => parts.some(p => p === '*' || p === c.tagName
+-            || (p.startsWith('[name=') && c.name === p.slice(7, -2))
+-            || (p === '[type="checkbox"]' && c.type === 'checkbox')));
+-    }
+-}
+-function environment(kind, confirmed = false) {
+-    let now = 0;
+-    const page = new Element('main');
+-    page.dataset = { page: kind, matchId: 'M', roomId: 'R', roundNumber: '1', selfHandConfirmed: String(confirmed),
+-        matchFinished: 'false', selfUserId: 'A', userState: 'ROOM_WAITING' };
+-    if (kind === 'rooms' || kind === 'room') delete page.dataset.matchId;
+-    const ids = {};
+-    const listeners = {};
+-    const document = {
+-        querySelector: () => page,
+-        getElementById: id => ids[id] ?? null,
+-        addEventListener: (name, fn) => { (listeners[name] ??= []).push(fn); },
+-        dispatchEvent: event => { for (const fn of listeners[event.type] ?? []) fn(event); },
+-        createElement: tag => { const e = new Element(tag); e.owner = document; return e; },
+-        createTextNode: text => { const e = new Element('#text'); e.textContent = text; return e; },
+-        ids
+-    };
+-    for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
+-        'rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
+-        'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel']) {
+-        ids[id] = document.createElement('div'); ids[id].id = id;
+-    }
+-    ids['round-history'].hidden = true;
+-    ids['toggle-round-history'].textContent = 'ラウンド履歴を表示';
+-    page.buttons = [new Element('button'),new Element('button'),new Element('button'),new Element('button')];
+-    if (confirmed) page.buttons.forEach(b => { b.disabled = true; });
+-    const controls = [new Element('input'),new Element('select'),new Element('button')];
+-    ids['original-hand-panel'].append(...controls);
+-    const moves = [], timeouts = [], intervals = [], fetches = [], pending = [];
+-    const context = vm.createContext({
+-        document, performance: { now: () => now },
+-        window: { location: { assign: url => moves.push(url) }, addEventListener: (name, fn) => { (listeners[name] ??= []).push(fn); } },
+-        navigator: { clipboard: { writeText: async () => {} } },
+-        CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
+-        setTimeout: (fn, delay) => { timeouts.push({ fn, delay }); return timeouts.length; },
+-        setInterval: (fn, delay) => { intervals.push({ fn, delay }); return intervals.length; },
+-        clearInterval: () => {},
+-        fetch: (url, options) => { fetches.push({ url, options }); return new Promise(resolve => pending.push(resolve)); },
+-        Date, Number, Math, console
+-    });
+-    function load(file) { vm.runInContext(fs.readFileSync(path.join(__dirname,'../../main/resources/static/js',file),'utf8'),context); }
+-    const emit = status => document.dispatchEvent({ type: 'janken:status', detail: status });
+-    const start = () => document.dispatchEvent({ type: 'DOMContentLoaded' });
+-    const reply = async (data, code = 200) => {
+-        pending.shift()({ status: code, ok: code === 200, json: async () => data });
+-        for (let i=0;i<8;i++) await Promise.resolve();
+-    };
+-    return {page, ids, controls, moves, timeouts, intervals, fetches, pending, load, emit, start, reply,
+-        setTime: value => { now=value; }};
+-}
+-function selecting(extra = {}) {
+-    return { userState:'PLAYING',currentRoomId:'R',currentMatchId:'M',matchState:'SELECTING_HAND',
+-        displayMatchId:'M',displayMatchState:'SELECTING_HAND',displayRoundNumber:1,
+-        selfHandConfirmed:false,selfSelectedHand:null, ...extra };
+-}
++const { environment, selecting } = require('./sync-test-support.cjs');
+ test('履歴は表示だけを切り替え、文言・ariaも更新する', () => {
+     const e=environment('play');e.load('play.js');
+     e.ids['toggle-round-history'].emit('click');

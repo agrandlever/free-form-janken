@@ -1,0 +1,16 @@
+{
+  "java": {
+    "total": 816,
+    "new": 94,
+    "regression": 722,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "javascript": {
+    "total": 27,
+    "new": 11,
+    "regression": 16,
+    "failures": 0
+  }
+}

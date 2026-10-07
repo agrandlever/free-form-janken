@@ -41,7 +41,8 @@ public class AuthService {
     public void logout(HttpSession session) {
         synchronized (lock) {
             GameUser user = access.require(session);
-            if (user.getState() == UserState.ROOM_WAITING || user.getState() == UserState.READY) {
+            if (user.getState() == UserState.ROOM_WAITING || user.getState() == UserState.READY
+                    || user.getState() == UserState.PLAYING) {
                 rooms.leaveRoom(user);
             } else if (user.getState() != UserState.ROOM_NONE || user.getCurrentRoomId() != null) {
                 throw GameOperationException.invalidState();

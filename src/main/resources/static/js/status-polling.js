@@ -12,7 +12,8 @@
     const matchUrl = (state, id) => {
         if (state === 'SELECTING_HAND') return '/play?matchId=' + encodeURIComponent(id);
         if (state === 'ROUND_RESULT') return '/round-result?matchId=' + encodeURIComponent(id);
-        return null; // 対戦終了画面は第12段階で導入する。
+        if (state === 'MATCH_RESULT') return '/match-result?matchId=' + encodeURIComponent(id);
+        return null;
     };
     const sync = (status) => {
         const kind = page.dataset.page;
@@ -23,7 +24,7 @@
         if (status.userState === 'PLAYING') {
             const canonical = matchUrl(status.matchState, status.currentMatchId);
             if (!canonical) return;
-            if (kind === 'rooms' || kind === 'room' || page.dataset.matchId !== status.currentMatchId) {
+            if (kind === 'rooms' || kind === 'room' || kind === 'match-result' || page.dataset.matchId !== status.currentMatchId) {
                 move(canonical);
                 return;
             }
@@ -42,10 +43,18 @@
                 move(destination);
                 return;
             }
-        } else if (kind !== 'room' || page.dataset.roomId !== status.currentRoomId) {
-            // 第11段階では②・③の観戦は導入しない。
-            move('/room');
-            return;
+        } else {
+            if (page.dataset.roomId !== status.currentRoomId) { move('/room'); return; }
+            if (status.displayMatchId === page.dataset.matchId && status.displayMatchState === 'MATCH_RESULT'
+                    && (kind === 'play' || kind === 'round-result')) {
+                // 最新結果へ置き換えず、このタブで扱っていた対戦の終了結果へ進む。
+                move(matchUrl('MATCH_RESULT', page.dataset.matchId));
+                return;
+            }
+            if (kind === 'match-result' && status.displayMatchId === page.dataset.matchId
+                    && status.displayMatchState === 'MATCH_RESULT') {
+                // ②・③は同じ結果を維持する。lastCompletedMatchIdは表示対象に使わない。
+            } else if (kind !== 'room') { move('/room'); return; }
         }
         document.dispatchEvent(new CustomEvent('janken:status', { detail: status }));
     };

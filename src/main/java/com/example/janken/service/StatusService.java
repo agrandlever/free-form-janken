@@ -18,11 +18,12 @@ public class StatusService {
     private final RoomStore rooms;
     private final MatchStore matches;
     private final Clock clock;
+    private final MatchResultStore results;
 
     public StatusService(GameStateLock lock, SessionUserAccess access, UserStore users,
-            RoomStore rooms, MatchStore matches, Clock clock) {
+            RoomStore rooms, MatchStore matches, Clock clock, MatchResultStore results) {
         this.lock = lock; this.access = access; this.users = users;
-        this.rooms = rooms; this.matches = matches; this.clock = clock;
+        this.rooms = rooms; this.matches = matches; this.clock = clock; this.results = results;
     }
 
     public record MemberView(UUID userId, String username, UserState userState, boolean isHost) { }
@@ -53,8 +54,10 @@ public class StatusService {
                     || current.getState() == MatchState.MATCH_RESULT)) {
                 throw GameOperationException.invalidState();
             }
-            // 第11段階は進行中GameMatchだけを解決。終了済みSnapshotの生成は後続段階。
-            GameMatch display = room == null || requested == null ? null : matches.findById(requested).orElse(null);
+            // 終了判定は保存済みSnapshotから行う。現在対戦とは独立したタブの対象を解決する。
+            MatchResultSnapshot completed = room == null || requested == null ? null
+                    : results.findById(requested).filter(s -> s.getRoomId().equals(room.getId())).orElse(null);
+            GameMatch display = completed != null || room == null || requested == null ? null : matches.findById(requested).orElse(null);
             if (display != null && (!room.getId().equals(display.getRoomId())
                     || display.getState() == MatchState.MATCH_RESULT)) { display = null; }
             Boolean confirmed = null;
@@ -76,7 +79,8 @@ public class StatusService {
                     room == null ? "NONE" : current == null ? "WAITING" : "PLAYING",
                     current == null ? null : current.getId(), current == null ? null : current.getState(),
                     roundNumber(current), transitionAt(current), room == null ? null : room.getLastCompletedMatchId(),
-                    display == null ? null : display.getId(), display == null ? null : display.getState(),
+                    completed != null ? completed.getMatchId() : display == null ? null : display.getId(),
+                    completed != null ? MatchState.MATCH_RESULT : display == null ? null : display.getState(),
                     roundNumber(display), transitionAt(display), confirmed, selected, roomView);
             // 全コピー成功後にだけ正常確認とする。読み取りと更新を同じロックで完了する。
             user.setLastSeenAt(now);

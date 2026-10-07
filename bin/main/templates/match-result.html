@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/match-result.js}"></script></head>
+<body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+<main data-page="match-result" th:attr="data-match-id=${matchId},data-room-id=${roomId}">
+<section th:replace="~{login :: errors}"></section>
+<h1>対戦終了</h1>
+<section th:if="${endType.name() == 'NORMAL'}"><h2>勝者</h2><ul><li th:each="winner : ${winners}" th:text="${winner.username}"></li></ul></section>
+<section th:if="${endType.name() == 'ABORTED'}"><p>参加人数が不足したため対戦を終了しました</p><p>勝者はいません</p></section>
+<h2>最終結果</h2><ul><li th:each="score : ${finalScores}"><span th:text="${score.username}"></span>：<span th:text="${score.score}"></span>勝</li></ul>
+<h2>ラウンド履歴</h2>
+<p th:if="${#lists.isEmpty(roundHistory)}">確定済みのラウンドはありません</p>
+<section th:each="round : ${roundHistory}">
+<h3>第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
+<ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}"><span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong></li></ul>
+<p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
+</section>
+<button id="toggle-affinities" type="button" aria-controls="original-hand-affinities" aria-expanded="false">オリジナル手の相性を表示</button>
+<div id="original-hand-affinities" class="table-scroll" hidden>
+<table class="affinity-table"><thead><tr><th scope="col">オリジナル手</th><th scope="col">グー</th><th scope="col">チョキ</th><th scope="col">パー</th><th scope="col">他のオリジナル手</th></tr></thead>
+<tbody><tr th:each="hand : ${originalHandAffinities}"><th scope="row" th:text="${hand.handName}"></th>
+<td th:each="relation : ${ {hand.vsRock, hand.vsScissors, hand.vsPaper, hand.vsOriginal} }" th:text="${relation.name() == 'WIN' ? '勝ち' : relation.name() == 'LOSE' ? '負け' : '引き分け'}"></td>
+</tr></tbody></table></div>
+<form method="post" th:action="@{/match-result/return}" th:object="${matchResultReturnForm}"><input type="hidden" th:field="*{roomId}"><input type="hidden" th:field="*{matchId}"><button type="submit">ルームへ戻る</button></form>
+</main></body></html>

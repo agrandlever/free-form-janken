@@ -118,7 +118,7 @@ class StageEightWebTests {
                 assertTrue(html.contains("先取勝数：<span>5</span>")); assertTrue(html.contains("現在の勝数：<span>0</span>"));
                 assertTrue(html.contains("あなたは対戦参加者です。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
                 assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("ON"));
-                for(var forbidden:List.of("/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
+                for(var forbidden:List.of("/api/status","vsRock","/original-hand/save")) {
                     assertFalse(html.contains(forbidden),forbidden);
                 }
             }
@@ -130,7 +130,7 @@ class StageEightWebTests {
             // 開始後に③になっても、今回の段階では観戦者として通さない。
             createAndReady(host,id,"HH"); redirect(http(host,play,null),"/room");
         }
-        for(var path:List.of("/room/start","/room/ready","/room/ready/cancel","/room/rules","/room/leave","/logout","/original-hand/save","/original-hand/delete")) {
+        for(var path:List.of("/room/start","/room/ready","/room/ready/cancel","/room/rules","/original-hand/save","/original-hand/delete")) {
             String body=path.startsWith("/original-hand")?saveBody(id,"Changed"):"roomId="+id+"&targetWins=9";
             var response=http(hostReady?host:a,path,body);
             // 非ホストのstart/rulesは状態判定よりホスト権限確認が先。

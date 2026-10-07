@@ -95,7 +95,7 @@ class StageNineWebTests {
     String normalBody(String matchId,String hand) {return "matchId="+matchId+"&roundNumber=1&type=NORMAL&normalHand="+hand;}
     @Test void realHttpSubmitDuplicateAndFinalState() throws Exception {
         var a=browser(); var b=browser(); String mid=startHttp(a,b)[1]; String play="/play?matchId="+mid;
-        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(6,count(initial,"<button")); // 手選択5個＋第11段階の履歴開閉。 assertFalse(initial.contains("disabled"));
+        String initial=http(a,play,null).body(); assertTrue(initial.contains("action=\"/play\"")); assertEquals(8,count(initial,"<button")); // 手選択5個＋履歴開閉＋第12段階の退出・ログアウト。 assertFalse(initial.contains("disabled"));
         redirect(http(a,"/play",normalBody(mid,"ROCK")),play);
         String self=http(a,play,null).body(); assertTrue(self.contains("確定済みの手：<strong>グー</strong>")); assertTrue(self.contains("他の参加者の確定を待っています")); assertEquals(5,count(self,"disabled=\"disabled\""));
         String other=http(b,play,null).body(); assertFalse(other.contains("確定済みの手：")); assertFalse(other.contains("disabled"));

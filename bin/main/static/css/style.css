@@ -19,3 +19,5 @@ select { padding: .6rem; margin: .5rem 0; }
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: .75rem; border: 1px solid #b6bec6; text-align: left; }
+
+.affinity-table { min-width: 580px; }

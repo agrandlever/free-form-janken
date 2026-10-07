@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
-<body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
+<body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
 <main data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
 <section th:replace="~{login :: errors}"></section>
 <h1>第<span th:text="${roundNumber}"></span>ラウンド結果</h1>
@@ -12,4 +12,5 @@
 </tr></tbody></table></div>
 <p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
 <p id="transition-count" role="status" th:text="${matchFinished ? '対戦結果まで：時刻を確認中' : '次のラウンドまで：時刻を確認中'}"></p>
+<form method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
 </main></body></html>

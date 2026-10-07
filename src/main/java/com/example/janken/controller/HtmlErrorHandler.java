@@ -36,6 +36,12 @@ public class HtmlErrorHandler {
                 action.setRoomId(request.getParameter("roomId"));
                 form = action;
             }
+            case "/match-result/return" -> {
+                var result = new com.example.janken.form.MatchResultReturnForm();
+                result.setRoomId(request.getParameter("roomId"));
+                result.setMatchId(request.getParameter("matchId"));
+                form = result;
+            }
             case "/room/rules" -> {
                 RoomRuleForm rules = new RoomRuleForm();
                 rules.setRoomId(request.getParameter("roomId"));

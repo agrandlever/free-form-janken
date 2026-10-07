@@ -61,7 +61,7 @@ public class RoomService {
     public void leaveRoom(HttpSession session, String roomId) {
         synchronized (lock) {
             GameUser user = access.require(session);
-            if (!isRoomState(user) || user.getCurrentRoomId() == null) {
+            if (!isLeaveState(user) || user.getCurrentRoomId() == null) {
                 throw GameOperationException.invalidState();
             }
             UUID target;
@@ -79,14 +79,20 @@ public class RoomService {
     /** ログアウトからも呼ぶ。外側のロックを解放せず、所属整理を完了する。 */
     void leaveRoom(GameUser user) {
         synchronized (lock) {
-            if (!isRoomState(user) || user.getCurrentRoomId() == null) {
+            if (!isLeaveState(user) || user.getCurrentRoomId() == null) {
                 throw GameOperationException.invalidState();
             }
-            Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
+            UserState beforeState = user.getState();
+            UUID beforeRoomId = user.getCurrentRoomId();
+            Room room = rooms.findById(beforeRoomId).orElseThrow(GameOperationException::invalidState);
+            UUID beforeMatchId = room.getCurrentMatchId();
             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
             room.getMemberIds().remove(user.getId());
             user.setState(UserState.ROOM_NONE);
             user.setCurrentRoomId(null);
+            if (beforeState == UserState.PLAYING) {
+                matches.handleParticipantLeave(beforeMatchId, user.getId());
+            }
             // 時刻・本人情報は維持し、次の入室成功時に時刻を設定し直す。
             if (room.getMemberIds().isEmpty()) {
                 rooms.deleteById(room.getId());
@@ -205,6 +211,10 @@ public class RoomService {
             room.setTargetWins(targetWins);
             room.setPreventConsecutiveSameOriginalHand(form.isPreventConsecutiveSameOriginalHand());
         }
+    }
+
+    private boolean isLeaveState(GameUser user) {
+        return isRoomState(user) || user.getState() == UserState.PLAYING;
     }
 
     private boolean isRoomState(GameUser user) {

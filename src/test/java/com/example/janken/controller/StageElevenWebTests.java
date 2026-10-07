@@ -178,7 +178,7 @@ class StageElevenWebTests {
         assertEquals(handA.equals(handB),html.contains("このラウンドの勝者はいません"));
         assertEquals(!handA.equals(handB),html.contains(">勝利</strong>"));
         assertTrue(html.contains(finalRound?"対戦結果まで":"次のラウンドまで"));
-        assertFalse(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
+        assertTrue(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
         assertFalse(html.contains("vsRock"));assertFalse(html.contains("vsOriginal"));
         var j=json(http(a,"/api/status?matchId="+mid,null));assertEquals("ROUND_RESULT",j.get("matchState").asText());
         assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());

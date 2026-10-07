@@ -1,0 +1,80 @@
+ M bin/main/com/example/janken/controller/GameController.class
+ M bin/main/com/example/janken/controller/HtmlErrorHandler.class
+ M bin/main/com/example/janken/controller/ScreenRenderer.class
+ M bin/main/com/example/janken/service/AuthService.class
+ M bin/main/com/example/janken/service/MatchService.class
+ M bin/main/com/example/janken/service/RoomService$StartMatchResult.class
+ M bin/main/com/example/janken/service/RoomService.class
+ M bin/main/com/example/janken/service/ScreenService$HistoryView.class
+ M bin/main/com/example/janken/service/ScreenService$ResultView.class
+ M bin/main/com/example/janken/service/ScreenService$ScoreView.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/com/example/janken/service/StatusService$MemberView.class
+ M bin/main/com/example/janken/service/StatusService$RoomView.class
+ M bin/main/com/example/janken/service/StatusService$SelectedHandView.class
+ M bin/main/com/example/janken/service/StatusService$StatusView.class
+ M bin/main/com/example/janken/service/StatusService.class
+ M bin/main/static/css/style.css
+ M bin/main/static/js/status-polling.js
+ M bin/main/templates/play.html
+ M bin/main/templates/round-result.html
+ M bin/test/com/example/janken/controller/StageEightWebTests.class
+ M bin/test/com/example/janken/controller/StageElevenWebTests.class
+ M bin/test/com/example/janken/controller/StageNineWebTests.class
+ M bin/test/com/example/janken/service/OriginalHandServiceTests.class
+ M bin/test/com/example/janken/service/StageEightServiceTests.class
+ M bin/test/com/example/janken/service/StageElevenServiceTests.class
+ M bin/test/com/example/janken/service/StageFourServiceTests.class
+ M bin/test/com/example/janken/service/StageNineServiceTests.class
+ M bin/test/com/example/janken/service/StageSixServiceTests.class
+ M bin/test/com/example/janken/service/StageTenServiceTests.class
+ M src/main/java/com/example/janken/controller/GameController.java
+ M src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+ M src/main/java/com/example/janken/controller/ScreenRenderer.java
+ M src/main/java/com/example/janken/service/AuthService.java
+ M src/main/java/com/example/janken/service/MatchService.java
+ M src/main/java/com/example/janken/service/RoomService.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/java/com/example/janken/service/StatusService.java
+ M src/main/resources/static/css/style.css
+ M src/main/resources/static/js/status-polling.js
+ M src/main/resources/templates/play.html
+ M src/main/resources/templates/round-result.html
+ M src/test/java/com/example/janken/controller/StageEightWebTests.java
+ M src/test/java/com/example/janken/controller/StageElevenWebTests.java
+ M src/test/java/com/example/janken/controller/StageNineWebTests.java
+ M src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ M src/test/java/com/example/janken/service/StageEightServiceTests.java
+ M src/test/java/com/example/janken/service/StageElevenServiceTests.java
+ M src/test/java/com/example/janken/service/StageFourServiceTests.java
+ M src/test/java/com/example/janken/service/StageNineServiceTests.java
+ M src/test/java/com/example/janken/service/StageSixServiceTests.java
+ M src/test/java/com/example/janken/service/StageTenServiceTests.java
+ M src/test/js/stage11-sync.test.cjs
+?? bin/main/com/example/janken/form/MatchResultReturnForm.class
+?? bin/main/com/example/janken/service/MatchResultService$AffinityView.class
+?? bin/main/com/example/janken/service/MatchResultService$WinnerView.class
+?? bin/main/com/example/janken/service/MatchResultService.class
+?? bin/main/static/js/match-result.js
+?? bin/main/templates/match-result.html
+?? bin/test/com/example/janken/controller/StageTwelveWebTests$1.class
+?? bin/test/com/example/janken/controller/StageTwelveWebTests$TestClock.class
+?? bin/test/com/example/janken/controller/StageTwelveWebTests$TimeConfig.class
+?? bin/test/com/example/janken/controller/StageTwelveWebTests.class
+?? bin/test/com/example/janken/service/StageTwelveServiceTests$MutableClock.class
+?? bin/test/com/example/janken/service/StageTwelveServiceTests.class
+?? reports/stage12-boot-summary.txt
+?? reports/stage12-chrome-aborted.png
+?? reports/stage12-completion.txt
+?? reports/stage12-diff.txt
+?? reports/stage12-gradle-test.log
+?? reports/stage12-javascript-test.log
+?? reports/stage12-tests.json
+?? src/main/java/com/example/janken/form/MatchResultReturnForm.java
+?? src/main/java/com/example/janken/service/MatchResultService.java
+?? src/main/resources/static/js/match-result.js
+?? src/main/resources/templates/match-result.html
+?? src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+?? src/test/java/com/example/janken/service/StageTwelveServiceTests.java
+?? src/test/js/stage12-sync.test.cjs
+?? src/test/js/sync-test-support.cjs

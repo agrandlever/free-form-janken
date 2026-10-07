@@ -15,7 +15,10 @@ import org.springframework.ui.Model;
 @Component
 public class ScreenRenderer {
     private final ScreenService screens;
-    public ScreenRenderer(ScreenService screens) { this.screens = screens; }
+    private final com.example.janken.service.MatchResultService results;
+    public ScreenRenderer(ScreenService screens, com.example.janken.service.MatchResultService results) {
+        this.screens = screens; this.results = results;
+    }
 
     public String get(HttpSession session, String requestedPath, Model model) {
         ScreenService.Screen screen = screens.current(session);
@@ -34,7 +37,14 @@ public class ScreenRenderer {
 
     private String matchPage(HttpSession session, String matchId, String template, Model model) {
         ScreenService.Screen screen = screens.current(session);
-        if (!screen.template().equals(template)) { return "redirect:" + screen.path(); }
+        if (!screen.template().equals(template)) {
+            if (screen.template().equals("room") && matchId != null) {
+                // 進行中の観戦は導入せず、終了保存済みの同じ対象だけ結果へ誘導する。
+                var result = results.page(session, matchId);
+                return "redirect:" + result.path();
+            }
+            return "redirect:" + screen.path();
+        }
         // 無指定なら本人の現在対戦を表示。異なるIDは本人の現在URLへ誘導する。
         if (matchId != null && !matchId.equals(screen.model().get("matchId"))) {
             return "redirect:" + screen.path();

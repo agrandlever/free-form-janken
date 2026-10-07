@@ -1,0 +1,4 @@
+Gradle Wrapper bootRunによる起動確認。Spring Boot 4.1.1 / Java 21.0.11 / port8080。
+2026-10-07 14:14:01 JST: Tomcat started on port 8080、Started JankenApplicationを確認（PID34212）。
+Chrome・実HTTP確認後、今回起動したPID34212を終了。8080への接続不可を確認。
+NORMAL・nextRoundの時間遷移はWeb統合テストの制御Clockと直接Service呼び出しを使用。

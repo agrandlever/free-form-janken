@@ -1,0 +1,26 @@
+> Task :compileJava
+> Task :processResources UP-TO-DATE
+> Task :classes
+
+> Task :compileTestJava
+ノート: C:\exPractice\free-form-janken\src\test\java\com\example\janken\controller\StageElevenWebTests.javaは推奨されないAPIを使用またはオーバーライドしています。
+ノート: 詳細は、-Xlint:deprecationオプションを指定して再コンパイルしてください。
+ノート: C:\exPractice\free-form-janken\src\test\java\com\example\janken\controller\StageTwelveWebTests.javaの操作は、未チェックまたは安全ではありません。
+ノート: 詳細は、-Xlint:uncheckedオプションを指定して再コンパイルしてください。
+
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :test
+
+2026-10-07T14:18:26.109+09:00  INFO 24224 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T14:18:26.133+09:00  INFO 24224 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-07T14:18:26.165+09:00  INFO 24224 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T14:18:26.179+09:00  INFO 24224 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-07T14:18:26.187+09:00  INFO 24224 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T14:18:26.203+09:00  INFO 24224 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-07T14:18:26.221+09:00  INFO 24224 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T14:18:26.235+09:00  INFO 24224 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+
+BUILD SUCCESSFUL in 49s
+4 actionable tasks: 3 executed, 1 up-to-date

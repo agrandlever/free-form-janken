@@ -1,0 +1,133 @@
+第12段階「対戦終了・結果保存・結果画面」実装報告
+日付：2026年10月7日（日本時間）
+対象：docs/の6設計書を基準とし、06実装設計書の第12段階だけを実装。
+
+1. 作成・変更ファイル
+ソースは新規8ファイル、変更23ファイル。次の一覧を参照。
+ M src/main/java/com/example/janken/controller/GameController.java
+ M src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+ M src/main/java/com/example/janken/controller/ScreenRenderer.java
+ M src/main/java/com/example/janken/service/AuthService.java
+ M src/main/java/com/example/janken/service/MatchService.java
+ M src/main/java/com/example/janken/service/RoomService.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/java/com/example/janken/service/StatusService.java
+ M src/main/resources/static/css/style.css
+ M src/main/resources/static/js/status-polling.js
+ M src/main/resources/templates/play.html
+ M src/main/resources/templates/round-result.html
+ M src/test/java/com/example/janken/controller/StageEightWebTests.java
+ M src/test/java/com/example/janken/controller/StageElevenWebTests.java
+ M src/test/java/com/example/janken/controller/StageNineWebTests.java
+ M src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ M src/test/java/com/example/janken/service/StageEightServiceTests.java
+ M src/test/java/com/example/janken/service/StageElevenServiceTests.java
+ M src/test/java/com/example/janken/service/StageFourServiceTests.java
+ M src/test/java/com/example/janken/service/StageNineServiceTests.java
+ M src/test/java/com/example/janken/service/StageSixServiceTests.java
+ M src/test/java/com/example/janken/service/StageTenServiceTests.java
+ M src/test/js/stage11-sync.test.cjs
+?? src/main/java/com/example/janken/form/MatchResultReturnForm.java
+?? src/main/java/com/example/janken/service/MatchResultService.java
+?? src/main/resources/static/js/match-result.js
+?? src/main/resources/templates/match-result.html
+?? src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+?? src/test/java/com/example/janken/service/StageTwelveServiceTests.java
+?? src/test/js/stage12-sync.test.cjs
+?? src/test/js/sync-test-support.cjs
+証跡・報告はreports/stage12-*へ保存。bin/は生成物として後述。
+
+2. advanceMatch検証条件：GameStateLock内で対象を再取得し、ROUND_RESULT、transitionAt非null、Clock.instant() >= transitionAtのすべてを満たす場合だけ処理する。
+3. 未決着次Round生成：activeが2人以上なら現在番号+1、空selections、startedAt=nowで新Roundを生成。
+4. 次Roundで維持する値：score、previousHand、participants、active、全originalHands、固定targetWins、連続使用禁止設定、roundHistoryを維持。第10段階の制限は維持したpreviousHandを使う。
+5. finishNormal呼び出し条件：advanceMatchの期限条件を満たしpendingEndType=NORMALの場合。finishNormal自身もROUND_RESULT、NORMAL予定、期限存在・到達を確認。
+6. abortMatch呼び出し条件：未決着で退出後active<=1なら即時。advanceMatchでも期限到達した未決着active<=1を中止。NORMAL予定または終了済みは中止しない。
+7. handleParticipantLeave実装：matchId・userIdで参加者を解決しactive=false。participantsの開始時記録を削除しない。
+8. SELECTING_HAND退出処理：退出者の現在selectionのみ除去。残存2人以上・全員確定の場合だけcompleteRoundが一回確定する。
+9. ROUND_RESULT退出処理：未決着・残存2人以上ならselections、確定結果、履歴、score、previousHand、transitionAtを変更しない。残存1人以下は即時中止。
+10. 最終勝者確定後退出処理：ROUND_RESULTかつNORMAL予定ではactive以外を維持。残存0人でもNORMAL予定・勝者・10秒期限を保護。
+11. inactive二重退出防止：参加者不在・既にinactiveなら早期returnし、人数計算や結果処理を繰り返さない。
+12. RoomService.leaveRoom統合順序：退出前state・roomId・currentMatchIdを保持→所属・memberIds確認→memberIds除外→①→currentRoomId解除→退出前④なら保持IDでhandleParticipantLeave→必要なホスト移譲／0人Room削除。全員退出時は移譲先がないため同じ内部IDのRoom削除だけを行う。
+13. ④手動退出：play・round-resultへroomActionFormと退出ボタンを追加。POST /room/leave成功は302 /rooms。ログイン・username・現在OriginalHandを維持。
+14. ④ログアウト：RoomServiceで途中退出まで完了後、session.invalidate()とUserStore削除。直接ユーザーだけを削除しない。
+15. GameStateLock保護範囲：対象確認、Room除外、UserState・所属変更、active変更、selection除去、確定／中止、Snapshot保存、Room終了連携、ホスト移譲、Room削除、ログアウトを同じ既存ロックで保護。別ロックなし。
+16. NORMAL終了処理：正式endType=NORMALとpendingWinnerIdsのコピーを設定し共通finishへ。次Roundは生成しない。
+17. ABORTED終了処理：正式endType=ABORTED、winnerIds空を設定し共通finishへ。残存1人へ勝者を与えない。
+18. MatchResultService責務：終了GameMatchからのSnapshot生成・一度だけ保存、閲覧権限、指定対象／最新対象解決、結果Model生成、return対象検証。
+19. Snapshot生成元：終了GameMatchのmatchId・roomId・roomName・固定ルール・全participants・正式終了種別／勝者・履歴・全OriginalHandSnapshotのみ。現在Room・過去GameUser・現在OriginalHandは結果復元に使わない。
+20. participantNames生成：participants全件の固定usernameをLinkedHashMapへ保存。active=falseや0勝も除外しない。
+21. finalScores生成：同じ全participantsのscoreを同じ順序・キー集合で保存。
+22. winnerIdsコピー：finishNormalでpendingWinnerIdsをコピーし、SnapshotコンストラクタでもList.copyOf。複数勝者を保持。
+23. roundHistoryコピー：第7段階のSnapshot defensive copy（元データ変更が保存結果へ波及しないコピー）でRoundResultと内部Entryも独立化。
+24. originalHandAffinitiesコピー：全OriginalHandSnapshotを第7段階のコンストラクタで再生成。途中退出作成者の手も保持。
+25. finishedAt：終了確定時に既存Clock.instant()を取得し、共通finishからSnapshotへ渡す。正常・中止とも境界テストで確認。
+26. Snapshot独立性：GameMatchのscore・participants・history・originalHandsの変更／削除、GameUser・Room・GameMatch削除、現在OriginalHand変更後も保存済みModelを再現。
+27. 同じmatchIdの一度だけ保存：MatchServiceの終了状態guardとMatchResultService.saveResultの既存ID早期returnで再生成・置換を防ぐ。再実行後もSnapshot参照・finishedAtは同じ。
+28. Room.currentMatchId解除：GameMatchの内部roomIdで取得したRoomが存在し、そのcurrentMatchIdが終了matchIdと一致する場合だけnull。
+29. lastCompletedMatchId更新：28と同じ一致条件で終了IDを設定。再実行で新しい最新IDを上書きしない。
+30. 残存④→②：終了対戦の参加者のうち現在PLAYING、currentRoomId一致、Room.memberIds所属のユーザーのみ変更。
+31. 退出済み①を戻さない方法：RoomServiceが先に①・所属nullへ変更。finishは現在状態と内部Room所属を再確認するため対象外。
+32. Room削除済み終了：Room存在を結果保存条件にしない。MatchStoreの固定GameMatchだけからNORMAL保存可能。
+33. 同名再作成Roomを変更しない方法：終了連携・権限ともUUIDの内部roomId一致だけを使用。roomNameで終了先を検索しない。
+34. GET /match-result：GameControllerへ実装。表示または仕様どおり302誘導。
+35. 閲覧条件：ログイン済み②・③、現在Room所属、Snapshot存在、Snapshot.roomId==currentRoomId。元参加者かどうかは不問。
+36. matchId指定ありの対象固定：指定UUIDのSnapshotだけを解決。不正形式・不存在・未終了・他Roomは/room。最新へ自動置換しない。
+37. matchId省略時処理：現在Room.lastCompletedMatchIdを一度解決。有効ならID付き/match-resultへ302、なければ/room。
+38. 結果対象をSessionに保存していないこと：閲覧先はURL・mainのdata-match-id・hidden・MatchResultReturnFormだけ。GameUserやsessionへcurrentResultMatchId等を追加していない。
+39. match-result Model：roomId、matchId、endType、winners、finalScores、roundHistory、originalHandAffinities、userState、matchResultReturnForm、username、roomName。第14段階用OriginalHand各Formは未追加。
+40. NORMAL勝者表示：Snapshot.winnerIdsとparticipantNamesからWinnerViewを生成し、全勝者名を表示。
+41. ABORTED表示：「参加人数が不足したため対戦を終了しました」「勝者はいません」。
+42. finalScores表示：開始時の全username・最終scoreを表示。途中退出者・0勝者も表示。userIdはModel内制御値のみ。
+43. roundHistory表示：SnapshotだけからroundNumberとusername・handName・wonRoundを表示。勝利を文字と太字・枠で示し、累積scoreや相性を履歴へ混ぜない。
+44. originalHandAffinities表示：固定全手を表示。「オリジナル手／グー／チョキ／パー／他のオリジナル手」の全列、WIN→勝ち、LOSE→負け、DRAW→引き分け。handIdは本文へ出さない。
+45. affinity表開閉：初期hidden。JavaScriptの表示切替だけで文言・aria-expandedを更新。状態変更APIなし。横スクロール対応。
+46. 過去相性と現在手の分離：結果表示はSnapshotだけ。現在OriginalHand変更後も過去の相性不変。編集導線なし。
+47. MatchResultReturnForm：roomId・表示中matchIdの2項目を保持。
+48. POST /match-result/return：②・③は送信roomIdと現在Room、SnapshotのRoomと対象IDを検証し302 /room。状態・結果・他タブの対象を変更しない。
+49. ④時の古いreturn要求処理：送信された古い対象より本人の現在対戦を優先し、SELECTING_HANDならplay、ROUND_RESULTならround-resultへ302。④を②へ戻さない。
+50. StatusService MATCH_RESULT対応：Snapshotの内部Room一致で終了対象を解決し、displayMatchState=MATCH_RESULT。displayRoundNumber・displayTransitionAt・本人手情報はnull。
+51. currentMatch/displayMatch分離：Room.currentMatchId解除後はcurrentMatchId・matchState=nullでも、指定済み有効結果IDのdisplay項目はMATCH_RESULTを保持。
+52. match-result polling：既存status-polling.jsを共有し、2秒間隔・対象matchId付きで確認を続ける。
+53. 古い結果ID維持：M1閲覧中にM2が開始・終了しlastCompletedMatchId=M2になっても、②・③はM1のURL・hidden・display対象を維持。
+54. 次対戦④優先：statusのuserState=PLAYINGならcurrentMatchIdの現在対戦へ移動。準備③だけの段階では古い結果を維持。
+55. 正常終了後の画面同期：残存者②とSnapshotのdisplayMatchStateから同じIDのmatch-resultへ移動。終了済みplay／round-result直接GETも同じ結果へ誘導。
+56. 中止後の画面同期：同じIDのABORTED結果へ移動。退出者①は/roomsを優先。Chromeで実際のpollingを確認。
+57. advanceMatchテスト：状態・null期限・期限直前／ちょうど／超過、勝者あり／なしの次Round、保持値、active<=1中止、正常終了、二重実行、連続使用制限を確認。
+58. 途中退出テスト：SELECTINGの提出済み／未提出、残存確定による1回判定、未決着ROUND_RESULT、即時中止、NORMAL保護、inactive再実行、履歴・score・previousHand保持。
+59. 正常終了テスト：10秒期限-1ns・-1ms／ちょうど／超過、複数winner、終了状態、Room連携、残存者のみ②、再保存・最新結果上書き防止。
+60. 中止テスト：selecting／勝者あり未決着／引き分け、即時ABORTED、勝者空、全参加者・0勝・score／履歴保存、退出者①維持。
+61. TC-095相当テスト：tc095SnapshotAloneSurvivesAllCurrentDomainChangesのNORMAL／ABORTED両方。Snapshotだけで名前・score・winner・履歴・全相性・種別を再現。
+62. TC-096相当テスト：勝者あり／なしの未決着ROUND_RESULTで残存2人。確定結果・selections・履歴・score・previousHand・期限不変、元期限で次Round。
+63. TC-097相当テスト：未決着結果で残存1人になったら待機せず中止。確定済み加算・履歴を保持。
+64. TC-098相当テスト：最終勝者確定後の全員手動退出／ログアウト、元Room削除、同名新Roomに別currentMatchId・lastCompletedMatchId・ルールを用意、旧MatchをNORMAL保存、新Room無変更。
+65. 結果アクセステスト：②・③・非参加、未ログイン／①／④、他Room・同名再作成Room、不存在・未終了・形式不正・空、指定なし最新固定／結果なし。
+66. 結果Modelテスト：複数勝者、全参加者・途中退出・0勝、履歴・全相性、現在手変更後の独立、未実装Formなし。実HTTP本文から内部IDの非表示を確認。
+67. 結果対象維持テスト：M1とM2を個別表示、M2開始・終了後もM1、return後の別結果タブ対象不変、sessionの共有結果IDなし。Service・Web・JavaScriptで確認。
+68. returnテスト：②・③成功／状態不変、④現在対戦優先、roomId不一致／不正／空、result不正／不存在／未終了／他Roomの409。
+69. 競合テスト：leave vs submit、logout vs submit、二重leave、leave vs completeRound、最後のsubmit vs leave、finish vs leave／finish、abort vs leave、二重advance。18ケースで両方のロック取得順を固定し、待機スレッドが同じロックでBLOCKEDになることも確認。既存start競合の退出・ログアウト期待値を第12段階へ更新。
+70. JavaScriptテスト：2秒poll、同じID維持、新最新結果へ置換なし、④だけ現在対戦優先、NORMAL／ABORTED同一ID遷移、権限喪失優先、相性開閉・aria・通信なし。
+71. 新規Javaテスト件数：94件（Service64件、Web30件）。ParameterizedTestの各入力ケースを実行件数として集計。
+72. 新規JavaScriptテスト件数：11件。既存テスト用DOM・通信・時計環境をsync-test-support.cjsへ共通化。
+73. compileJava結果：Gradle Wrapperによる成功。Java21、Spring Boot4.1.1を維持。
+74. test結果：816件、失敗0、エラー0、スキップ0。最終ログstage12-gradle-test.log参照。
+75. 既存722件回帰結果：722件すべて成功。コンストラクタ依存追加への追従と、④退出／ログアウトの暫定拒否・ボタン数の期待値だけ第12段階へ更新。テストケースは除外していない。
+76. 既存JavaScript16件回帰結果：16件すべて成功。新規11件と合わせ27件成功。stage12-javascript-test.log参照。
+77. Spring Boot起動結果：Gradle Wrapper bootRunで8080起動、Started JankenApplicationを確認。最終JavaテストでもSpring Bootの実サーバーを起動。確認後、今回起動したサーバーを停止し8080への接続不可を確認。
+78. HTTP／Chrome確認結果：実HTTPテストは対戦開始→確定→制御Clockと直接Service呼び出しで次Round／NORMAL終了、および途中退出→ABORTEDを検証。結果HTML・status・勝者／全score／履歴／相性／IDを確認。Chromeは実対戦開始、手確定後も退出可能、HTTP側の相手退出による中止、同じIDの自動結果同期、相性開閉、ルーム戻りを確認。390px幅では画面幅390、documentWidth375、相性表580、表コンテナ311、overflow-x=auto。全列を省略せず横スクロールできる。ChromeでNORMALの時間遷移は実行せず、固定Clockの実HTTPテストで確認。証跡stage12-chrome-aborted.png。
+79. Scheduler未実装：MatchTransitionScheduler、500ms処理、@Scheduledは追加していない。実アプリで時間経過だけでは次Round／NORMALへ進まないのは第12段階の仕様。
+80. DisconnectMonitor未実装：30秒切断処理なし。既存statusによるlastSeenAt更新を維持。
+81. 結果画面OriginalHand編集未実装：作成・更新・削除導線、各Form、MATCH_RESULT返却先のOriginalHandService統合なし。
+82. 観戦未実装：②・③から進行中play／round-resultを閲覧する導線・観戦用戻りなし。終了済み結果の閲覧だけ実装。
+83. docs/変更なし：git diffで6設計書の変更なし。.gitignoreも変更なし。
+84. bin/生成物変化：IDE／ビルド由来で42エントリー（変更30、新規12）が発生。class、コピーされたHTML・CSS・JavaScript。意図的な編集・削除・復元は行っていない。詳細stage12-changes.txt。
+85. git diffまたは変更概要：MatchService終了／退出、Room・Auth連携、結果専用Service／Form／API／HTML／JavaScript、Status統合と境界・競合・HTTPテストを追加。stage12-diff.txtとstage12-changes.txt参照。
+86. 設計書にシグネチャ等が固定されていない部分で行った実装判断：advanceMatch・finishNormal・abortMatchはUUID matchIdを受け、共有ロック内でStoreの現在実体を解決。handleParticipantLeaveはmatchId・userIdを受ける。saveResultはMatchServiceの共通終了内からだけ呼ぶpackage-privateとし、共有ロック保持を実行時確認。Clock時刻を共通終了へ渡してfinishedAtを固定。結果Modelは既存ScoreView・HistoryView・ResultViewと新しいWinnerView・AffinityViewでコピー。表示ページとreturn検証はMatchResultServiceへ集約し、Controllerは状態を直接変更しない。終了済みhandleParticipantLeaveはactive=falseだけを行い、Snapshot・score・履歴・Room・UserStateの終了処理を繰り返さない。現在Room以外の結果IDは常に非公開。returnの無効なroomId／matchIdは今回の指定どおり409。Gradleコマンド実行基盤の障害のため、Nodeから既存Java21でWrapper JARを実行。ネットワーク通信制限を避け既存.gradle-user-homeと--offlineを使用。既存build/reports/problemsへの書込み権限問題は--no-problems-reportでその補助レポートだけ無効化し、コンパイル・全テスト・通常テストレポートは実行した。
+
+再実行用PowerShellコマンド（それぞれ個別に実行）：
+.\gradlew.bat compileJava --gradle-user-home .\.gradle-user-home --offline --no-problems-report
+
+.\gradlew.bat test --gradle-user-home .\.gradle-user-home --offline --no-problems-report
+
+node --test src/test/js/stage11-sync.test.cjs src/test/js/stage12-sync.test.cjs
+
+結論：第12段階完了。第13段階以降へは進んでいません。
