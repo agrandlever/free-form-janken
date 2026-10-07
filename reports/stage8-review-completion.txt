@@ -1,0 +1,188 @@
+第8段階「対戦開始」確認・補強 完了報告
+確認日：2026-10-07（日本時間）
+判定：第8段階完了。第9段階以降へは進んでいません。
+
+前提
+開始時のgit statusはクリーンでした。最新コミット773768cに、第8段階のService・Controller・画面・43件のテストが実装済みでした。
+今回、その既存実装をdocs/の6設計書と依頼事項へ照合し、不足する確認を補強しました。既存実装を今回新規作成したとは扱っていません。
+前回実装の記録reports/stage8-completion.txtは変更していません。本報告が今回の作業結果です。
+
+1. 作成・変更したファイル
+今回変更したソース：
+・src/main/resources/templates/play.html：data-round-numberを追加。利用者向け説明を「対戦が開始されました。手の選択機能は準備中です。」へ変更。
+・src/test/java/com/example/janken/service/StageEightServiceTests.java：14件追加。両ロック取得順12件、準備完了順と入室順の相違1件、現在の手がない④の作成拒否1件。
+今回作成した確認記録：
+・reports/stage8-review-completion.txt（本報告）
+・reports/stage8-review-build.log
+・reports/stage8-review-boot.log
+・reports/stage8-review-http.json
+・reports/stage8-review-tests.json
+・reports/stage8-review-diff.txt
+既存のMatchService.java、GameController.java、RoomService.java、RoomController.java、ScreenService.java、ScreenRenderer.java、OriginalHandService.java、room.html、StageEightWebTests.java等の第8段階実装は照合・動作確認しましたが、今回変更していません。
+
+2. RoomService.startMatch()の検証順序
+セッション認証 → 要求roomId/currentRoomId一致 → 現在Room取得 → 操作者/hostUserId一致 → ②または③・memberIds所属 → currentMatchId=null → memberIds入室順で現在所属するREADY取得 → 2人以上 → 全OriginalHand存在 → username非重複 → OriginalHand.name非重複 → MatchServiceへ委譲。
+非ホスト403/FORBIDDEN。roomId・状態不一致、対戦中、READY不足は409/INVALID_STATE。
+両名前の重複があれば両メッセージを保持し、ユーザー名を主コードにします。
+
+3. MatchService.startMatch()の処理順序
+GameMatch生成・Room情報/ルールのコピー → 入室順のMatchParticipant生成 → 全OriginalHandSnapshot生成 → Clockから第1Round生成 → MatchStore保存 → Room.currentMatchId設定 → 確定参加者だけPLAYING → IDを返却。
+startMatch以外の後続メソッド・stubはありません。
+
+4. GameStateLockで保護した範囲
+RoomServiceでの認証・全検証からMatchServiceのコピー・構築・保存・Room更新・全参加者状態変更・結果作成まで、同じ単一GameStateLockを保持します。
+MatchServiceはThread.holdsLock(lock)で外側の保持を確認し、委譲前後でロックを解放しません。
+ready、cancelReady、rules、OriginalHand save/delete、leave、logoutと表示コピー生成も同じロックです。
+
+5. GameMatch ID生成方法
+検証成功後、ロック内のUUID.randomUUID()。不成立要求はID生成・保存に進みません。
+
+6. participantsの生成方法と順序
+Room.memberIdsの入室順でREADY一覧を確定。GameMatchの既存LinkedHashMapへ同じ順序で格納します。
+MatchParticipantはuserId、開始時username、OriginalHand.idをコピー。score=0、active=true、previousHand=null。
+新テストで、後から入室した人が先にREADYでも入室順を保つことを確認しました。
+
+7. OriginalHandSnapshot生成方法
+新しい既存OriginalHandSnapshotへhandId、ownerUserId、name、vsRock、vsScissors、vsPaper、vsOriginalを値でコピーします。現在OriginalHand参照は保持しません。
+
+8. 開始時Room情報・ルールの固定方法
+GameMatchコンストラクターにroomId、roomName、targetWins、preventConsecutiveSameOriginalHandを渡します。既存finalフィールドを使用し、Room参照を持ちません。
+
+9. 第1Round生成方法
+new Round(1, clock.instant())をcurrentRoundへ設定。selectionsは空Map。
+GameMatch.state=SELECTING_HAND。transitionAt、pendingEndType、endType=null。pendingWinnerIds、winnerIds、roundHistoryは空。第7段階の初期値を維持します。
+
+10. Clockの使用方法
+既存TimeConfigurationのClockをコンストラクターで注入。開始処理のロック内でinstant()を1回取得します。
+Serviceテストは2026-10-07T00:00:00Zの固定Clockです。
+
+11. MatchStore登録タイミング
+GameMatch、全Participant、全Snapshot、Roundを構築できた後、共有状態更新の最初に保存します。
+
+12. Room.currentMatchId設定タイミング
+保存直後、同じロック内で新matchIdを設定。lastCompletedMatchIdは変更しません。
+
+13. ③→④の変更タイミング
+currentMatchId設定後、確定したREADY一覧の各GameUserだけをPLAYINGへ変更します。
+
+14. 非参加②・③を変更しない方法
+更新対象を開始時READY一覧に限定。②ホスト・その他②は含めません。
+開始後に非参加②がREADYになっても、開始済み対戦に追加せず③を維持します。
+
+15. ②ホストと③ホストの正常リダイレクト差
+ロック内でStartMatchResult(matchId, participant)を作成。③→④のホストは302 /play?matchId=開始ID、②ホストは302 /room。
+両方を通常起動HTTPでも確認しました。
+
+16. RoomController /room/start実装
+POST /room/startは既存RoomActionForm.roomIdをRoomService.startMatch()へ渡します。
+ControllerからMatchServiceを直接呼ばず、MatchStore・GameMatch・GameUserを更新しません。
+
+17. room.htmlの対戦開始UI
+ホスト・対戦なし・READY 2人以上の場合だけ開始フォームを表示。hiddenには検証済み現在roomIdを使用します。
+開始後は「対戦が進行中です。」、④メンバーの「現在対戦中」を表示。観戦ボタンなし。Service側で全条件を再確認します。
+
+18. GameController GET /play実装
+GETだけを実装。ScreenRenderer/ScreenServiceが現在Room所属、現在GameMatchとのroomId一致、本人active参加者、PLAYING、SELECTING_HAND、currentRound存在を確認します。
+
+19. play.htmlの第8段階実装範囲
+現在username、Round、targetWins、本人score、固定参加者と各score、連続禁止ON/OFF、参加者であること、通常手3つと固定された全オリジナル手名を表示。
+今回roundNumberも制御用data属性に追加しました。Modelは表示用値コピーで、他人の相性を公開しません。
+手確定フォーム・HandSelectionFormはありません。
+
+20. ④のGETアクセス制御
+GET /、/rooms、/roomは本人の現在playへ302。GET /playの無指定は本人の現在対戦を表示。
+不正・不存在・他Room・別matchIdは本人の現在playへ302。②・③は/room、①は/rooms、未ログインは/へ誘導。
+通常GETだけの制御。ポーリング・自動同期なし。
+
+21. ④のOriginalHand旧POST拒否
+validateTargetの最初でREADY/PLAYINGを409/INVALID_STATEで拒否。入力検証や更新より前に拒否します。
+save/delete拒否と元OriginalHand不変を確認。追加テストでは現在OriginalHandを直接nullにした④の作成も拒否し、Snapshot維持を確認しました。
+
+22. ④退出・ログアウトを第12段階まで先行実装しない方法
+既存の状態検証で④のleave/logoutを409/INVALID_STATEで拒否。対戦・所属・セッションを変更しません。
+playに実動作する退出・ログアウト導線なし。handleParticipantLeaveなし。
+②ホストの退出・ログアウトは既存処理として許可し、対戦参加者を変更しません。
+
+23. start vs start競合テスト
+既存同時実行30回に加え、先行開始がロックを保持し、後続開始が同じロックでBLOCKEDとなることを明示的に確認する2ケースを追加。
+成功1件、INVALID_STATE1件、MatchStore1件、Room.currentMatchId一致、READY参加者全員PLAYINGを確認しました。
+
+24. startとready/cancel/rules/leave/logoutの競合テスト
+既存：start、ready、cancel、rules、非参加②save/delete、READY参加者旧save/delete、③ホストleave/logout、②ホストleave/logoutの12種類を各30回、合計360回反復。
+追加：start/ready/cancel/rules/leave/logoutの6種類について、start先行・競合操作先行の両取得順12件。
+後続要求が共通ロックで待つことを確認後に先行要求を実行し、期待する成功・拒否、参加者、状態、ルール固定、所属、ホスト移譲を検証します。
+rules先行なら新ルールで開始、start先行ならrules拒否。cancel先行ならREADY不足で開始拒否。③ホストleave/logout先行なら開始拒否、start先行ならleave/logout拒否。
+ready先行なら3人参加、start先行なら追加ユーザーは非参加READY。混合状態なし。
+
+25. Snapshot固定テスト
+既存テストで開始後の現在OriginalHandを別ID・名前・4相性へ置換、別参加者の現在手を削除してもSnapshot不変を確認。
+Roomルールを直接変更し、Room名/usernameは既存Domainがfinalのため同じIDの別オブジェクトをStoreへ置換して、roomName・ルール・参加者usernameの開始時コピーを確認。
+表示Model取得後のscore/手一覧更新もModelへ影響しないことを確認しました。
+
+26. 開始失敗時の原子性テスト
+非ホスト、ID不一致、状態不一致、進行中、READY 0/1人、OriginalHand不足、username重複、手名重複、両方重複で新Matchなし・currentMatchId不変・ユーザー状態/ルール/現在手不変を確認。
+MockitoのClock例外で生成途中失敗を起こし、部分登録・一部PLAYINGが残らないことを確認。不要な障害注入基盤なし。
+
+27. その他の第8段階テスト内容と件数
+第8段階は合計57件：StageEightServiceTests 53件、StageEightWebTests 4件。
+前回43件から今回14件追加。正常2/3/7人、②/③ホスト、全コピー・初期値・Room/Store連携・未公開情報非公開・アクセス・旧POST・HTTPフロー・POST /play 405を確認。
+360回の競合反復はこの件数内のループです。
+
+28. compileJava結果
+Gradle WrapperのcompileJava成功（既存Java実装は変更していないためUP-TO-DATE）。
+Java 21 / Spring Boot 4.1.1。既存プロジェクト内Gradleキャッシュと--offlineを使用。
+最終コマンド：.\gradlew.bat -Dgradle.user.home=C:/exPractice/free-form-janken/.gradle-user-home compileJava test --offline
+
+29. test結果
+最終BUILD SUCCESSFUL、終了コード0。528件、失敗0、エラー0、スキップ0。
+最終実行でcompileTestJavaとtestを実行し、追加・修正後のテストソースを確認済み。
+ログreports/stage8-review-build.log、集計reports/stage8-review-tests.json、HTML build/reports/tests/test/index.html。
+
+30. 第0～7段階の回帰テスト結果
+528件から第8段階57件を除く471件すべて成功。login、Room入退室、OriginalHand、ready/cancel、rule、Store、Snapshotを含みます。既存テスト削除なし。
+
+31. Spring Boot起動結果
+Gradle Wrapper bootRun --offline --args=--server.port=18081で通常起動成功。起動ログのアプリPID 19284を確認。
+確認後そのPIDだけをStop-Processで停止。127.0.0.1:18081への接続がECONNREFUSEDとなることを確認済み。
+ログreports/stage8-review-boot.log。
+
+32. HTTP／ブラウザー基本フロー確認
+ブラウザーではなく、別Cookieセッションの実HTTPで確認しました。
+③ホスト：同一Roomの3人が手作成・READY → 開始302 play → 全参加者の正規GETが現在playへ → Round 1・0勝・固定手名を200表示 → 二重開始409。
+②ホスト：参加者2人が手作成・READY → ホスト開始302 room → roomで進行中/現在対戦中表示 → 参加者は現在play → Round 1/0勝 → 二重開始409。ホストplayアクセスはroomへ。
+各参加者の別matchId誘導、leave/logout409、POST /play405も確認。
+記録reports/stage8-review-http.json。最初の確認スクリプトはLocationを相対URLと仮定して失敗しましたが、絶対URLからパスを抽出する確認方法へ修正し、新規Roomで両フローを完遂しました。アプリの失敗ではありません。
+
+33. docs/を変更していないこと
+6設計書すべての作業前後SHA-256ハッシュが一致。git差分なし。
+
+34. bin/の生成物変化
+意図的な編集・削除なし。IDEの生成・同期により以下2件更新：
+・bin/main/templates/play.html
+・bin/test/com/example/janken/service/StageEightServiceTests.class
+新規・削除なし。今回変更ソースに対応する生成物です。
+
+35. 第9段階以降を実装していないこと
+手確定、判定、score加算、previousHand更新、RoundResult生成、終了情報設定、終了/結果保存、観戦、状態API/ポーリング、Scheduler/切断監視、④途中退出による対戦変更なし。
+第7段階Domainの終了関連フィールド/型は既存のまま。後続処理は追加していません。
+
+36. POST /playを実装していないこと
+GameControllerはGETのみ。実HTTPでPOST405を確認。submitHand、selections登録、二重送信判定、HandSelectionFormなし。
+
+37. 観戦を実装していないこと
+②・③はplayへ通さずroomへ誘導。「対戦を見る」導線なし。
+
+38. git diffまたは変更概要
+今回ソース変更は画面1ファイル・テスト1ファイル。確認記録6ファイル追加と、前記bin生成物2件更新。
+git diff --check成功（LF→CRLFのGit案内だけ）。docs/、.gitignore、Gradle設定・Wrapperは未変更。コミット・ステージ操作なし。
+詳細reports/stage8-review-diff.txt。
+
+39. 設計書にシグネチャ等が固定されていない部分で行った実装判断
+既存の判断を確認：RoomServiceはStartMatchResult(UUID, boolean)で開始時のホスト参加判定を返す。MatchService.startMatch(Room,List<GameUser>)はパッケージアクセスでControllerから直接呼べない。
+開始時最終確認の個別コードはstart節で固定されていないため、設計済み409/ORIGINAL_HAND_REQUIRED、READY_USERNAME_CONFLICT、READY_HAND_NAME_CONFLICTを再利用。独自コードなし。両重複の主コードはusername。
+④の別matchIdは現在playへ302。④leave/logoutは第12段階まで409拒否。手一覧表示だけで不要なHandSelectionFormなし。
+今回の判断：既存第8段階がコミット済みのため重複実装せず検証を補強。反復競合テストに両取得順を保証するテストを加え、後続要求のThread.State.BLOCKEDを期限付きで確認。変更対象はテストとplayの表示情報だけ。
+通常シェルツールは環境初期化エラーのためNodeからWindowsコマンドを実行。既定Gradleホームの初回ダウンロードはネットワーク制限で失敗したため、既存キャッシュを利用して成功させました。権限変更・設計書変更は行っていません。
+
+最終判定：第8段階完了
+第9段階以降には進んでいません。

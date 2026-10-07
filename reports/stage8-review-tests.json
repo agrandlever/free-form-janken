@@ -1,0 +1,164 @@
+{
+  "totals": {
+    "tests": 528,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "TEST-com.example.janken.controller.OriginalHandWebTests.xml",
+      "tests": 63,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.controller.StageEightWebTests.xml",
+      "tests": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.controller.StageFourWebTests.xml",
+      "tests": 10,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.controller.StageSixWebTests.xml",
+      "tests": 12,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.BasicDomainTests.xml",
+      "tests": 6,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.GameMatchTests.xml",
+      "tests": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.MatchParticipantTests.xml",
+      "tests": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.MatchResultSnapshotTests.xml",
+      "tests": 10,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.OriginalHandSnapshotTests.xml",
+      "tests": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.RoundResultEntryTests.xml",
+      "tests": 2,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.RoundResultTests.xml",
+      "tests": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.domain.RoundTests.xml",
+      "tests": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.JankenApplicationTests.xml",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.service.OriginalHandServiceTests.xml",
+      "tests": 195,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.service.StageEightServiceTests.xml",
+      "tests": 53,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.service.StageFourServiceTests.xml",
+      "tests": 105,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.service.StageSixServiceTests.xml",
+      "tests": 32,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.store.GameStateLockTests.xml",
+      "tests": 1,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.store.MatchResultStoreTests.xml",
+      "tests": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.store.MatchStoreTests.xml",
+      "tests": 4,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.store.RoomStoreTests.xml",
+      "tests": 6,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "file": "TEST-com.example.janken.store.UserStoreTests.xml",
+      "tests": 3,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    }
+  ]
+}

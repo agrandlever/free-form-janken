@@ -1,0 +1,17 @@
+{
+  "flows": [
+    {
+      "hostReady": true,
+      "roomId": "1c6b0692-401c-4266-a6ba-05ae30041abb",
+      "playPath": "/play?matchId=31ac45c0-9f9c-4ec3-be5e-49c895d573eb",
+      "result": "passed"
+    },
+    {
+      "hostReady": false,
+      "roomId": "0a9d8805-44b3-46bf-8798-37efc0a07fb3",
+      "playPath": "/play?matchId=d2776f2d-32af-4b15-8153-432643703066",
+      "result": "passed"
+    }
+  ],
+  "httpCalls": []
+}

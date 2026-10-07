@@ -268,4 +268,131 @@ class StageEightServiceTests {
         }
     }
 
+
+    @Test void participantOrderFollowsEntryRatherThanReadyOrder() {
+        var host = member("Host", "R", "HH");
+        var first = member("First", "R", "H1");
+        var second = member("Second", "R", "H2");
+        // 準備完了の順番を逆転させても、開始時の並びは入室順で固定する。
+        service.ready(second, id(host));
+        service.ready(first, id(host));
+        GameMatch match = started(host);
+        assertEquals(List.of(user(first).getId(), user(second).getId()),
+                new ArrayList<>(match.getParticipants().keySet()));
+        assertEquals(List.of("H1", "H2"), match.getOriginalHands().stream()
+                .map(OriginalHandSnapshot::getName).toList());
+        assertEquals(UserState.ROOM_WAITING, user(host).getState());
+    }
+
+    @Test void playingUserCannotCreateHandEvenWhenCurrentHandIsMissing() {
+        var sessions = prepared(2, true);
+        var host = sessions.getFirst();
+        var form = hand(host, "New");
+        GameMatch match = started(host);
+        // 業務APIでは起こらない欠損を用意し、作成も状態判定で拒否することを確認する。
+        user(host).setOriginalHand(null);
+        error(409, "INVALID_STATE", () -> hands.save(host, form));
+        assertNull(user(host).getOriginalHand());
+        assertEquals("HH", match.getOriginalHands().getFirst().getName());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"start,true", "start,false", "ready,true", "ready,false",
+            "cancel,true", "cancel,false", "rules,true", "rules,false",
+            "leave,true", "leave,false", "logout,true", "logout,false"})
+    void competingRequestsRespectBothLockOrders(String operation, boolean startFirst) throws Exception {
+        var sessions = prepared(2, true);
+        var host = sessions.getFirst();
+        var other = sessions.get(1);
+        var extra = member("Extra", "R", "HE");
+        var hostUser = user(host);
+        var otherUser = user(other);
+        var extraUser = user(extra);
+        Room r = room(host);
+        String roomId = id(host);
+        Runnable start = () -> service.startMatch(host, roomId);
+        Runnable competing = switch (operation) {
+            case "start" -> start;
+            case "ready" -> () -> service.ready(extra, roomId);
+            case "cancel" -> () -> service.cancelReady(other, roomId);
+            case "rules" -> () -> service.updateRules(host, rules(roomId, "5", true));
+            case "leave" -> () -> service.leaveRoom(host, roomId);
+            default -> () -> auth.logout(host);
+        };
+        Runnable first = startFirst ? start : competing;
+        Runnable second = startFirst ? competing : start;
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        var queuedThread = new java.util.concurrent.atomic.AtomicReference<Thread>();
+        CountDownLatch attempted = new CountDownLatch(1);
+        String firstResult;
+        Future<String> secondResult;
+        try {
+            synchronized (lock) {
+                secondResult = pool.submit(() -> {
+                    queuedThread.set(Thread.currentThread());
+                    attempted.countDown();
+                    return operationResult(second);
+                });
+                assertTrue(attempted.await(5, TimeUnit.SECONDS));
+                // 競合要求が同じロックで待つことを確認してから先行要求を実行する。
+                // 単に同時スタートする試験に加え、両方の取得順を必ず検証する。
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                while (queuedThread.get().getState() != Thread.State.BLOCKED
+                        && !secondResult.isDone() && System.nanoTime() < deadline) {
+                    Thread.onSpinWait();
+                }
+                assertEquals(Thread.State.BLOCKED, queuedThread.get().getState());
+                firstResult = operationResult(first);
+                assertFalse(secondResult.isDone());
+            }
+            String followingResult = secondResult.get(5, TimeUnit.SECONDS);
+            assertEquals("OK", firstResult);
+            if (operation.equals("ready")) {
+                assertEquals("OK", followingResult);
+            } else if (!startFirst && operation.equals("rules")) {
+                assertEquals("OK", followingResult);
+            } else {
+                assertEquals(!startFirst && operation.equals("logout")
+                        ? "LOGIN_REQUIRED" : "INVALID_STATE", followingResult);
+            }
+            boolean started = startFirst || operation.equals("start")
+                    || operation.equals("ready") || operation.equals("rules");
+            assertEquals(started ? 1 : 0, matches.findAll().size());
+            if (started) {
+                GameMatch match = matches.findAll().getFirst();
+                assertEquals(match.getId(), r.getCurrentMatchId());
+                assertEquals(UserState.PLAYING, hostUser.getState());
+                assertEquals(UserState.PLAYING, otherUser.getState());
+                boolean extraParticipates = operation.equals("ready") && !startFirst;
+                assertEquals(extraParticipates ? 3 : 2, match.getParticipants().size());
+                assertEquals(extraParticipates ? UserState.PLAYING
+                        : operation.equals("ready") ? UserState.READY : UserState.ROOM_WAITING,
+                        extraUser.getState());
+                assertEquals(operation.equals("rules") && !startFirst ? 5 : 3, match.getTargetWins());
+                assertEquals(r.getTargetWins(), match.getTargetWins());
+                assertEquals(r.isPreventConsecutiveSameOriginalHand(), match.isPreventConsecutiveSameOriginalHand());
+                assertTrue(match.getCurrentRound().getSelections().isEmpty());
+            } else {
+                assertNull(r.getCurrentMatchId());
+                if (operation.equals("cancel")) {
+                    assertEquals(UserState.READY, hostUser.getState());
+                    assertEquals(UserState.ROOM_WAITING, otherUser.getState());
+                } else {
+                    assertEquals(UserState.READY, otherUser.getState());
+                    assertEquals(UserState.ROOM_NONE, hostUser.getState());
+                    assertNull(hostUser.getCurrentRoomId());
+                    assertFalse(r.getMemberIds().contains(hostUser.getId()));
+                    assertEquals(otherUser.getId(), r.getHostUserId());
+                    assertEquals(operation.equals("logout"), host.isInvalid());
+                }
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    String operationResult(Runnable action) {
+        try { action.run(); return "OK"; }
+        catch (GameOperationException e) { return e.getCode(); }
+    }
 }
