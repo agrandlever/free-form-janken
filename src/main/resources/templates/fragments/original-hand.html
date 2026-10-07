@@ -4,9 +4,9 @@
 <h2>オリジナル手</h2>
 <p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
 <p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
-<button id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
+<button th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
         th:text="${hasOriginalHand ? 'オリジナル手を編集' : 'オリジナル手を作成'}"></button>
-<div id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
+<div th:if="${canEditOriginalHand}" id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
 <section th:replace="~{login :: errors}"></section>
 <form method="post" th:action="@{/original-hand/save}" th:object="${originalHandForm}">
 <input id="original-save-returnPage" type="hidden" th:field="*{returnPage}">

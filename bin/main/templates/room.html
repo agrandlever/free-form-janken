@@ -12,5 +12,24 @@
 <ul th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomId']}" th:text="${message}"></li></ul>
 <button type="submit">ルームを退出</button>
 </form>
-<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong></li></ul>
+<form th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
+<input type="hidden" th:field="*{roomId}"><button type="submit">準備完了</button>
+</form>
+<form th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
+<input type="hidden" th:field="*{roomId}"><button type="submit">準備取消</button>
+</form>
+<section><h2>対戦ルール</h2>
+<p>先取勝数：<span th:text="${targetWins}"></span></p>
+<p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+<form th:if="${isHost}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
+<input type="hidden" th:field="*{roomId}">
+<label for="targetWins">先取勝数</label>
+<input type="text" inputmode="numeric" th:field="*{targetWins}" aria-describedby="targetWins-errors">
+<ul id="targetWins-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['targetWins']}" th:text="${message}"></li></ul>
+<label><input type="checkbox" th:field="*{preventConsecutiveSameOriginalHand}">同一オリジナル手の連続使用を禁止する</label>
+<button type="submit">ルール変更</button>
+</form>
+<p>通常のグー・チョキ・パーは連続して選択できます。</p>
+</section>
+<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong></li></ul>
 </main></body></html>

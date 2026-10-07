@@ -5,6 +5,7 @@ import java.util.Map;
 
 /** HTML再表示に必要な業務エラーだけを保持する。 */
 public class GameOperationException extends RuntimeException {
+    private List<String> explicitMessages;
     private final int status;
     private final String code;
     private final Map<String, List<String>> fieldErrors;
@@ -21,7 +22,13 @@ public class GameOperationException extends RuntimeException {
         this.fieldErrors = Map.copyOf(fieldErrors);
     }
 
+    public GameOperationException(int status, String code, List<String> messages) {
+        this(status, code, messages.getFirst());
+        this.explicitMessages = List.copyOf(messages);
+    }
+
     public List<String> getErrorMessages() {
+        if (explicitMessages != null) { return explicitMessages; }
         // 複数項目のエラーをすべて表示し、同じメッセージの重複は避ける。
         java.util.LinkedHashSet<String> messages = new java.util.LinkedHashSet<>();
         messages.add(getMessage());

@@ -9,6 +9,7 @@ import com.example.janken.domain.enums.UserState;
 import com.example.janken.form.LoginForm;
 import com.example.janken.form.RoomActionForm;
 import com.example.janken.form.RoomEnterForm;
+import com.example.janken.form.RoomRuleForm;
 import com.example.janken.store.GameStateLock;
 import com.example.janken.store.RoomStore;
 import com.example.janken.store.UserStore;
@@ -33,7 +34,7 @@ public class ScreenService {
         this.users = users;
     }
 
-    public record MemberView(String username, boolean host) { }
+    public record MemberView(String username, boolean host, boolean ready) { }
     public record Screen(String path, String template, Map<String, Object> model) { }
 
     public Screen current(HttpSession session) {
@@ -51,7 +52,7 @@ public class ScreenService {
                 originalHandModel(user, "ROOMS", null, model);
                 return screen("/rooms", "rooms", model);
             }
-            if (user.getState() != UserState.ROOM_WAITING || user.getCurrentRoomId() == null) {
+            if ((user.getState() != UserState.ROOM_WAITING && user.getState() != UserState.READY) || user.getCurrentRoomId() == null) {
                 throw GameOperationException.invalidState();
             }
             Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
@@ -59,10 +60,22 @@ public class ScreenService {
             model.put("roomId", room.getId().toString());
             model.put("roomName", room.getName());
             model.put("isHost", user.getId().equals(room.getHostUserId()));
-            model.put("members", room.getMemberIds().stream().map(id -> {
+            java.util.List<MemberView> members = room.getMemberIds().stream().map(id -> {
                 GameUser member = users.findById(id).orElseThrow(GameOperationException::invalidState);
-                return new MemberView(member.getUsername(), id.equals(room.getHostUserId()));
-            }).toList());
+                return new MemberView(member.getUsername(), id.equals(room.getHostUserId()), member.getState() == UserState.READY);
+            }).toList();
+            model.put("members", members);
+            model.put("readyMembers", members.stream()
+                    .filter(MemberView::ready).toList());
+            model.put("targetWins", room.getTargetWins());
+            model.put("preventConsecutiveSameOriginalHand", room.isPreventConsecutiveSameOriginalHand());
+            model.put("currentMatchId", room.getCurrentMatchId());
+            model.put("matchRunning", room.getCurrentMatchId() != null);
+            RoomRuleForm ruleForm = new RoomRuleForm();
+            ruleForm.setRoomId(room.getId().toString());
+            ruleForm.setTargetWins(Integer.toString(room.getTargetWins()));
+            ruleForm.setPreventConsecutiveSameOriginalHand(room.isPreventConsecutiveSameOriginalHand());
+            model.put("roomRuleForm", ruleForm);
             RoomActionForm form = new RoomActionForm();
             form.setRoomId(room.getId().toString());
             model.put("roomActionForm", form);
@@ -87,6 +100,7 @@ public class ScreenService {
         OriginalHandDeleteForm delete = new OriginalHandDeleteForm();
         delete.setReturnPage(returnPage);
         delete.setRoomId(roomId);
+        model.put("canEditOriginalHand", user.getState() == UserState.ROOM_NONE || user.getState() == UserState.ROOM_WAITING);
         model.put("hasOriginalHand", hand != null);
         model.put("originalHandName", hand == null ? "" : hand.getName());
         model.put("originalHandForm", form);

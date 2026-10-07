@@ -3,6 +3,7 @@ package com.example.janken.controller;
 import com.example.janken.form.LoginForm;
 import com.example.janken.form.RoomActionForm;
 import com.example.janken.form.RoomEnterForm;
+import com.example.janken.form.RoomRuleForm;
 import com.example.janken.service.GameOperationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,10 +31,17 @@ public class HtmlErrorHandler {
                 enter.setRoomName(request.getParameter("roomName"));
                 form = enter;
             }
-            case "/room/leave" -> {
+            case "/room/leave", "/room/ready", "/room/ready/cancel" -> {
                 RoomActionForm action = new RoomActionForm();
                 action.setRoomId(request.getParameter("roomId"));
                 form = action;
+            }
+            case "/room/rules" -> {
+                RoomRuleForm rules = new RoomRuleForm();
+                rules.setRoomId(request.getParameter("roomId"));
+                rules.setTargetWins(request.getParameter("targetWins"));
+                rules.setPreventConsecutiveSameOriginalHand(Boolean.parseBoolean(request.getParameter("preventConsecutiveSameOriginalHand")));
+                form = rules;
             }
             default -> form = new LoginForm();
         }

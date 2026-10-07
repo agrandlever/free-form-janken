@@ -1,0 +1,294 @@
+第6段階 実装完了報告
+確認日：2026-10-07（日本時間）
+対象：docs/の6設計書、06_実装設計書_簡易自由律じゃんけん.md「第6段階：準備・ルール」
+結論：第6段階完了。①ROOM_NONE・②ROOM_WAITING・③READYのみを統合しました。
+
+1. 作成・変更したファイル
+新規ソース3件：
+・src/main/java/com/example/janken/form/RoomRuleForm.java
+・src/test/java/com/example/janken/service/StageSixServiceTests.java
+・src/test/java/com/example/janken/controller/StageSixWebTests.java
+変更ソース13件：
+・src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+・src/main/java/com/example/janken/controller/RoomController.java
+・src/main/java/com/example/janken/controller/ScreenRenderer.java
+・src/main/java/com/example/janken/service/AuthService.java
+・src/main/java/com/example/janken/service/GameOperationException.java
+・src/main/java/com/example/janken/service/OriginalHandService.java
+・src/main/java/com/example/janken/service/RoomService.java
+・src/main/java/com/example/janken/service/ScreenService.java
+・src/main/resources/templates/fragments/original-hand.html
+・src/main/resources/templates/room.html
+・src/test/java/com/example/janken/controller/StageFourWebTests.java
+・src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+・src/test/java/com/example/janken/service/StageFourServiceTests.java
+報告書：reports/stage6-completion.txt（本ファイル）。
+確認結果：build/stage6-verification.txt、build/stage6-smoke-results.txt。
+起動ログ：build/stage6-boot.log、build/stage6-bootrun.log。
+
+2. RoomServiceへ追加・変更したメソッド
+追加：ready(session, roomId)、cancelReady(session, roomId)、updateRules(session, RoomRuleForm)。
+追加：updateRules(session, form, inputErrors)。booleanの型変換エラーも権限・状態確認後に判定します。
+追加private補助：isRoomState、requireCurrentRoomId、requireRoom。
+変更：leaveRoom(session, roomId)、ログアウトから使うleaveRoom(GameUser)を②・③対応へ拡張。
+コンストラクターへ既存UserStoreを追加し、現在の③を参照します。
+enterRoomは①・未所属のみを許可する既存検証を維持し、③の再入室を409で拒否します。
+transferHostは参加順の最初の残存memberIdsへ移譲する既存実装を維持しました。③からの退出でも同じ処理を呼びます。
+startMatchは追加していません。
+
+3. readyの検証順序
+同じ共有GameStateLockのsynchronized内で、次の順です。
+1）ログイン済みユーザー取得。
+2）要求roomIdとcurrentRoomIdの一致。
+3）state == ROOM_WAITING。
+4）本人のOriginalHand存在。
+5）現在Roomの存在・本人の所属を確認し、同じRoomの現在③一覧を取得。
+6）username重複確認。
+7）OriginalHand.name重複確認。
+8）エラーがなければREADYへ変更。
+一覧取得と変更の間を含め、途中でロックを解放しません。
+OriginalHandなしは409 / ORIGINAL_HAND_REQUIRED。指定のメッセージを返し、②・Room・手を変更しません。
+
+4. 準備対象となる③一覧の取得条件
+現在Room.memberIdsを参加順で参照し、既存UserStoreからユーザーを取得します。
+currentRoomIdが現在Room.idと一致し、state == READYのユーザーだけを比較対象とします。
+②および別Roomの③は対象外です。取得・参照・比較は共有ロック内です。
+
+5. username重複判定
+保存済みusernameをString.equalsで完全一致比較します。
+同じRoomの②との同名は許可し、現在③との同名は409 / READY_USERNAME_CONFLICTです。
+メッセージ：準備完了中のプレイヤーとユーザー名が重複しています。
+拒否時は本人の②を維持します。
+
+6. OriginalHand.name重複判定
+第5段階でString.strip()後に保存された、現在のOriginalHand.getName()を完全一致比較します。
+入力フォームや未保存値を比較対象にしません。
+現在③の同名手は409 / READY_HAND_NAME_CONFLICTです。
+メッセージ：準備完了中のプレイヤーとオリジナル手の名前が重複しています。
+本人の②と現在の手を維持します。
+
+7. 両方重複時のerrorCodeとerrorMessages
+usernameと手名を独立に確認し、username競合を見つけても手名確認を実行します。
+主errorCode：READY_USERNAME_CONFLICT。
+errorMessagesの順序：
+1）準備完了中のプレイヤーとユーザー名が重複しています。
+2）準備完了中のプレイヤーとオリジナル手の名前が重複しています。
+GameOperationExceptionへ順序付きListのコンストラクターを追加し、両メッセージを保持します。
+HTTP409、本人は②を維持します。
+
+8. cancelReadyの実装
+ログイン確認→現在roomId一致→state == READY→Room存在・所属確認→ROOM_WAITINGへ変更。
+全体を同じGameStateLockで保護します。状態・roomId不一致は409 / INVALID_STATEで変更しません。
+正常POSTは302 → /roomです。
+
+9. RoomRuleFormの内容
+String roomId、String targetWins、boolean preventConsecutiveSameOriginalHand。
+targetWinsは入力値を保持し、整数変換をService内へ遅らせるためStringです。
+Controllerで先行する整数変換エラーによって非ホストの403を400へ変えません。
+checkboxの型変換失敗もBindingResult（入力変換失敗を保持する仕組み）で捕捉してServiceへ渡します。
+
+10. updateRulesの検証順序
+共有GameStateLock内でログインを確認し、次の順で判定します。
+1）要求roomIdと現在所属の一致。
+2）現在Room取得と本人の所属確認。
+3）操作者id == hostUserId。
+4）状態が②または③。
+5）currentMatchId == null。
+6）入力変換エラーがないこと、targetWinsが有効な整数1～99であること。
+7）両ルールを更新。
+非ホスト403 / FORBIDDEN、状態・所属・進行中対戦409 / INVALID_STATE、入力不正400 / VALIDATION_ERRORです。
+拒否時は両ルールとUserStateを変更しません。
+
+11. targetWins検証
+null・空・非整数・整数オーバーフロー・1～99範囲外を400で拒否します。
+1・99を許可し、0・100・負数・小数・文字列・未入力をテストしました。
+fieldErrors.targetWinsとerrorMessagesに「先取勝数は1～99の整数で入力してください。」を設定します。
+400時はroom.htmlを再表示し、errorCode・errorMessages・fieldErrors・formと通常Room Modelを再構築します。
+表示roomRuleFormには入力値を保持し、hiddenは現在の検証済みRoom IDへ設定します。
+既存保存ルールを部分更新しません。
+
+12. ③でルール変更してもREADYを維持する方法
+検証成功後にRoomのtargetWinsとpreventConsecutiveSameOriginalHandだけを設定します。
+GameUser.stateを変更する処理をルール更新へ入れていません。
+本人・他の③の準備状態をすべて維持することをService・実HTTPで確認しました。
+
+13. RoomControllerへ追加したエンドポイント
+POST /room/rules、POST /room/ready、POST /room/ready/cancelの3つだけです。
+すべて既存RoomServiceへ委譲します。ControllerからDomain・Storeを直接変更しません。
+
+14. room.htmlの準備UI
+②では準備完了POSTフォーム、③では準備取消POSTフォームを相互排他的に表示します。
+th:ifでサーバーの最新userStateを判定します。
+hidden roomIdはScreenServiceで現在Room・所属を確認した値です。
+内部UUIDを利用者向けの文字表示として出しません。
+
+15. room.htmlのルールUI
+対戦ルールの見出し、保存済み先取勝数・連続禁止ON/OFFを表示します。
+ホストだけに先取勝数入力、連続禁止checkbox、ルール変更ボタンを表示します。
+初期値は保存済みルールです。先取勝数入力は不正文字もエラー再表示で保持できるtextとし、inputmode=numericで数字入力を補助します。
+補足：通常のグー・チョキ・パーは連続して選択できます。
+非ホストに編集フォームを表示しません。
+
+16. 準備済み参加者の表示方法
+表示用MemberViewへboolean readyを追加しました。
+参加者一覧でホストには「（ホスト）」、③には「（準備完了）」を表示します。
+状態コードREADYそのものを利用者へ表示しません。
+
+17. ③でOriginalHand編集導線を隠した方法
+ScreenServiceがcanEditOriginalHandを①・②だけtrueにします。
+共通フラグメントで作成／編集ボタンと保存／削除フォームのパネル全体をth:ifで除外します。
+現在の手名の表示は維持します。
+ScreenRendererも③では入力エラー再表示用の編集パネルを開きません。
+
+18. ③からの旧OriginalHand POST拒否方法
+OriginalHandService.save・deleteは既存の共有GameStateLockを維持しています。
+ロック取得後の最新stateがREADYならvalidateTarget冒頭で409 / INVALID_STATEを返します。
+その後の入力検証や手の変更は行いません。以前の②フォームからのPOSTでも拒否します。
+Serviceテストで元のOriginalHandオブジェクトを維持し、実HTTPで保存・削除の両方を409として確認しました。
+
+19. ③からの退出処理
+②と同じ通常退出を許可し、memberIdsから削除、ROOM_NONE、currentRoomId=nullへ変更します。
+セッション・id・username・OriginalHandを維持します。
+ホストなら参加順の最初の残存メンバーへ移譲し、最後の1人ならRoomを削除します。
+正常時302 → /rooms。共有ロック内で所属整理を完了します。
+
+20. ③からのログアウト処理
+AuthService.logoutが②・③で既存RoomService.leaveRoom(GameUser)を呼びます。
+所属整理・ホスト移譲またはRoom削除→session.invalidate→UserStore.deleteByIdの順です。
+第4段階のUserStore削除方針を維持し、正常時302 → /です。
+全体を同じ共有GameStateLockで保護します。MatchService参照はありません。
+
+21. ③のGETアクセス制御
+ScreenService.currentで②・③の正規画面を/roomにします。
+③のGET /roomは表示、GET /roomsおよびGET /は302 → /roomです。
+④の表示・遷移処理は追加していません。
+
+22. GameStateLockで保護した範囲
+readyのログイン・所属・状態・手存在・③一覧・両重複検証から②→③まで。
+cancelReadyの全確認から③→②まで。
+updateRulesのログイン・所属・権限・状態・進行中対戦・入力検証から両ルール更新まで。
+③を含む退出の所属整理・ホスト移譲・Room削除。
+③ログアウトの所属整理からセッション終了・ユーザー削除まで。
+OriginalHand保存／削除の最新状態確認・③拒否を含む全処理。
+画面のアクセス確認と表示用コピー生成。
+準備と保存・削除・取消・退出・ログアウト・ルール更新が同じ共有ロックを使います。
+Store別・ready専用等の追加ロックはありません。
+
+23. 同時readyテストの内容と結果
+CyclicBarrier（2スレッドの開始を揃える仕組み）で同時要求を開始します。
+同じusernameのみ、同じ手名のみ、両方同じの3パターンを各30回、合計90回確認しました。
+毎回1人だけ成功して③となり、他方は規定の競合コードで②を維持します。
+Futureを時間制限付きで取得し、スレッド内の例外もテスト失敗として検出します。すべて成功しました。
+
+24. readyと他操作の競合テスト結果
+保存・削除・取消・退出・ログアウト・ルール変更の6パターンを各30回、合計180回確認し、すべて成功しました。
+保存：先行保存は反映後に準備成功、先行準備なら保存409で元の手を維持。
+削除：先行削除なら準備ORIGINAL_HAND_REQUIRED、先行準備なら削除INVALID_STATE。
+取消：取消先行なら409で後続準備が③、準備先行なら取消成功で②。
+退出：最終①・未所属、メンバーから除外・ホスト移譲・手とログイン維持。
+ログアウト：最終①・未所属、セッション終了・UserStore削除・ホスト移譲。
+ルール：両操作成功、更新後ルールを保持して③を維持。
+すべてで残存メンバーの所属整合とcurrentMatchId=nullも確認しました。
+
+25. その他の第6段階テスト内容と件数
+StageSixServiceTests：32件成功。うち同時準備3件と他操作競合6件は、各30回の内部反復を含みます。
+StageSixWebTests：12件成功。第6段階追加は計44件です。
+主な内容：正常準備・再送・手なし・別roomId・取消・②と③の同名差・strip済み手名・両重複メッセージ順・別Room・取消後の名前再利用・未更新の手で再準備・ルール1/99・未入力/非整数/範囲外・ON/OFF・非ホストと入力不正の優先順位・currentMatchIdありの拒否・③維持・③古い手操作拒否・再入室拒否・退出・ログアウト・ホスト移譲・最後のRoom削除。
+実HTTP3件でテンプレート描画・準備UI・③編集導線なし・GET誘導・ルールエラー入力保持・退出・ログアウトも確認しました。
+
+26. compileJava結果
+Gradle Wrapperで成功。BUILD SUCCESSFUL、終了コード0です。
+最終確認はcompileJava test bootJar --offline --no-daemon --no-problems-reportで成功しました。
+既存の.gradle-user-homeをGRADLE_USER_HOMEへ指定しました。標準キャッシュでの初回はネットワーク制限による配布物取得失敗でした。
+一度、既存build/reports/problems/problems-report.htmlへの書込み拒否があったため、Gradleの--no-problems-reportで回避しました。ソースやビルド設定の変更で回避していません。
+
+27. test結果
+Gradle Wrapper test：BUILD SUCCESSFUL、終了コード0。
+全434件、失敗0・エラー0・スキップ0です。
+追加44件＋第0～5段階の既存390件がすべて成功しました。
+HTMLレポート：build/reports/tests/test/index.html。
+最終テスト後に実装ソースを変更していません。
+
+28. Spring Boot起動結果
+実HTTPテストのRANDOM_PORTでSpring Boot／Tomcatが起動・終了しました。
+Gradle Wrapper bootRunでも18086で起動成功（確認用アプリPID23316）。
+最終版bootJarからJava 21で単独起動し、18087でSpring Boot 4.1.1起動成功（PID24748）。
+確認後に両アプリを停止し、18086・18087のHTTP接続不可を確認しました。
+起動用PowerShellだけでは子のアプリを停止できなかったため、起動ログで特定した確認用アプリPID23316をStop-Processで停止しました。
+
+29. 通常ブラウザー／HTTPでの基本フロー確認
+通常起動18087へ独立したCookieセッション2つで実HTTP要求を行いました。
+2人入室→手作成→ホスト②でルール変更→両者準備→準備中表示→ホスト③でルール変更・両者③維持→旧手保存／削除409→準備取消→編集導線復帰→再準備→③ホスト退出→手維持・ホスト移譲→残存③ログアウト→退出済みユーザーログアウトが成功しました。
+③のGET /room・/rooms・/誘導と、非ホストのルールフォーム非表示も確認しました。
+通常ブラウザーの手動UI操作は行っていません。実HTTPによる確認です。
+ルーム名コピーの既存JavaScriptはNode vmで成功・失敗の2項目を確認しました。実ブラウザーのクリップボード権限UIは未確認です。
+
+30. 第0～5段階の回帰テスト結果
+既存390件すべて成功しました。
+ログイン・入室・退出・満員制御・ホスト移譲・Room削除・OriginalHand作成/更新/削除・ID維持・不正更新の全項目維持・文字列共通規則・既存競合処理を維持しています。
+既存テストの変更はRoomServiceコンストラクターのUserStore追加、表示用MemberViewのready=false追加、第6段階UI導入に伴うHTMLの準備ボタン・hidden個数の期待値更新です。既存機能の確認を削除していません。
+room.jsは変更なし。コピー成功・失敗の追加確認も成功しました。
+
+31. docs/を変更していないこと
+6設計書を参照しました。git diff --name-only -- docsは空です。
+docs/の追加・編集・削除はありません。
+
+32. bin/の生成物変化
+開始時のgit statusはクリーンでした。
+bin/は更新15件（class13、HTML2）、追加4件（class4）です。
+具体的な一覧は本報告書末尾へ記載します。
+IDEによる自動コンパイル・リソース同期に伴う変化です。生成した具体的なIDEプロセスは特定していません。
+bin/は意図的に編集・削除していません。.gitignoreも変更していません。
+
+33. 第7段階以降を実装していないこと
+GameMatch・MatchParticipant・OriginalHandSnapshot・Round・各結果Domain・MatchStore・各Match関連Service・StatusService・StatusApiController・/api/status・ポーリング・Scheduler・対戦関連画面を追加していません。
+PLAYINGへ遷移する処理はありません。既存Enum・Domainの先行フィールドは変更していません。
+currentMatchIdは通常操作ではnullのまま。ルール拒否のテストのみ、既存RoomフィールドへUUIDを直接設定して構造を確認しました。
+対戦クラスやStoreを先行作成していません。
+
+34. /room/startを実装していないこと
+エンドポイント・startMatch・開始ボタン・動かない開始導線のいずれも追加していません。
+mainソース内の/room/start・MatchService・MatchStore・GameMatch・/api/status検索結果はありません。
+
+35. git diffまたは変更概要
+src/は新規3件・既存変更13件、加えて報告書1件とbin/の自動生成物差分です。
+Domain・Store・GameStateLock・Gradle設定・.gitignore・docs/・静的JavaScript/CSSは変更していません。
+git diff --checkは成功し、空白エラーはありません。
+コミット・ステージはしていません。
+
+36. 設計書に明記されていない部分で行った実装判断
+・RoomRuleForm.targetWinsはStringとして受け、権限と状態の確認後にServiceで整数へ変換します。保存先Roomの型は既存intを維持しました。
+・整数文字列は半角数字と任意の符号を許可し、最終的に1～99か判定します。空白付き・全角数字・小数・文字列は不正です。
+・checkboxの型変換エラーはBindingResultで捕捉し、Serviceへ渡して403/409優先を保ちます。
+・ready/cancel/rulesのroomId未指定・不正形式も現在所属と不一致として409にします。既存leaveとOriginalHandの形式エラー400仕様は変更していません。
+・③一覧は現在RoomのmemberIdsから取得し、currentRoomIdとREADYも確認します。
+・Room実在・本人memberIds所属も防御的に確認します。
+・両重複エラー用に順序付きメッセージListを例外へ追加しました。既存fieldErrors由来のエラー構造は維持しました。
+・通常Room ModelへreadyMembers・保存済み両ルール・roomRuleForm・currentMatchId・matchRunningを追加しました。対戦機能は生成しません。
+・先取勝数入力はtext/inputmode=numericで、不正入力の再表示時も文字を保持できます。
+・③での編集導線は共通フラグメントの条件表示を使い、①・②の既存UIを維持しました。
+・起動確認時だけ18086/18087を使用し、application.propertiesは変更していません。
+
+bin/差分一覧：
+ M bin/main/com/example/janken/controller/HtmlErrorHandler.class
+ M bin/main/com/example/janken/controller/RoomController.class
+ M bin/main/com/example/janken/controller/ScreenRenderer.class
+ M bin/main/com/example/janken/service/AuthService.class
+ M bin/main/com/example/janken/service/GameOperationException.class
+ M bin/main/com/example/janken/service/OriginalHandService.class
+ M bin/main/com/example/janken/service/RoomService.class
+ M bin/main/com/example/janken/service/ScreenService$MemberView.class
+ M bin/main/com/example/janken/service/ScreenService$Screen.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/templates/fragments/original-hand.html
+ M bin/main/templates/room.html
+ M bin/test/com/example/janken/controller/StageFourWebTests.class
+ M bin/test/com/example/janken/service/OriginalHandServiceTests.class
+ M bin/test/com/example/janken/service/StageFourServiceTests.class
+?? bin/main/com/example/janken/form/RoomRuleForm.class
+?? bin/test/com/example/janken/controller/StageSixWebTests$1.class
+?? bin/test/com/example/janken/controller/StageSixWebTests.class
+?? bin/test/com/example/janken/service/StageSixServiceTests.class
+
+最終判定：第6段階完了
+第7段階へは進んでいません。

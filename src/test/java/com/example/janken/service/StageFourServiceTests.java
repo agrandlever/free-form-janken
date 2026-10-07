@@ -37,7 +37,7 @@ class StageFourServiceTests {
     @BeforeEach void setup() {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users); clock = new TestClock();
-        roomService = new RoomService(lock, rooms, access, clock);
+        roomService = new RoomService(lock, rooms, access, clock, users);
         auth = new AuthService(lock, users, access, roomService, clock);
     }
 
@@ -187,6 +187,6 @@ class StageFourServiceTests {
     @Test void snapshotDoesNotChangeAfterDomainUpdates() {
         MockHttpSession a=login("A"); roomService.enterRoom(a,"R"); ScreenService service=new ScreenService(lock,access,rooms,users);
         ScreenService.Screen screen=service.current(a); roomService.leaveRoom(a,room(a).getId().toString());
-        assertEquals("R",screen.model().get("roomName")); assertEquals(List.of(new ScreenService.MemberView("A",true)),screen.model().get("members"));
+        assertEquals("R",screen.model().get("roomName")); assertEquals(List.of(new ScreenService.MemberView("A",true,false)),screen.model().get("members"));
     }
 }

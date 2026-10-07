@@ -5,6 +5,7 @@ import com.example.janken.form.OriginalHandForm;
 import com.example.janken.form.OriginalHandDeleteForm;
 import com.example.janken.form.RoomEnterForm;
 import com.example.janken.form.RoomActionForm;
+import com.example.janken.form.RoomRuleForm;
 import com.example.janken.service.GameOperationException;
 import com.example.janken.service.ScreenService;
 import jakarta.servlet.http.HttpSession;
@@ -39,7 +40,16 @@ public class ScreenRenderer {
             // 古い所属IDはhiddenへ再利用せず、現在の検証済みIDを使う。
             model.addAttribute("roomActionForm", form);
         }
-        if (form instanceof OriginalHandForm hand && canRedisplay(screen, hand.getReturnPage(), hand.getRoomId())) {
+        if (form instanceof RoomRuleForm rules && screen.template().equals("room")
+                && Boolean.TRUE.equals(screen.model().get("isHost")) && error.getStatus() == 400) {
+            RoomRuleForm display = new RoomRuleForm();
+            display.setRoomId((String) screen.model().get("roomId"));
+            display.setTargetWins(rules.getTargetWins());
+            display.setPreventConsecutiveSameOriginalHand(rules.isPreventConsecutiveSameOriginalHand());
+            model.addAttribute("roomRuleForm", display);
+        }
+        if (Boolean.TRUE.equals(screen.model().get("canEditOriginalHand"))
+                && form instanceof OriginalHandForm hand && canRedisplay(screen, hand.getReturnPage(), hand.getRoomId())) {
             OriginalHandForm current = (OriginalHandForm) screen.model().get("originalHandForm");
             // 入力値は維持し、hiddenの対象は現在画面の検証済み値を使う。
             OriginalHandForm display = new OriginalHandForm();
@@ -52,7 +62,8 @@ public class ScreenRenderer {
             display.setRoomId(current.getRoomId());
             model.addAttribute("originalHandForm", display);
             model.addAttribute("originalHandFormOpen", true);
-        } else if (form instanceof OriginalHandDeleteForm delete
+        } else if (Boolean.TRUE.equals(screen.model().get("canEditOriginalHand"))
+                && form instanceof OriginalHandDeleteForm delete
                 && canRedisplay(screen, delete.getReturnPage(), delete.getRoomId())) {
             model.addAttribute("originalHandFormOpen", true);
         }

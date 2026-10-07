@@ -62,6 +62,8 @@ public class OriginalHandService {
     }
 
     private String validateTarget(GameUser user, String returnPage, String roomId, String resultMatchId) {
+        // 古い②フォームでも、最新状態が③なら入力検証・変更より先に拒否する。
+        if (user.getState() == UserState.READY) { throw GameOperationException.invalidState(); }
         if (!"ROOMS".equals(returnPage) && !"ROOM".equals(returnPage)) {
             throw GameOperationException.validation("returnPage", "返却先の指定が不正です。");
         }
