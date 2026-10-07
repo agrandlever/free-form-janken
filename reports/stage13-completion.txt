@@ -1,0 +1,92 @@
+第13段階「時間経過による自動遷移」完了報告
+対象：docs/の6設計書を正とし、06_実装設計書の第13段階だけを実装。
+第14段階以降には進んでいません。
+
+1. 作成・変更ファイル
+   新規：src/main/java/com/example/janken/scheduler/MatchTransitionScheduler.java
+   変更：src/main/java/com/example/janken/JankenApplication.java
+   変更：build.gradle（テスト時の定期起動無効化のみ。依存追加なし）
+   新規：src/test/java/com/example/janken/service/StageThirteenServiceTests.java
+   新規：src/test/java/com/example/janken/controller/StageThirteenWebTests.java
+   新規：src/test/java/com/example/janken/scheduler/MatchTransitionSchedulingTests.java
+   新規：src/test/js/stage13-sync.test.cjs
+   確認証拠：reports/stage13-* のログ、JSON、画面PNG、本報告、差分・変更一覧。
+2. Scheduler構造：Spring管理の@Component。コンストラクターでGameStateLock、MatchStore、MatchService、Clockを受け取る。公開runTransitions()をテストから直接実行できる。
+3. Scheduling有効化：既存JankenApplicationに@EnableSchedulingを追加。新規設定クラス・依存関係なし。
+4. 500ms設定：runTransitions()に@Scheduled(fixedRate = 500)。独自スレッド・Timer・Executorは本番実装へ追加していない。
+5. Clock：既存Clock Beanを注入し、共有ロック内で比較時刻を1回取得。MatchServiceの再確認用Clock取得も従来どおり維持。
+6. 走査元：共有ロック内でMatchStore.findAll()を呼ぶ。RoomStore・Room.currentMatchId一覧を走査元にしない。
+7. 対象条件：ROUND_RESULT、transitionAt != null、!now.isBefore(transitionAt)をすべて満たす対戦。
+8. SELECTING_HAND：期限付きでも委譲しない。テスト成功。
+9. MATCH_RESULT：期限付きでも委譲しない。テスト成功。
+10. transitionAt=null：どの状態でも委譲しない。テスト成功。
+11. 期限前：反復実行してもRound、期限、履歴、勝数、previousHandを維持。テスト成功。
+12. 期限ちょうど：now == transitionAtで遷移可能。1ns前・1ms前では遷移しない。
+13. 勝者なし5秒：実際の手確定から作成した結果で4.999秒相当・5秒ちょうどを検証。次Roundは番号+1、selections空、SELECTING_HAND、期限null、履歴・勝数・previousHand維持。
+14. 勝者あり未決着10秒：10秒未満では維持し、到達で同じmatchIdの次Roundへ進む。NORMAL終了しない。
+15. 最終ラウンド10秒：期限前はROUND_RESULT・残存④を維持。期限到達で既存finishNormal経由のNORMAL終了、winner・finalScores・Snapshot保存、MATCH_RESULT、期限null、Room.currentMatchId解除、lastCompletedMatchId更新、残存④→②を確認。
+16. 委譲：候補の内部matchIdをMatchService.advanceMatch()へ渡す。
+17. 業務処理：Schedulerに勝敗判定・score更新・Round生成・Snapshot生成・UserState更新を重複実装していない。既存Serviceを変更していない。
+18. ロック範囲：clock.instant()、findAll()、状態・期限確認、advanceMatch完了まで単一GameStateLockで保護。別ロックなし。
+19. 古い走査結果：ロック外へ変更可能GameMatchを持ち出さない。既存advanceMatchの最新状態・期限再確認を維持。委譲直前のnext／normal／aborted変化を模擬するテストも成功。
+20. 冪等性（繰り返しても結果が変わらない性質）：次Roundが2つ飛ばない、Snapshot.saveは1回、勝数・履歴再加算なし、後のlastCompletedMatchIdを上書きしない。
+21. 複数走査：SELECTING_HAND、期限前、期限到達未決着、期限到達正常決着、MATCH_RESULT、期限nullの6対戦を同時配置して確認。対象外対戦で走査を打ち切らない。
+22. Room削除済み：全員leave／logout後でもMatchStoreに残る対戦を発見し、期限到達で正常結果保存。
+23. 同名Room再作成：新RoomのcurrentMatchId、lastCompletedMatchId、ルール、memberIdsを維持。roomName検索は追加せず、既存roomId基準を使用。
+24. カウント0：表示が0になるだけでは遷移しない。JavaScriptとWebテストで確認。本番JavaScript変更なし。
+25. 次Round反映：既存2秒status pollingでROUND_RESULT→SELECTING_HANDを検出し、同じmatchIdの/playへ移動。Chromeでも確認。
+26. 正常終了反映：既存2秒status pollingでMATCH_RESULTを検出し、同じmatchIdの/match-resultへ移動。Chromeでも確認。
+27. 500ms設定テスト：アノテーションfixedRate=500、JankenApplicationの@EnableScheduling、SpringのScheduledタスク登録1件を検証。成功。
+28. 期限前テスト：複数回Scheduler実行時の状態・Round参照・期限・履歴・勝数・previousHand維持を検証。成功。
+29. 期限ちょうどテスト：5秒／10秒のnow == deadlineを含めて成功。
+30. TC-050相当：勝者なし5秒境界、次Round生成、Web status、JS polling、通常起動HTTP／Chromeで確認。成功。
+31. TC-051相当：最終10秒境界、NORMAL結果保存、winner・finalScores・Room・残存状態、通常起動HTTP／Chromeで確認。成功。
+32. TC-098相当：leave／logout、同名再作成あり／なしの4ケースで旧Room削除後の正常終了を確認。成功。
+33. 複数対戦走査テスト：6状態混在で必要な2対戦だけが遷移し、Snapshotは1件。成功。
+34. 冪等性テスト：連続実行・並行実行でRound二重生成なし、結果再保存なし、履歴・score維持を確認。成功。
+35. Scheduler vs leave：最終確定あり／なし、Scheduler先行／leave先行の両順序を別スレッド・同一ロックで検証。成功。
+36. Scheduler vs logout：最終確定あり／なし、Scheduler先行／logout先行の両順序を検証。最終確定後は退出が先でもNORMALを維持。成功。
+37. 古いroundNumber：Schedulerの前後・競合で旧要求409を検証。Webテストと通常起動した実HTTPでも409確認。
+38. 画面同期テスト：Webで期限到達・Scheduler未実行時の結果維持と実行後statusを検証。JSでカウント0・2秒polling・同一ID遷移を検証。Chromeでdraw→Round2→最終結果の自動移動を確認。
+39. 新規Javaテスト：43件（Service39、Web3、Scheduling設定1）。すべて成功。
+40. 新規JavaScriptテスト：2件。すべて成功。
+41. compileJava：Gradle Wrapperで成功。
+42. test：Java計859件、失敗0、エラー0、skip0。BUILD SUCCESSFUL。
+43. 既存Java816件：全件成功（859 - 新規43 = 816）。第9～12段階の既存テストは変更していない。
+44. 既存JavaScript27件：全件成功（計29件、新規2件）。
+45. 通常起動：Gradle WrapperのbootJar生成後、Java 21で実行可能Jarを起動。default profile、テスト用設定なし、127.0.0.1:18013。起動成功。確認後PID18508を停止し、HTTP接続不可を確認。
+46. Scheduled自動実行：HTTPとChrome確認中にrunTransitions／advanceMatchを直接呼んでいない。状態APIは期限前ROUND_RESULTを維持し、実際の定期処理で遷移した。
+47. HTTP／Chrome結果：対戦ID 0c11349f-87b8-4a2b-9f1e-2b9821a64054。
+   ケースA：5秒期限 2026-10-07 14:35:08.278 JST、SELECTING_HAND観測14:35:08.751 JST（HTTP観測なので更新そのものの時刻ではない）。Chromeは同じIDの第2Roundへ自動移動。
+   ケースB：10秒期限 2026-10-07 14:36:45.813 JST、MATCH_RESULT観測14:36:46.110 JST。currentMatchId=null、lastCompletedMatchId=同ID、ROOM_WAITING、結果HTTP200。Chromeは同じIDの結果画面へ移動し、Chrome13の1勝・相手0勝・2Round分の履歴を表示。
+   ミリ秒単位の画面切替完全一致は合否条件にしていない。
+48. DisconnectMonitor：未実装。1秒監視・30秒判定・lastSeenAtによる切断処理なし。
+49. 結果画面OriginalHand編集：未実装。第12段階の画面を維持。
+50. 観戦：未実装。
+51. Scheduler用HTTP API：追加なし。手動「次へ」ボタン、setTimeout後の強制遷移も追加なし。
+52. docs/：変更なし。.gitignoreも変更なし。
+53. bin/：IDEの自動ビルドによりJankenApplication.classが更新され、Scheduler・新規Javaテストの.classが生成された。生成物として扱い、手動編集していない。build/にもGradleの生成物あり。
+54. 差分：reports/stage13-diff.txtは既存追跡ファイルのgit diff。新規ファイルはgit diffに含まれないため、本報告1項目とreports/stage13-changes.txtで一覧を記録。git diff --checkは成功。コミットは行っていない。
+55. 設計書で固定されていない部分の判断：公開runTransitions()を@Scheduled対象にした。走査全体を単一共有ロックで囲み、比較用Clockを1回読む。定期実行無効化用janken.match-transition.enabledは省略時true。Gradle testのみsystemProperty=falseを設定し、空StoreのScheduling登録テストだけ@SpringBootTestの明示設定trueで上書きする。IDEでGradleを経由せずJUnitを直接実行する場合も、同じ-Djanken.match-transition.enabled=falseを指定できる。
+   初回テストでテスト用application.propertiesが本番のCookie設定を隠す問題を検出したため、その新規ファイルを取り除き、Gradle testのsystemPropertyへ変更。既存セッション設定・業務処理への修正なし。
+
+実行コマンド（PowerShell、プロジェクトルートで実行）
+実行単位1：.\gradlew.bat --gradle-user-home .gradle-user-home --offline compileJava test bootJar --console=plain
+実行単位2：node --test src/test/js/*.test.cjs
+通常起動：Java 21のjava.exe -jar build/libs/free-form-janken-0.0.1-SNAPSHOT.jar --server.port=18013 --server.address=127.0.0.1
+既存Gradleキャッシュを指定してオフライン実行。初回のキャッシュ未指定時は配布zip取得のネットワーク制限に遭遇したが、上記でビルド完了。
+
+証拠ファイル
+reports/stage13-gradle-test.log
+reports/stage13-javascript-test.log
+reports/stage13-tests.json
+reports/stage13-http-observations.json
+reports/stage13-http-summary.json
+reports/stage13-boot.log
+reports/stage13-chrome-next-round.png
+reports/stage13-chrome-normal.png
+reports/stage13-diff.txt
+reports/stage13-changes.txt
+
+第13段階完了
+第14段階には進んでいません。

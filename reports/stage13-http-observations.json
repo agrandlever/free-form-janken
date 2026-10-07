@@ -1,0 +1,3118 @@
+[
+  {
+    "label": "draw-result",
+    "status": {
+      "serverTime": "2026-10-07T05:35:03.294332500Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:03.306508400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:03.518318800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:03.742260700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:03.951972700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:04.172602900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:04.387851900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:04.604012600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:04.818841500Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:05.045058600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:05.273407Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:05.486167Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:05.706108200Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:05.922193100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:06.137747600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:06.357657700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:06.582074600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:06.807075800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:07.017168700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:07.231592300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:07.449721300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:07.661692200Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:07.875936700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:08.096769900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:08.318658300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:08.527753300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 1,
+      "transitionAt": "2026-10-07T05:35:08.278252900Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 1,
+      "displayTransitionAt": "2026-10-07T05:35:08.278252900Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "SELECTING_HAND",
+    "status": {
+      "serverTime": "2026-10-07T05:35:08.751493700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "SELECTING_HAND",
+      "roundNumber": 2,
+      "transitionAt": null,
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "SELECTING_HAND",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": null,
+      "selfHandConfirmed": false,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "final-result",
+    "status": {
+      "serverTime": "2026-10-07T05:36:35.827739400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:35.844580Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:36.063920100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:36.283016600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:36.497913400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:36.748230900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:37.004902300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:37.211914600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:37.427373700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:37.649171100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:37.872112700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:38.082637Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:38.297948400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:38.507272700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:38.735731800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:38.950652900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:39.166061800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:39.382709400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:39.594115300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:39.815908Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:40.033047700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:40.246140100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:40.453086800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:40.677999100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:40.885803500Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:41.104123400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:41.330168500Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:41.548092700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:41.772086200Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:42.010593600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:42.229847900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:42.450101700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:42.660476300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:42.880489900Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:43.095003300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:43.316804300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:43.534607400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:43.749129Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:43.966170Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:44.185754700Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:44.396449600Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:44.614957800Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:44.827402100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:45.049157200Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:45.262475400Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:45.474424500Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:45.679531300Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:45.902012100Z",
+      "userState": "PLAYING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "PLAYING",
+      "currentMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "matchState": "ROUND_RESULT",
+      "roundNumber": 2,
+      "transitionAt": "2026-10-07T05:36:45.813204500Z",
+      "lastCompletedMatchId": null,
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "ROUND_RESULT",
+      "displayRoundNumber": 2,
+      "displayTransitionAt": "2026-10-07T05:36:45.813204500Z",
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "PLAYING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "PLAYING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "MATCH_RESULT",
+    "status": {
+      "serverTime": "2026-10-07T05:36:46.110936900Z",
+      "userState": "ROOM_WAITING",
+      "currentRoomId": "a47f1000-e022-4868-b177-047fdf762fa3",
+      "roomState": "WAITING",
+      "currentMatchId": null,
+      "matchState": null,
+      "roundNumber": null,
+      "transitionAt": null,
+      "lastCompletedMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+      "displayMatchState": "MATCH_RESULT",
+      "displayRoundNumber": null,
+      "displayTransitionAt": null,
+      "selfHandConfirmed": null,
+      "selfSelectedHand": null,
+      "room": {
+        "id": "a47f1000-e022-4868-b177-047fdf762fa3",
+        "name": "Chrome13Room",
+        "hostUserId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+        "targetWins": 1,
+        "preventConsecutiveSameOriginalHand": false,
+        "members": [
+          {
+            "userId": "38599e2d-b3e0-46e0-b7ee-0d52c2a8d2af",
+            "username": "Chrome13",
+            "userState": "ROOM_WAITING",
+            "isHost": true
+          },
+          {
+            "userId": "2d4c47f6-be45-44c4-ba8a-607dcd5cb95b",
+            "username": "Http13Peer",
+            "userState": "ROOM_WAITING",
+            "isHost": false
+          }
+        ]
+      }
+    }
+  }
+]

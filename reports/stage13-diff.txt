@@ -1,0 +1,26 @@
+diff --git a/build.gradle b/build.gradle
+index 0e3fead..13ad138 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -31,4 +31,6 @@ dependencies {
+ 
+ tasks.named('test') {
+     useJUnitPlatform()
++    // 固定Clockを進めるテストは明示的にSchedulerを実行し、バックグラウンド遷移を止める。
++    systemProperty 'janken.match-transition.enabled', 'false'
+ }
+diff --git a/src/main/java/com/example/janken/JankenApplication.java b/src/main/java/com/example/janken/JankenApplication.java
+index 6b5a72a..689278e 100644
+--- a/src/main/java/com/example/janken/JankenApplication.java
++++ b/src/main/java/com/example/janken/JankenApplication.java
+@@ -2,8 +2,10 @@ package com.example.janken;
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.scheduling.annotation.EnableScheduling;
+ 
+ @SpringBootApplication
++@EnableScheduling
+ public class JankenApplication {
+ 
+     public static void main(String[] args) {

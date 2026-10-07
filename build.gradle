@@ -31,4 +31,6 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // 固定Clockを進めるテストは明示的にSchedulerを実行し、バックグラウンド遷移を止める。
+    systemProperty 'janken.match-transition.enabled', 'false'
 }

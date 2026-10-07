@@ -1,0 +1,19 @@
+{
+  "matchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+  "draw": {
+    "deadline": "2026-10-07T05:35:08.278252900Z",
+    "observed": "2026-10-07T05:35:08.751493700Z",
+    "state": "SELECTING_HAND",
+    "round": 2
+  },
+  "normal": {
+    "deadline": "2026-10-07T05:36:45.813204500Z",
+    "observed": "2026-10-07T05:36:46.110936900Z",
+    "state": "MATCH_RESULT",
+    "userState": "ROOM_WAITING",
+    "currentMatchId": null,
+    "lastCompletedMatchId": "0c11349f-87b8-4a2b-9f1e-2b9821a64054",
+    "resultHttpStatus": 200
+  },
+  "stalePostStatus": 409
+}

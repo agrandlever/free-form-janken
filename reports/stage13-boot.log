@@ -1,0 +1,12 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-10-07T14:33:33.527+09:00  INFO 18508 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Starting JankenApplication v0.0.1-SNAPSHOT using Java 21.0.11 with PID 18508 (C:\exPractice\free-form-janken\build\libs\free-form-janken-0.0.1-SNAPSHOT.jar started by CodexSandboxOffline in C:\exPractice\free-form-janken)
+2026-10-07T14:33:33.538+09:00  INFO 18508 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : No active profile set, falling back to 1 default profile: "default"
