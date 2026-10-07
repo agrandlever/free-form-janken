@@ -12,7 +12,8 @@
 <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
 <h2>手を選択</h2>
 <p th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
-<!-- 対象IDと番号はサーバーで確認した現在値を送る。連続使用制限は第10段階で統合する。 -->
+<p th:if="${hasConsecutiveUseRestriction}">前のラウンドと同じオリジナル手は選択できません。</p>
+<!-- 画面で無効化しても、POSTの最終判定は共有ロック内のMatchServiceで行う。 -->
 <div>
 <form th:each="hand : ${ {'ROCK','SCISSORS','PAPER'} }" method="post" th:action="@{/play}">
 <input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
@@ -22,7 +23,7 @@
 <form th:each="hand : ${originalHandOptions}" method="post" th:action="@{/play}">
 <input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
 <input type="hidden" name="type" value="ORIGINAL"><input type="hidden" name="originalHandId" th:value="${hand.originalHandId}">
-<button type="submit" th:disabled="${selfHandConfirmed}" th:text="${hand.name}"></button>
+<button type="submit" th:disabled="${selfHandConfirmed or hand.consecutiveUseRestricted}" th:text="${hand.name}"></button>
 </form>
 </div>
 </main></body></html>

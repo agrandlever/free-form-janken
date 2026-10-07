@@ -1,6 +1,8 @@
 package com.example.janken.service;
 
 import com.example.janken.domain.GameUser;
+import com.example.janken.domain.HandSelection;
+import com.example.janken.domain.enums.SelectedHandType;
 import com.example.janken.domain.GameMatch;
 import com.example.janken.domain.MatchParticipant;
 import com.example.janken.domain.OriginalHandSnapshot;
@@ -95,7 +97,7 @@ public class ScreenService {
 
     public record ParticipantView(String username, int score) { }
 
-    public record OriginalHandOption(String originalHandId, String name) { }
+    public record OriginalHandOption(String originalHandId, String name, boolean consecutiveUseRestricted) { }
 
     private Screen playScreen(GameUser user, Map<String, Object> model) {
         if (user.getCurrentRoomId() == null) { throw GameOperationException.invalidState(); }
@@ -121,8 +123,13 @@ public class ScreenService {
         // 他人の未公開相性や変更可能なDomainを表示用Modelへ渡さない。
         model.put("originalHandNames", match.getOriginalHands().stream()
                 .map(OriginalHandSnapshot::getName).toList());
-        model.put("originalHandOptions", match.getOriginalHands().stream()
-                .map(h -> new OriginalHandOption(h.getHandId().toString(), h.getName())).toList());
+        // 相性を含まない表示用コピーへ、本人の直前手に基づく制限だけを追加する。
+        var options = match.getOriginalHands().stream()
+                .map(h -> new OriginalHandOption(h.getHandId().toString(), h.getName(),
+                        MatchService.isConsecutiveOriginalHandRestricted(match, participant,
+                                new HandSelection(SelectedHandType.ORIGINAL, null, h.getHandId())))).toList();
+        model.put("originalHandOptions", options);
+        model.put("hasConsecutiveUseRestriction", options.stream().anyMatch(OriginalHandOption::consecutiveUseRestricted));
         // 本人の表示名だけをコピーし、他参加者のselectionや相性は公開しない。
         var self = match.getCurrentRound().getSelections().get(user.getId());
         model.put("selfHandConfirmed", self != null);

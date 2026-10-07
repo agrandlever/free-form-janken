@@ -83,6 +83,10 @@ public class MatchService {
             // 値が不正な再送でも、確定済みを409で拒否して既存の手を守る。
             if (round.getSelections().containsKey(user.getId())) { throw GameOperationException.invalidState(); }
             HandSelection selection = validateHand(form, match);
+            // 使用可能手の確認後、登録前に判定し、違反時は共有状態を一切更新しない。
+            if (isConsecutiveOriginalHandRestricted(match, participant, selection)) {
+                throw GameOperationException.validation("originalHandId", "前のラウンドと同じオリジナル手は選択できません。");
+            }
             round.getSelections().put(user.getId(), copy(selection));
             if (match.getParticipants().values().stream().filter(MatchParticipant::isActive)
                     .allMatch(p -> round.getSelections().containsKey(p.getUserId()))) {
@@ -90,6 +94,18 @@ public class MatchService {
             }
             return matchId;
         }
+    }
+
+    /** サーバー検証と表示用判定で共用する。呼び出し元は共有GameStateLockを保持する。 */
+    static boolean isConsecutiveOriginalHandRestricted(GameMatch match, MatchParticipant participant,
+            HandSelection selection) {
+        // OFFと通常手ではpreviousHandを参照せず、そのまま許可する。
+        if (!match.isPreventConsecutiveSameOriginalHand() || selection.getType() != SelectedHandType.ORIGINAL) {
+            return false;
+        }
+        HandSelection previous = participant.getPreviousHand();
+        return previous != null && previous.getType() == SelectedHandType.ORIGINAL
+                && selection.getOriginalHandId().equals(previous.getOriginalHandId());
     }
 
     private HandSelection validateHand(HandSelectionForm form, GameMatch match) {

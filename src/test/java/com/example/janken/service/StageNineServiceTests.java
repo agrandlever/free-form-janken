@@ -49,9 +49,10 @@ class StageNineServiceTests {
     }
     @ParameterizedTest @ValueSource(ints={0,1,2})
     void acceptsEverySnapshotIncludingOtherOwnerAndPreviousHand(int index) {
+        fixture(3,3,false);
         UUID id=match.getOriginalHands().get(index).getHandId();
         match.getParticipants().get(uid(0)).setPreviousHand(new HandSelection(SelectedHandType.ORIGINAL,null,id));
-        // 設定ONでも第9段階では直前と同じ手を拒否しない。現在ユーザーの手にも依存しない。
+        // 設定OFFでは直前と同じ手も許可する。全参加者の開始時手を利用できる。
         var f=form("ORIGINAL","",id.toString()); service.submitHand(sessions.getFirst(),f); f.setOriginalHandId(UUID.randomUUID().toString());
         assertEquals(id,match.getCurrentRound().getSelections().get(uid(0)).getOriginalHandId());
     }
@@ -133,6 +134,8 @@ class StageNineServiceTests {
         submit(0,"ROCK"); submit(1,"SCISSORS"); assertEquals(2,match.getRoundHistory().getFirst().getEntries().size()); assertEquals(8,p.getScore()); assertSame(previous,p.getPreviousHand()); assertTrue(match.getPendingWinnerIds().isEmpty());
     }
     @Test void multipleRoundsUseOnlyTestDataAndUpdateOriginalCopies() {
+        // 同一手の連続使用を含むため、設定OFFで第9段階のラウンド確定を回帰確認する。
+        fixture(3,3,false);
         UUID id=match.getOriginalHands().get(1).getHandId();
         for(int n=1;n<=2;n++) {
             if(n==2){match.setCurrentRound(new Round(2,now)); match.setState(MatchState.SELECTING_HAND);}
