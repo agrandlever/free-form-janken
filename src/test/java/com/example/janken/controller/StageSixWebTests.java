@@ -124,7 +124,7 @@ class StageSixWebTests {
     void readyUi(String html) {
         assertTrue(html.contains("準備取消")); assertFalse(html.contains("action=\"/room/ready\""));
         assertTrue(html.contains("（準備完了）"));
-        for (String text : List.of("オリジナル手を作成", "オリジナル手を編集", "オリジナル手を削除", "/original-hand/save", "/original-hand/delete", "/room/start", "/api/status")) {
+        for (String text : List.of("オリジナル手を作成", "オリジナル手を編集", "オリジナル手を削除", "/original-hand/save", "/original-hand/delete", "/api/status")) {
             assertFalse(html.contains(text), text);
         }
     }

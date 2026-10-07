@@ -60,6 +60,12 @@ public class RoomController {
         return "redirect:/room";
     }
 
+    @PostMapping("/room/start")
+    public String start(@ModelAttribute RoomActionForm form, HttpServletRequest request) {
+        RoomService.StartMatchResult result = rooms.startMatch(request.getSession(false), form.getRoomId());
+        return result.participant() ? "redirect:/play?matchId=" + result.matchId() : "redirect:/room";
+    }
+
     @PostMapping("/room/leave")
     public String leave(@ModelAttribute RoomActionForm form, HttpServletRequest request) {
         rooms.leaveRoom(request.getSession(false), form.getRoomId());

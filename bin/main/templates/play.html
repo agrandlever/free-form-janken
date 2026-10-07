@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body><header><p>ユーザー：<span th:text="${username}"></span></p></header>
+<main th:attr="data-match-id=${matchId},data-room-id=${roomId}">
+<section th:replace="~{login :: errors}"></section>
+<h1>第<span th:text="${roundNumber}"></span>ラウンド</h1>
+<p th:if="${matchParticipant}">あなたは対戦参加者です。</p>
+<p>先取勝数：<span th:text="${targetWins}"></span></p>
+<p>現在の勝数：<span th:text="${score}"></span></p>
+<p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+<h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
+<h2>利用可能な手</h2><ul><li>グー</li><li>チョキ</li><li>パー</li><li th:each="name : ${originalHandNames}" th:text="${name}"></li></ul>
+<!-- 第8段階は開始状態の表示のみ。手の確定フォームは第9段階で追加する。 -->
+<p>手の確定機能は次の実装段階で追加します。</p>
+</main></body></html>

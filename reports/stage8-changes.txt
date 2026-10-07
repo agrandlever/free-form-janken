@@ -1,0 +1,43 @@
+ M bin/main/com/example/janken/controller/HtmlErrorHandler.class
+ M bin/main/com/example/janken/controller/RoomController.class
+ M bin/main/com/example/janken/controller/ScreenRenderer.class
+ M bin/main/com/example/janken/service/OriginalHandService.class
+ M bin/main/com/example/janken/service/RoomService.class
+ M bin/main/com/example/janken/service/ScreenService$MemberView.class
+ M bin/main/com/example/janken/service/ScreenService$Screen.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/templates/room.html
+ M bin/test/com/example/janken/controller/StageSixWebTests.class
+ M bin/test/com/example/janken/service/OriginalHandServiceTests.class
+ M bin/test/com/example/janken/service/StageFourServiceTests.class
+ M bin/test/com/example/janken/service/StageSixServiceTests.class
+ M src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+ M src/main/java/com/example/janken/controller/RoomController.java
+ M src/main/java/com/example/janken/controller/ScreenRenderer.java
+ M src/main/java/com/example/janken/service/OriginalHandService.java
+ M src/main/java/com/example/janken/service/RoomService.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/resources/templates/room.html
+ M src/test/java/com/example/janken/controller/StageSixWebTests.java
+ M src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ M src/test/java/com/example/janken/service/StageFourServiceTests.java
+ M src/test/java/com/example/janken/service/StageSixServiceTests.java
+?? bin/main/com/example/janken/controller/GameController.class
+?? bin/main/com/example/janken/service/MatchService.class
+?? bin/main/com/example/janken/service/RoomService$StartMatchResult.class
+?? bin/main/com/example/janken/service/ScreenService$ParticipantView.class
+?? bin/main/templates/play.html
+?? bin/test/com/example/janken/controller/StageEightWebTests$1.class
+?? bin/test/com/example/janken/controller/StageEightWebTests.class
+?? bin/test/com/example/janken/service/StageEightServiceTests.class
+?? reports/stage8-baseline.log
+?? reports/stage8-boot.log
+?? reports/stage8-build.log
+?? reports/stage8-http-flow.json
+?? reports/stage8-test-final.log
+?? reports/stage8-test.log
+?? src/main/java/com/example/janken/controller/GameController.java
+?? src/main/java/com/example/janken/service/MatchService.java
+?? src/main/resources/templates/play.html
+?? src/test/java/com/example/janken/controller/StageEightWebTests.java
+?? src/test/java/com/example/janken/service/StageEightServiceTests.java

@@ -37,7 +37,7 @@ class StageFourServiceTests {
     @BeforeEach void setup() {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users); clock = new TestClock();
-        roomService = new RoomService(lock, rooms, access, clock, users);
+        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
         auth = new AuthService(lock, users, access, roomService, clock);
     }
 
@@ -185,8 +185,8 @@ class StageFourServiceTests {
         assertEquals(user(b).getId(),remaining.getHostUserId()); assertNull(user(a).getCurrentRoomId());
     }
     @Test void snapshotDoesNotChangeAfterDomainUpdates() {
-        MockHttpSession a=login("A"); roomService.enterRoom(a,"R"); ScreenService service=new ScreenService(lock,access,rooms,users);
+        MockHttpSession a=login("A"); roomService.enterRoom(a,"R"); ScreenService service=new ScreenService(lock,access,rooms,users,new com.example.janken.store.MatchStore());
         ScreenService.Screen screen=service.current(a); roomService.leaveRoom(a,room(a).getId().toString());
-        assertEquals("R",screen.model().get("roomName")); assertEquals(List.of(new ScreenService.MemberView("A",true,false)),screen.model().get("members"));
+        assertEquals("R",screen.model().get("roomName")); assertEquals(List.of(new ScreenService.MemberView("A",true,false,false)),screen.model().get("members"));
     }
 }

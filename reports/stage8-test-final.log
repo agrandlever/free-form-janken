@@ -1,0 +1,18 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :test
+
+2026-10-07T12:22:03.102+09:00  INFO 29536 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T12:22:03.121+09:00  INFO 29536 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-07T12:22:03.157+09:00  INFO 29536 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T12:22:03.182+09:00  INFO 29536 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-07T12:22:03.198+09:00  INFO 29536 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-07T12:22:03.217+09:00  INFO 29536 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+
+BUILD SUCCESSFUL in 48s
+4 actionable tasks: 2 executed, 2 up-to-date

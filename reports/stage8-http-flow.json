@@ -1,0 +1,20 @@
+[
+  {
+    "hostReady": true,
+    "players": 3,
+    "startStatus": 302,
+    "hostLocation": "http://127.0.0.1:18080/play?matchId=786e948b-2661-4cb3-840f-18f67b1e44fd",
+    "participantLocation": "http://127.0.0.1:18080/play?matchId=786e948b-2661-4cb3-840f-18f67b1e44fd",
+    "playStatus": 200,
+    "doubleStartStatus": 409
+  },
+  {
+    "hostReady": false,
+    "players": 2,
+    "startStatus": 302,
+    "hostLocation": "http://127.0.0.1:18080/room",
+    "participantLocation": "http://127.0.0.1:18080/play?matchId=6d90f342-0a89-4e44-8423-a277af5a7d28",
+    "playStatus": 200,
+    "doubleStartStatus": 409
+  }
+]

@@ -11,7 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice(assignableTypes = {AuthController.class, RoomController.class})
+@ControllerAdvice(assignableTypes = {AuthController.class, RoomController.class, GameController.class})
 public class HtmlErrorHandler {
     private final ScreenRenderer screens;
     public HtmlErrorHandler(ScreenRenderer screens) { this.screens = screens; }
@@ -31,7 +31,7 @@ public class HtmlErrorHandler {
                 enter.setRoomName(request.getParameter("roomName"));
                 form = enter;
             }
-            case "/room/leave", "/room/ready", "/room/ready/cancel" -> {
+            case "/room/start", "/room/leave", "/room/ready", "/room/ready/cancel" -> {
                 RoomActionForm action = new RoomActionForm();
                 action.setRoomId(request.getParameter("roomId"));
                 form = action;

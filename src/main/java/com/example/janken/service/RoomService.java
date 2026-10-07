@@ -22,13 +22,15 @@ public class RoomService {
     private final SessionUserAccess access;
     private final Clock clock;
     private final UserStore users;
+    private final MatchService matches;
 
-    public RoomService(GameStateLock lock, RoomStore rooms, SessionUserAccess access, Clock clock, UserStore users) {
+    public RoomService(GameStateLock lock, RoomStore rooms, SessionUserAccess access, Clock clock, UserStore users, MatchService matches) {
         this.lock = lock;
         this.rooms = rooms;
         this.access = access;
         this.clock = clock;
         this.users = users;
+        this.matches = matches;
     }
 
     public void enterRoom(HttpSession session, String roomName) {
@@ -91,6 +93,43 @@ public class RoomService {
             } else if (user.getId().equals(room.getHostUserId())) {
                 transferHost(room);
             }
+        }
+    }
+
+    public record StartMatchResult(UUID matchId, boolean participant) { }
+
+    public StartMatchResult startMatch(HttpSession session, String roomId) {
+        synchronized (lock) {
+            GameUser operator = access.require(session);
+            requireCurrentRoomId(operator, roomId);
+            Room room = rooms.findById(operator.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
+            if (!operator.getId().equals(room.getHostUserId())) {
+                throw new GameOperationException(403, "FORBIDDEN", "対戦を開始できるのはホストだけです。");
+            }
+            if (!isRoomState(operator) || !room.getMemberIds().contains(operator.getId())) {
+                throw GameOperationException.invalidState();
+            }
+            if (room.getCurrentMatchId() != null) { throw GameOperationException.invalidState(); }
+            List<GameUser> participants = room.getMemberIds().stream()
+                    .map(id -> users.findById(id).orElseThrow(GameOperationException::invalidState))
+                    .filter(user -> room.getId().equals(user.getCurrentRoomId()))
+                    .filter(user -> user.getState() == UserState.READY).toList();
+            if (participants.size() < 2) { throw GameOperationException.invalidState(); }
+            if (participants.stream().anyMatch(user -> user.getOriginalHand() == null)) {
+                throw new GameOperationException(409, "ORIGINAL_HAND_REQUIRED", "参加者のオリジナル手がありません。");
+            }
+            boolean usernameConflict = participants.stream().map(GameUser::getUsername).distinct().count() != participants.size();
+            boolean handConflict = participants.stream().map(user -> user.getOriginalHand().getName()).distinct().count() != participants.size();
+            List<String> messages = new ArrayList<>();
+            if (usernameConflict) { messages.add("参加者のユーザー名が重複しています。"); }
+            if (handConflict) { messages.add("参加者のオリジナル手の名前が重複しています。"); }
+            if (!messages.isEmpty()) {
+                throw new GameOperationException(409,
+                        usernameConflict ? "READY_USERNAME_CONFLICT" : "READY_HAND_NAME_CONFLICT", messages);
+            }
+            // 委譲中も同じロックを保持し、③一覧と開始時コピーの間に変更を許さない。
+            UUID matchId = matches.startMatch(room, participants);
+            return new StartMatchResult(matchId, operator.getState() == UserState.PLAYING);
         }
     }
 

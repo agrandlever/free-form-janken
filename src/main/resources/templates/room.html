@@ -18,10 +18,14 @@
 <form th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button type="submit">準備取消</button>
 </form>
+<p th:if="${matchRunning}">対戦が進行中です。</p>
+<form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
+<input type="hidden" name="roomId" th:value="${roomId}"><button type="submit">対戦開始</button>
+</form>
 <section><h2>対戦ルール</h2>
 <p>先取勝数：<span th:text="${targetWins}"></span></p>
 <p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
-<form th:if="${isHost}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
+<form th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
 <input type="hidden" th:field="*{roomId}">
 <label for="targetWins">先取勝数</label>
 <input type="text" inputmode="numeric" th:field="*{targetWins}" aria-describedby="targetWins-errors">
@@ -31,5 +35,5 @@
 </form>
 <p>通常のグー・チョキ・パーは連続して選択できます。</p>
 </section>
-<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong></li></ul>
+<h2>参加者一覧</h2><ul><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
 </main></body></html>

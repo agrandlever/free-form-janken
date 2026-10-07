@@ -29,7 +29,7 @@ class OriginalHandServiceTests {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users);
         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
-        roomService = new RoomService(lock, rooms, access, clock, users);
+        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
         auth = new AuthService(lock, users, access, roomService, clock);
         hands = new OriginalHandService(lock, access, rooms);
     }
@@ -226,7 +226,7 @@ class OriginalHandServiceTests {
     }
     @Test void screenCopiesSavedSettingsSeparatelyFromInput() {
         MockHttpSession s=session(false); OriginalHandForm f=form(s,"最初"); hands.save(s,f);
-        ScreenService screens=new ScreenService(lock,access,rooms,users); ScreenService.Screen before=screens.current(s);
+        ScreenService screens=new ScreenService(lock,access,rooms,users,new com.example.janken.store.MatchStore()); ScreenService.Screen before=screens.current(s);
         f.setName("次"); hands.save(s,f);
         assertEquals("最初",before.model().get("originalHandName"));
         assertEquals("最初",((OriginalHandForm)before.model().get("originalHandForm")).getName());

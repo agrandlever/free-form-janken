@@ -24,6 +24,17 @@ public class ScreenRenderer {
         return screen.template();
     }
 
+    public String play(HttpSession session, String matchId, Model model) {
+        ScreenService.Screen screen = screens.current(session);
+        if (!screen.template().equals("play")) { return "redirect:" + screen.path(); }
+        // 無指定なら本人の現在対戦を表示。異なるIDは本人の現在URLへ誘導する。
+        if (matchId != null && !matchId.equals(screen.model().get("matchId"))) {
+            return "redirect:" + screen.path();
+        }
+        model.addAllAttributes(screen.model());
+        return screen.template();
+    }
+
     public String error(HttpSession session, Object form, GameOperationException error, Model model) {
         ScreenService.Screen screen = screens.current(session);
         model.addAllAttributes(screen.model());
