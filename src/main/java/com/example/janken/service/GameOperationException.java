@@ -21,6 +21,14 @@ public class GameOperationException extends RuntimeException {
         this.fieldErrors = Map.copyOf(fieldErrors);
     }
 
+    public List<String> getErrorMessages() {
+        // 複数項目のエラーをすべて表示し、同じメッセージの重複は避ける。
+        java.util.LinkedHashSet<String> messages = new java.util.LinkedHashSet<>();
+        messages.add(getMessage());
+        fieldErrors.values().forEach(messages::addAll);
+        return List.copyOf(messages);
+    }
+
     public int getStatus() { return status; }
     public String getCode() { return code; }
     public Map<String, List<String>> getFieldErrors() { return fieldErrors; }

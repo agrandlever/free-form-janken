@@ -151,7 +151,7 @@ class StageFourWebTests {
         redirect(http(a,"/rooms/enter","roomName="+encoded),"/room");
         String hostHtml=http(a,"/room",null).body(); String id=hiddenRoom(hostHtml);
         assertTrue(hostHtml.contains("共有&lt;部屋&gt;")); assertTrue(hostHtml.contains("（ホスト）"));
-        assertEquals(1,hostHtml.split(id,-1).length-1); // 内部IDは退出用hiddenにだけ現れる。
+        assertEquals(2,hostHtml.split(id,-1).length-1); // 未作成時の内部IDは退出・保存のhiddenにだけ現れる。
         assertFalse(hostHtml.contains("/api/status")); assertFalse(hostHtml.contains("準備完了"));
         redirect(http(b,"/login","username=Member"),"/rooms");
         redirect(http(b,"/rooms/enter","roomName="+encoded),"/room"); assertEquals(id,hiddenRoom(http(b,"/room",null).body()));

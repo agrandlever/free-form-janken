@@ -1,0 +1,248 @@
+第5段階 実装完了報告
+確認日：2026-10-07（日本時間）
+対象：docs/06_実装設計書_簡易自由律じゃんけん.md「第5段階：オリジナル手の作成・更新・削除」
+結論：第5段階完了。対象は①ROOM_NONE・②ROOM_WAITINGのROOMS／ROOMだけです。
+
+1. 作成・変更したファイル
+新規ソース8件：
+・src/main/java/com/example/janken/controller/OriginalHandController.java
+・src/main/java/com/example/janken/form/OriginalHandDeleteForm.java
+・src/main/java/com/example/janken/form/OriginalHandForm.java
+・src/main/java/com/example/janken/service/OriginalHandService.java
+・src/main/resources/static/js/original-hand.js
+・src/main/resources/templates/fragments/original-hand.html
+・src/test/java/com/example/janken/controller/OriginalHandWebTests.java
+・src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+変更ソース7件：
+・src/main/java/com/example/janken/controller/ScreenRenderer.java
+・src/main/java/com/example/janken/service/GameOperationException.java
+・src/main/java/com/example/janken/service/ScreenService.java
+・src/main/resources/static/css/style.css
+・src/main/resources/templates/room.html
+・src/main/resources/templates/rooms.html
+・src/test/java/com/example/janken/controller/StageFourWebTests.java
+追加報告書：reports/stage5-completion.txt（本ファイル）。
+動作確認ログ等はbuild/stage5-*に保存しました。
+
+2. OriginalHandServiceのメソッドと責務
+save(session, form)：サーバーで状態・対象・入力を確認し、新規作成または更新します。
+save(session, form, inputErrors)：Controllerで検出したEnum型変換エラーも受け取り、状態・対象確認後に入力検証へ統合します。
+delete(session, deleteForm)：同じ状態・対象条件を確認し、現在のオリジナル手を削除します。
+private validateTarget：ROOMS／ROOM、状態、所属、roomId、不要なresultMatchIdを確認します。
+private validate：共通の名前整形・文字数判定、禁止名、相性4項目、最低1つLOSEを確認します。
+保存用の検証は削除に適用しません。
+
+3. OriginalHandControllerの実装内容
+POST /original-hand/save、POST /original-hand/deleteだけを追加しました。
+操作者はrequest.getSession(false)をServiceへ渡して識別します。GameUserやStoreは直接操作しません。
+送信userIdを操作者識別に利用しません。許可されたForm項目だけを受け付けます。
+相性の型変換エラーはBindingResult（入力変換の失敗と入力値を保持する仕組み）へ保持し、Serviceの状態・対象確認を先に実行します。
+Service例外をHTTPステータス付きの既存ScreenRendererへ渡します。
+専用GET、専用オリジナル手画面はありません。
+
+4. OriginalHandFormのフィールド
+String name。
+既存HandRelation型のvsRock・vsScissors・vsPaper・vsOriginal。
+String returnPage・roomId・resultMatchId。
+Formは入力値保持用で、最終検証は第4段階と同じ方式でServiceが担当します。
+
+5. OriginalHandDeleteFormのフィールド
+String returnPage・roomId・resultMatchIdだけです。
+nameや相性の検証を削除要求へ適用しません。
+
+6. 名前のstrip・コードポイント判定方法
+第4段階のNameInput.normalize()をそのまま再利用し、この共通クラスは変更していません。
+nullは空として扱い、String.strip()後のvalue.codePointCount(0, value.length())が1～20か判定します。
+保存には成功後のstrip済み値を使用します。再表示用の入力値はstripせず保持します。
+補助平面の絵文字20個を許可し、21個を拒否します。HTMLのmaxlengthで誤拒否しません。
+
+7. 禁止名判定の実装方法
+OriginalHandServiceのSet.of("グー", "チョキ", "パー")に、strip済み名前をcontains()で照合します。
+完全一致だけを拒否し、スーパーグー・グードラゴン・炎のチョキ・パーの騎士等は許可します。
+禁止名エラーはnameのfieldErrorsとerrorMessagesへ、指定された次の文言を設定します。
+オリジナル手の名前に「グー」「チョキ」「パー」は使用できません。
+Form独自の別判定は導入していません。作成・更新・両画面とも同じService判定を使用します。
+LoginForm.username・RoomEnterForm.roomNameには禁止名規則を追加していません。
+
+8. 相性4項目と最低1つLOSEの検証方法
+HandRelationのWIN・LOSE・DRAWだけをControllerで厳密に型変換します。
+未指定・空値・不正値は400となります。Serviceも各項目のnullを確認し、型変換失敗があれば拒否します。
+4項目がすべて指定済みなら、最低1項目がHandRelation.LOSEか確認します。
+WIN／DRAWだけの全16組合せを拒否します。LOSEがどの1項目にあっても許可します。
+複数の項目エラーをまとめて返し、errorMessagesにもすべてのメッセージを表示します。
+
+9. 新規作成時のID生成方法
+全検証成功後、既存手がない場合だけUUID.randomUUID()を使用します。
+検証失敗でOriginalHandを作成・保存しません。
+
+10. 更新時に既存IDを維持する方法
+現在のOriginalHand.getId()を、新しい設定オブジェクトのIDへそのまま引き継ぎます。
+設定更新でUUID.randomUUID()は呼びません。削除後の再作成では新規IDを生成します。
+
+11. 不正更新で既存値を変更しない方法
+名前・相性すべての検証を完了するまで既存OriginalHandを変更しません。
+検証後、既存IDと検証済み全設定を持つOriginalHandを作り、GameUser.originalHandへ一括設定します。
+失敗時は既存オブジェクト自体を維持し、id・name・4相性がすべて元のままであることを確認しました。
+正常更新でも既存IDは維持します。
+
+12. ROOMS／ROOMのreturnPage・roomId検証方法
+ROOMS：ROOM_NONE・currentRoomId=nullを確認し、roomId・resultMatchIdの指定を認めません。
+ROOM：ROOM_WAITING・currentRoomIdありを確認し、要求roomIdがUUIDとして正しく現在所属と一致すること、Roomの存在と本人のmemberIds所属を確認します。resultMatchIdは指定不可です。
+第4段階と同じくUUID.fromString()後に標準UUID文字列との一致も確認し、省略形式を認めません。
+未指定・空・UUID形式不正は400、形式が正しい別roomIdは409です。
+未知のreturnPageは400。不要なIDは未送信または空文字を「指定なし」と扱います。
+旧画面の保存・削除は、退出後も別Roomへの再入室後も409で拒否します。
+
+13. HTTPステータスとエラーコード
+成功：302 → /rooms または /room。
+400 / VALIDATION_ERROR：名前・相性・最低1つLOSE・返却先・必要ID不足／形式不正・不要ID指定。
+401 / LOGIN_REQUIRED：未ログイン保存／削除。ログイン画面を表示し状態は変更しません。
+409 / INVALID_STATE：状態・所属・有効UUIDの対象不一致、未作成からの削除。
+拒否時はerrorCode・errorMessages・fieldErrors・formと通常Modelを再構築します。
+
+14. rooms.htmlの変更内容
+共通オリジナル手フラグメントを組み込みました。
+未作成は「オリジナル手が作成されていません」と作成ボタン、作成済みは現在名と編集ボタンだけを表示します。
+作成済みでは作成導線を出しません。ルーム名入力・入室・ヘッダー・ログアウトを維持しています。
+
+15. room.htmlの変更内容
+同じフラグメントを②へ組み込み、現在のroomIdを保存／削除のhiddenへ設定します。
+ルーム名・コピー・退出・参加者一覧・ホスト表示を維持しました。
+既存room.jsは変更していません。
+
+16. インラインフォーム開閉の実装方法
+両画面で共通original-hand.jsを読み込みます。
+作成／編集ボタンで同じ画面のパネルのhiddenを解除し、名前入力へフォーカスします。
+閉じるではhiddenを設定し、作成／編集ボタンへフォーカスを戻します。
+aria-expanded（開閉状態を支援技術へ伝える属性）も更新します。
+閉じても入力値を消しません。状態確認API・ポーリングは追加していません。
+相性は3種類を選べるselectで表示します。保存・削除は別々のPOSTフォームです。
+
+17. 入力エラー時にフォームを維持する方法
+ScreenServiceが共有ロック内で現在の通常Modelと保存済み手の表示コピーを再作成します。
+ScreenRendererが再表示可能な同じ画面ではoriginalHandFormOpen=trueにし、入力名・相性を別の表示Formへコピーします。
+型変換できなかった相性も入力値として保持し、同じselectへ選択済みの不正値を表示します。
+genericなformには送信値をそのまま残し、表示Formのhidden対象だけ現在の検証済みIDに補正します。
+fieldErrorsとerrorMessagesを開いたパネル内に表示します。
+保存済み手名は入力中の名前で置き換えません。旧ルーム・不正returnPage等は現在の正規画面でエラー表示します。
+
+18. GameStateLockで保護した範囲
+save／deleteの全処理を、第3段階からの同じ共有GameStateLockのsynchronized内で実行します。
+セッションユーザー取得→現在状態→所属・対象・返却先→入力検証→現在手取得→ID引継ぎ／生成→一括保存または削除までロックを解放しません。
+退出等が先行していれば、ロック取得後の最新状態で拒否します。
+画面のアクセス確認と本人用表示コピー生成も既存ScreenServiceの同じロック内です。
+Storeごとの独自ロックは追加していません。
+
+19. 保存／削除と退出の競合テスト結果
+同時開始の保存vs退出を20回、削除vs退出を20回、計40回確認し全成功しました。
+順序によってオリジナル手操作は成功または409となり、退出は成功します。
+退出後は必ず①・currentRoomId=null・空Room削除となり、手の部分更新やID変更はありません。
+別途2件で共有ロックをテスト側が保持し、操作が待機することと、先行退出後の最新状態を確認して409になることを検証しました。
+旧ルーム要求・再入室後の別roomIdによる保存／削除拒否も確認しています。
+
+20. その他の第5段階テスト内容と件数
+OriginalHandServiceTests：195件成功（競合40回・共有ロック確認2件を含む）。
+OriginalHandWebTests：63件成功。新規合計258件。
+既存132件と合わせて全390件成功、失敗0・エラー0・スキップ0。
+主要内容：①／②作成・更新・削除、未作成削除、ID維持、不正更新の全値維持、null・空文字・半角／タブ／全角空白、strip保存、1／20／21コードポイント・絵文字、禁止3名と前後空白・部分一致許可、相性4項目必須・許可値・LOSE、返却先・対象IDの400／409、未ログイン、操作者userIdの切替不可、画面ModelとHTML、入力・不正Enum値保持、現在保存値表示の独立性。
+Nodeの標準vmで実際のJavaScriptを読み、開く・閉じる・再展開時の入力維持・既存コピー成功・既存コピー失敗の5項目も別途成功しました。
+TC-013・014・020・092・093・112・113・116・118～120・129等の第5段階で実行可能な部分を確認しました。
+③との正式統合・対戦・結果連携のテストは行っていません。
+
+21. compileJava結果
+Gradle Wrapper compileJava：BUILD SUCCESSFUL、終了コード0。
+最終ログ：build/stage5-compile-final.log。
+初回の標準Gradleユーザーホームでは配布物の取得がネットワーク制限で失敗したため、既存のプロジェクト内.gradle-user-homeキャッシュを指定し、--offlineで成功しました。
+Java 21／Spring Boot 4.1.1の既存設定を変更していません。
+
+22. test結果
+Gradle Wrapper test：最終BUILD SUCCESSFUL、終了コード0。
+全390件、失敗0・エラー0・スキップ0。
+最終ログ：build/stage5-verified-test.log。
+HTMLレポート：build/reports/tests/test/index.html。
+最初のWebテストで同じ相性パラメーターを二重送信していたテスト側の問題を修正済みです。
+最終確認後に実装ソースは変更していません。
+
+23. Spring Boot起動結果
+実HTTP統合テストのRANDOM_PORTで実際のSpring Boot／Tomcatを起動し、正常終了を確認しました。
+さらにGradle Wrapper bootRunで通常起動し、18085番ポートで起動成功しました。
+通常起動アプリPID27308は確認後に終了し、PID不存在とHTTP接続不可を確認しました。
+最終統合テストのプロセスPID12512も終了済みです。Gradle Daemonはアプリケーションサーバーとは別です。
+起動ログ：build/stage5-boot.log。
+
+24. ブラウザー／統合で確認した基本フロー
+ブラウザーUIの手動操作は行わず、実HTTP統合テストと通常起動サーバーへのHTTP要求で確認しました。
+ログイン→①で作成→編集→削除→Room入室→②で作成→編集→削除→退出→ログアウトが成功しました。
+両画面で禁止名400時に同じ画面・開いたフォーム・元の入力値・保存済み表示値・エラー文言を確認しました。
+実HTTP統合テストでは不正な相性の選択値保持、HTMLエスケープ、作成／編集導線切替も確認しました。
+開閉・コピーのJavaScriptは前記vmで成功／失敗処理を確認しました。実ブラウザーのクリップボード権限UI自体は未確認です。
+通常起動確認結果：build/stage5-smoke-results.txt。
+
+25. 第4段階までの機能を壊していないこと
+既存132件も全成功しました。ログイン・入室・退出・ログアウト・満員・ホスト移譲・Room削除・文字列共通判定・既存競合テストを維持しました。
+StageFourWebTestsの内部roomId出現数だけ、退出hiddenに加え保存hiddenが増えたため1→2へ適合させました。未作成時の削除フォームは非表示です。
+room.js、AuthService、RoomService、NameInput、Domain、Store、GameStateLock、Gradle設定は変更していません。
+
+26. docs/を変更していないこと
+6設計書を参照し、git diff --name-only -- docsが空であることを確認しました。
+docs/の追加・編集・削除はありません。
+
+27. bin/の生成物変化
+開始時のgit statusはクリーンでした。最終では追加11件・更新9件です。
+・ M bin/main/com/example/janken/controller/ScreenRenderer.class
+・ M bin/main/com/example/janken/service/GameOperationException.class
+・ M bin/main/com/example/janken/service/ScreenService$MemberView.class
+・ M bin/main/com/example/janken/service/ScreenService$Screen.class
+・ M bin/main/com/example/janken/service/ScreenService.class
+・ M bin/main/static/css/style.css
+・ M bin/main/templates/room.html
+・ M bin/main/templates/rooms.html
+・ M bin/test/com/example/janken/controller/StageFourWebTests.class
+・?? bin/main/com/example/janken/controller/OriginalHandController$1.class
+・?? bin/main/com/example/janken/controller/OriginalHandController.class
+・?? bin/main/com/example/janken/form/OriginalHandDeleteForm.class
+・?? bin/main/com/example/janken/form/OriginalHandForm.class
+・?? bin/main/com/example/janken/service/OriginalHandService.class
+・?? bin/main/static/js/original-hand.js
+・?? bin/main/templates/fragments/original-hand.html
+・?? bin/test/com/example/janken/controller/OriginalHandWebTests$1.class
+・?? bin/test/com/example/janken/controller/OriginalHandWebTests$FixedTime.class
+・?? bin/test/com/example/janken/controller/OriginalHandWebTests.class
+・?? bin/test/com/example/janken/service/OriginalHandServiceTests.class
+追加はclass9件・JavaScript1件・HTML1件、更新はclass6件・CSS1件・HTML2件です。
+resources生成物5件は対応するsrc/main/resourcesの内容と一致することを確認しました。
+生成した具体的なIDEプロセスは特定していません。bin/には確認のための読み取りのみ行い、意図的な編集・削除はしていません。
+.gitignoreも変更していません。
+
+28. MATCH_RESULT連携を実装していないこと
+resultMatchIdはFormに保持するだけで、ROOMS／ROOMからの不要指定を拒否します。
+MatchResultStore・MatchResultService・MatchResultSnapshot・/match-resultは追加していません。
+MATCH_RESULTの操作・返却先・結果ID維持・関連テストは実装していません。
+
+29. 第6段階以降を実装していないこと
+準備完了・取消・ルール変更・対戦開始・③の画面統合・対戦関連Domain／Store／Service・状態確認API・ポーリング・Scheduler・play／round-result／match-result画面を追加していません。
+第2段階までに存在したEnum・Domainのフィールドは変更していません。
+今回の対象は①・②だけです。完了後も第6段階へ進んでいません。
+
+30. git diffまたは変更概要
+src/：新規8件・既存変更7件。既存変更分のgit diff --statは80行追加・7行削除です。
+新規ファイルは未追跡のため通常git diff --statには含まれません。
+加えて本報告書と前記bin生成物の変化があります。コミット・ステージはしていません。
+git diff --checkは成功し、空白エラーはありません。
+docs/・.gitignore・既存Domain／Store／ロック／ビルド設定は差分なしです。
+
+31. 設計書に明記されていない部分で行った実装判断
+・共通UIはtemplates/fragments/original-hand.htmlへ切り出しました。表示専用の断片であり、専用画面やGETではありません。
+・開閉は共通original-hand.jsにまとめ、既存コピー処理のroom.jsをそのまま維持しました。
+・相性はselectで3種類を選べる構成としました。クライアント側の制約でサーバー検証を置き換えません。
+・Formは第4段階同様に入力保持用とし、Serviceで名前・相性・状態の最終検証を行います。
+・型変換できない相性値を既定値へ変えず、BindingResultと不正値用optionで保持・再表示します。
+・更新は既存IDを持つ新しいOriginalHandを検証後に一括設定し、既存可変オブジェクトへの途中変更を避けます。
+・表示用Form・保存済み名前・genericな要求Formを分け、画面hiddenは現在の検証済みIDに補正します。
+・複数項目の入力不正はまとめて返し、GameOperationExceptionのgetErrorMessages()で全項目メッセージを重複なしで表示します。
+・ROOMの対象検証では現在Roomの実在とmemberIdsへの所属も確認します。
+・ROOMS／ROOMの不要IDはnull・空文字なら指定なし、それ以外は400とします。ROOM必須roomIdは空文字を400とします。
+・正常POSTの返却先はServiceが検証済みreturnPageから固定パスで返し、任意URLへリダイレクトさせません。
+・通常起動の確認は既存8080との競合を避けるため、確認時だけ18085を指定しました。application.propertiesは変更していません。
+
+最終判定：第5段階完了

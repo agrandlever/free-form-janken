@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"><body>
+<section th:fragment="editor" class="original-hand">
+<h2>オリジナル手</h2>
+<p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
+<p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
+<button id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
+        th:text="${hasOriginalHand ? 'オリジナル手を編集' : 'オリジナル手を作成'}"></button>
+<div id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
+<section th:replace="~{login :: errors}"></section>
+<form method="post" th:action="@{/original-hand/save}" th:object="${originalHandForm}">
+<input id="original-save-returnPage" type="hidden" th:field="*{returnPage}">
+<input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
+<label for="original-hand-name">名前（前後の空白を除いて1～20文字）</label>
+<input id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-errors">
+<ul id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
+<label for="vsRock">グーへの相性</label>
+<select th:field="*{vsRock}" aria-describedby="vsRock-errors">
+<option value="">選択してください</option>
+<option th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsRock')}" th:value="${originalHandRejectedValues['vsRock']}" th:text="${originalHandRejectedValues['vsRock']}"></option>
+<option value="WIN">勝ち</option><option value="LOSE">負け</option><option value="DRAW">引き分け</option>
+</select>
+<ul id="vsRock-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsRock']}" th:text="${message}"></li></ul>
+<label for="vsScissors">チョキへの相性</label>
+<select th:field="*{vsScissors}" aria-describedby="vsScissors-errors">
+<option value="">選択してください</option>
+<option th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsScissors')}" th:value="${originalHandRejectedValues['vsScissors']}" th:text="${originalHandRejectedValues['vsScissors']}"></option>
+<option value="WIN">勝ち</option><option value="LOSE">負け</option><option value="DRAW">引き分け</option>
+</select>
+<ul id="vsScissors-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsScissors']}" th:text="${message}"></li></ul>
+<label for="vsPaper">パーへの相性</label>
+<select th:field="*{vsPaper}" aria-describedby="vsPaper-errors">
+<option value="">選択してください</option>
+<option th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsPaper')}" th:value="${originalHandRejectedValues['vsPaper']}" th:text="${originalHandRejectedValues['vsPaper']}"></option>
+<option value="WIN">勝ち</option><option value="LOSE">負け</option><option value="DRAW">引き分け</option>
+</select>
+<ul id="vsPaper-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsPaper']}" th:text="${message}"></li></ul>
+<label for="vsOriginal">他のオリジナル手への相性</label>
+<select th:field="*{vsOriginal}" aria-describedby="vsOriginal-errors">
+<option value="">選択してください</option>
+<option th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsOriginal')}" th:value="${originalHandRejectedValues['vsOriginal']}" th:text="${originalHandRejectedValues['vsOriginal']}"></option>
+<option value="WIN">勝ち</option><option value="LOSE">負け</option><option value="DRAW">引き分け</option>
+</select>
+<ul id="vsOriginal-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsOriginal']}" th:text="${message}"></li></ul>
+<p>相性4項目のうち最低1項目は負けにしてください。</p>
+<button type="submit">決定</button>
+<button id="close-original-hand" type="button">閉じる</button>
+</form>
+<form th:if="${hasOriginalHand}" method="post" th:action="@{/original-hand/delete}" th:object="${originalHandDeleteForm}">
+<input id="original-delete-returnPage" type="hidden" th:field="*{returnPage}">
+<input th:if="${originalHandDeleteForm.roomId != null}" id="original-delete-roomId" type="hidden" th:field="*{roomId}">
+<button type="submit">オリジナル手を削除</button>
+</form>
+</div>
+</section>
+</body></html>

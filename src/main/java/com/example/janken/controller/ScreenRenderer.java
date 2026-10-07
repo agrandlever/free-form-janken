@@ -1,12 +1,13 @@
 package com.example.janken.controller;
 
 import com.example.janken.form.LoginForm;
+import com.example.janken.form.OriginalHandForm;
+import com.example.janken.form.OriginalHandDeleteForm;
 import com.example.janken.form.RoomEnterForm;
 import com.example.janken.form.RoomActionForm;
 import com.example.janken.service.GameOperationException;
 import com.example.janken.service.ScreenService;
 import jakarta.servlet.http.HttpSession;
-import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
@@ -26,7 +27,7 @@ public class ScreenRenderer {
         ScreenService.Screen screen = screens.current(session);
         model.addAllAttributes(screen.model());
         model.addAttribute("errorCode", error.getCode());
-        model.addAttribute("errorMessages", List.of(error.getMessage()));
+        model.addAttribute("errorMessages", error.getErrorMessages());
         model.addAttribute("fieldErrors", error.getFieldErrors());
         model.addAttribute("form", form);
         if (screen.template().equals("login") && form instanceof LoginForm) {
@@ -38,6 +39,36 @@ public class ScreenRenderer {
             // 古い所属IDはhiddenへ再利用せず、現在の検証済みIDを使う。
             model.addAttribute("roomActionForm", form);
         }
+        if (form instanceof OriginalHandForm hand && canRedisplay(screen, hand.getReturnPage(), hand.getRoomId())) {
+            OriginalHandForm current = (OriginalHandForm) screen.model().get("originalHandForm");
+            // 入力値は維持し、hiddenの対象は現在画面の検証済み値を使う。
+            OriginalHandForm display = new OriginalHandForm();
+            display.setName(hand.getName());
+            display.setVsRock(hand.getVsRock());
+            display.setVsScissors(hand.getVsScissors());
+            display.setVsPaper(hand.getVsPaper());
+            display.setVsOriginal(hand.getVsOriginal());
+            display.setReturnPage(current.getReturnPage());
+            display.setRoomId(current.getRoomId());
+            model.addAttribute("originalHandForm", display);
+            model.addAttribute("originalHandFormOpen", true);
+        } else if (form instanceof OriginalHandDeleteForm delete
+                && canRedisplay(screen, delete.getReturnPage(), delete.getRoomId())) {
+            model.addAttribute("originalHandFormOpen", true);
+        }
         return screen.template();
+    }
+
+    private boolean canRedisplay(ScreenService.Screen screen, String returnPage, String roomId) {
+        if ("ROOMS".equals(returnPage)) { return screen.template().equals("rooms"); }
+        if (!"ROOM".equals(returnPage) || !screen.template().equals("room")) { return false; }
+        try {
+            java.util.UUID target = java.util.UUID.fromString(roomId == null ? "" : roomId);
+            if (!target.toString().equalsIgnoreCase(roomId)) { return true; }
+            return target.toString().equals(screen.model().get("roomId"));
+        } catch (IllegalArgumentException ex) {
+            // 対象の形式エラーは現在ルームで再表示する。別ルームUUIDは再利用しない。
+            return true;
+        }
     }
 }

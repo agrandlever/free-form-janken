@@ -1,6 +1,9 @@
 package com.example.janken.service;
 
 import com.example.janken.domain.GameUser;
+import com.example.janken.domain.OriginalHand;
+import com.example.janken.form.OriginalHandForm;
+import com.example.janken.form.OriginalHandDeleteForm;
 import com.example.janken.domain.Room;
 import com.example.janken.domain.enums.UserState;
 import com.example.janken.form.LoginForm;
@@ -45,6 +48,7 @@ public class ScreenService {
             model.put("userState", user.getState());
             if (user.getState() == UserState.ROOM_NONE) {
                 model.put("roomEnterForm", new RoomEnterForm());
+                originalHandModel(user, "ROOMS", null, model);
                 return screen("/rooms", "rooms", model);
             }
             if (user.getState() != UserState.ROOM_WAITING || user.getCurrentRoomId() == null) {
@@ -62,8 +66,32 @@ public class ScreenService {
             RoomActionForm form = new RoomActionForm();
             form.setRoomId(room.getId().toString());
             model.put("roomActionForm", form);
+            originalHandModel(user, "ROOM", room.getId().toString(), model);
             return screen("/room", "room", model);
         }
+    }
+
+    private void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
+        OriginalHand hand = user.getOriginalHand();
+        OriginalHandForm form = new OriginalHandForm();
+        form.setReturnPage(returnPage);
+        form.setRoomId(roomId);
+        if (hand != null) {
+            // 表示中にDomainが更新されても変化しない、本人用のコピーを作る。
+            form.setName(hand.getName());
+            form.setVsRock(hand.getVsRock());
+            form.setVsScissors(hand.getVsScissors());
+            form.setVsPaper(hand.getVsPaper());
+            form.setVsOriginal(hand.getVsOriginal());
+        }
+        OriginalHandDeleteForm delete = new OriginalHandDeleteForm();
+        delete.setReturnPage(returnPage);
+        delete.setRoomId(roomId);
+        model.put("hasOriginalHand", hand != null);
+        model.put("originalHandName", hand == null ? "" : hand.getName());
+        model.put("originalHandForm", form);
+        model.put("originalHandDeleteForm", delete);
+        model.put("originalHandFormOpen", false);
     }
 
     private Screen screen(String path, String template, Map<String, Object> model) {
