@@ -95,6 +95,8 @@ public class ScreenService {
 
     public record ParticipantView(String username, int score) { }
 
+    public record OriginalHandOption(String originalHandId, String name) { }
+
     private Screen playScreen(GameUser user, Map<String, Object> model) {
         if (user.getCurrentRoomId() == null) { throw GameOperationException.invalidState(); }
         Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
@@ -119,6 +121,12 @@ public class ScreenService {
         // 他人の未公開相性や変更可能なDomainを表示用Modelへ渡さない。
         model.put("originalHandNames", match.getOriginalHands().stream()
                 .map(OriginalHandSnapshot::getName).toList());
+        model.put("originalHandOptions", match.getOriginalHands().stream()
+                .map(h -> new OriginalHandOption(h.getHandId().toString(), h.getName())).toList());
+        // 本人の表示名だけをコピーし、他参加者のselectionや相性は公開しない。
+        var self = match.getCurrentRound().getSelections().get(user.getId());
+        model.put("selfHandConfirmed", self != null);
+        model.put("selfSelectedHandName", self == null ? null : RoundJudgeService.handName(self, match.getOriginalHands()));
         return screen("/play?matchId=" + match.getId(), "play", model);
     }
 

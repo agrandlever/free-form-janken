@@ -1,0 +1,27 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :resolveMainClassName UP-TO-DATE
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-10-07T12:50:19.589+09:00  INFO 7740 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Starting JankenApplication using Java 21.0.11 with PID 7740 (C:\exPractice\free-form-janken\build\classes\java\main started by CodexSandboxOffline in C:\exPractice\free-form-janken)
+2026-10-07T12:50:19.592+09:00  INFO 7740 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-07T12:50:28.482+09:00  INFO 7740 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 18089 (http)
+2026-10-07T12:50:28.500+09:00  INFO 7740 --- [free-form-janken] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-07T12:50:28.501+09:00  INFO 7740 --- [free-form-janken] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-10-07T12:50:28.547+09:00  INFO 7740 --- [free-form-janken] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 8908 ms
+2026-10-07T12:50:28.897+09:00  INFO 7740 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18089 (http) with context path '/'
+2026-10-07T12:50:28.902+09:00  INFO 7740 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Started JankenApplication in 9.757 seconds (process running for 10.079)
+2026-10-07T12:50:29.149+09:00  INFO 7740 --- [free-form-janken] [io-18089-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-07T12:50:29.150+09:00  INFO 7740 --- [free-form-janken] [io-18089-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-07T12:50:29.151+09:00  INFO 7740 --- [free-form-janken] [io-18089-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

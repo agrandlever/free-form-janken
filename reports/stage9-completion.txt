@@ -1,0 +1,180 @@
+第9段階「手の確定・勝敗判定・ラウンド確定」完了報告
+確認日：2026-10-07（日本時間）
+判定：第9段階完了。第10段階以降には進んでいません。
+
+1. 作成・変更したファイル
+新規：
+・src/main/java/com/example/janken/form/HandSelectionForm.java
+・src/main/java/com/example/janken/service/RoundJudgeService.java
+・src/test/java/com/example/janken/service/RoundJudgeServiceTests.java
+・src/test/java/com/example/janken/service/StageNineServiceTests.java
+・src/test/java/com/example/janken/controller/StageNineWebTests.java
+変更：
+・src/main/java/com/example/janken/controller/GameController.java
+・src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+・src/main/java/com/example/janken/service/MatchService.java
+・src/main/java/com/example/janken/service/ScreenService.java
+・src/main/resources/templates/play.html
+・src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+・src/test/java/com/example/janken/service/StageFourServiceTests.java
+・src/test/java/com/example/janken/service/StageSixServiceTests.java
+・src/test/java/com/example/janken/service/StageEightServiceTests.java
+・src/test/java/com/example/janken/controller/StageEightWebTests.java
+既存ServiceテストはMatchServiceのコンストラクター依存を更新。既存WebテストはPOST /play未実装（405）・フォームなしという段階限定の期待だけを更新。テスト削除なし。
+確認記録：reports/stage9-completion.txt、stage9-test.log、stage9-boot.log、stage9-boot-error.log、stage9-tests.json、stage9-diff.txt、stage9-changes.txt。
+
+2. HandSelectionFormのフィールド
+matchId、roundNumber、type、normalHand、originalHandId。すべて生のStringとして受け取ります。確定したDomainの型はUUID、int、SelectedHandType、NormalHandType、UUIDです。Bean ValidationやEnumへの早期変換で409を400へ変えないためです。
+
+3. POST /playのController処理
+GameControllerがFormと現在セッションをMatchService.submitHand()へ渡し、検証済み対象IDを受け取って302 /play?matchId=対象IDへ返します。Domain・StoreをControllerで更新しません。
+
+4. submitHand()の検証順序
+同じGameStateLock内で認証・PLAYING → 必須ID/番号の形式読み取り → currentRoomId/Room存在 → Room.currentMatchId一致 → MatchStore取得 → GameMatch.id一致 → 本人active参加者 → currentRound存在 → roundNumber一致 → SELECTING_HAND → 本人未確定 → type/値の組み合わせ → 使用可能手 → HandSelectionコピー登録 → 全active確定確認 → 全員確定ならcompleteRound。
+形式を読み取った後の対象・状態・未確定確認の順序は指定どおりです。手の値にはそれ以前に触れません。
+
+5. matchId・roundNumber検証
+matchId必須、UUID.fromStringと正規表記の大文字小文字を除く一致でUUIDの短縮形等も拒否。roundNumber必須、整数文字列表現を検証後Integer.parseInt、1以上。欠損・形式不正・整数範囲外は400/VALIDATION_ERROR。形式が有効な古いID・番号は409/INVALID_STATE。現在値への置換なし。
+
+6. 二重確定の409優先
+selections.containsKey(本人ID)をvalidateHandより先に確認。同手・別手・不正type等を409/INVALID_STATEで拒否。putまで進まず既存選択の参照・値を維持します。ROUND_RESULT後の再送もstate確認で409です。
+
+7. NORMAL検証
+type=NORMAL、normalHand=ROCK/SCISSORS/PAPERのみ、originalHandIdはnullまたは空文字。他の値や組み合わせは400。
+
+8. ORIGINAL検証
+type=ORIGINAL、normalHandはnullまたは空文字、originalHandIdは必須の正しいUUID、GameMatch.originalHands内のhandIdに存在することを確認。不存在・形式不正・混在は400、選択登録なし。
+
+9. 全参加者のOriginalHand利用
+所有者による絞り込みを行わず、開始時Snapshot一覧全体からIDを検索。現在のGameUser.originalHandは参照しません。他人が所有する手も選択可能です。
+
+10. HandSelectionコピー
+検証済み値からHandSelectionを生成し、登録時にもnew HandSelection(type, normalHand, originalHandId)で別インスタンスを作成。Formへの参照を保存しません。
+
+11. RoundJudgeService責務
+入力からRoundResultを計算するだけ。score、previousHand、状態、履歴、期限、Storeの更新なし。ClockもStoreも注入しません。
+
+12. 通常手同士
+同手DRAW。ROCK>SCISSORS、SCISSORS>PAPER、PAPER>ROCKをswitchで判定。逆方向はLOSE。
+
+13. Original vs Normal
+SnapshotのvsRock/vsScissors/vsPaperを対応する通常手で選択。通常手から比較する場合はWIN/LOSEを反転、DRAWは維持。
+
+14. 同一Original
+originalHandId（Snapshot.handId）一致でDRAW。名前による同一判定なし。
+
+15. 異なるOriginalの9組み合わせ
+vsOriginalをWIN=1、DRAW=0、LOSE=-1として大小比較。
+WIN/LOSE→A勝ち、LOSE/WIN→B勝ち、WIN/WIN→引分、LOSE/LOSE→引分、DRAW/WIN→B勝ち、DRAW/LOSE→A勝ち、WIN/DRAW→A勝ち、LOSE/DRAW→B勝ち、DRAW/DRAW→引分。
+9通りを同名・異IDのSnapshotで独立したパラメーターテストとして確認。
+
+16. 多人数wonRound
+本人以外のすべてのactive参加者と比較。hasWin=trueかつhasLoss=falseだけwonRound。複数勝者・勝者なしを許容。
+
+17. RoundResultEntryのhandName
+通常手はグー/チョキ/パー、Originalは開始時Snapshot.name。userId、開始時username、handName、wonRoundだけを結果へ格納。累積scoreなし。
+
+18. completeRound()の検証
+SELECTING_HAND、currentRound存在、active>=2、全activeの選択存在を最初に確認。不成立ならClockや判定を呼ばず何も変更しません。確定後はROUND_RESULTのため再呼び出しも無更新。
+
+19. decidedAt取得
+共有ロック内でclock.instant()を1回だけ呼ぶ。同じInstantをjudgeRound引数・RoundResult・transitionAt計算に使用。Mockitoで1回の取得を検証。
+
+20. score加算箇所
+MatchService.completeRound()内だけ。返却EntryのwonRound=trueのparticipantに1加算。勝者1人につき1ラウンド最大1。
+
+21. previousHand
+全activeについて本人の確定HandSelectionを別インスタンスへコピー。勝者・敗者・引分・勝者なしすべて更新。selection側を変更してもコピー不変であることを確認。
+
+22. roundHistory
+第7段階の不変RoundResultを1回add。状態検証により再判定・再追加を拒止。累積scoreは追加しません。
+
+23. pendingEndType
+score加算後のactiveでtargetWins到達者があればNORMAL。未到達ならnull。正式endTypeは変更しません。
+
+24. pendingWinnerIds
+到達者全員のuserId一覧を作成し、既存Listをclear後addAllして値をコピー。未到達は空。正式winnerIdsは変更しません。
+
+25. transitionAt
+decidedAt+10秒（ラウンド勝者あり/最終到達あり）、+5秒（勝者なし・未到達）。重複completeRoundで上書きなし。時刻を進めても自動処理しません。
+
+26. play.html手選択UI
+通常手3つと全Snapshot名の送信ボタンを表示。各フォームに現在のmatchId・roundNumber、type、対象手をhiddenで保持。Original内部IDは制御用hiddenだけで利用。相性表示なし。
+
+27. 本人確定後表示
+ScreenServiceがロック内で本人selectionだけのhandNameをコピー。確定済みの手名と他参加者待ちを表示し、全手選択ボタンをdisabledにします。再読み込みで反映。ポーリングなし。
+
+28. 他人の手非公開
+表示用Modelへparticipant名/score、OriginalHandOption(ID/name)、本人確定フラグ/本人手名だけをコピー。他人のselectionやselectedHand、Original相性、Domain参照を渡しません。実HTTPでHTML非公開を確認。
+
+29. 同一Original連続制限
+未実装。preventConsecutiveSameOriginalHandは開始時値を維持しますがpreviousHandとの比較・拒否なし。設定ONで同じ手を再び選べることをテスト。連続制限によるボタン無効化なし。
+
+30. GameStateLockの保護範囲
+認証・対象確認 → 状態・未確定確認 → 手検証 → コピー登録 → 全員確認 → Judge → score → previousHand → history → pending → transitionAt → ROUND_RESULTまで同じ共有ロック。completeRoundのsynchronizedは同じオブジェクトで再入可能。別ロックなし。Judge実行時のThread.holdsLockも検証。
+
+31. RoundJudgeService単体テスト
+27件。通常手9通り、Original vs Normal双方向3件、同一ID1件、異なるOriginal9通り、多人数の単一/複数/勝者なし4件、Snapshot名1件。多人数試験でscore・previousHand・Store内容/参照・状態・履歴・期限の不変性と不変Entryを確認。
+
+32. submitHand入力テスト
+正常通常3手、全Snapshot（他人含む）、設定ON・直前同じOriginal、Form変更からの独立性、欠損/不正/混在/不存在、ID形式・番号の欠損/不正/範囲外、古い対象、非active/非参加者、Room/Match/Round欠損、ID不一致、state不一致、二重確定の409優先、PLAYING以外・未認証。Controller経由も確認。
+
+33. completeRoundテスト
+未確定・active人数不足・Round欠損、2人/3人、単一/複数/勝者なし、勝者だけ加算、全activeコピー更新、inactive除外・記録維持、不変結果、history1件、ROUND_RESULT、+5/+10、単一/複数target到達、累積scoreからの到達、未到達のpending解除、再実行不変、Clock1回、共有ロック、テストデータによる複数Roundを確認。
+
+34. 二重送信・同時確定
+Serviceで同一ユーザーの異なる手の競合、最後の2人の同時送信、最後の1手と重複送信、completeRound同時呼び出し。実HTTPでも同一ユーザー/最後の2人/最後と重複を確認。1成功+1拒否または参加者2人の成功、選択上書きなし、Judge1回、score1回、previousHandコピー、結果/履歴1件、期限固定を確認。すべて成功。
+
+35. 新規テスト件数
+101件：RoundJudgeServiceTests 27、StageNineServiceTests 64、StageNineWebTests 10。既存テストは削除なし。
+
+36. compileJava
+Gradle Wrapperで成功。既存キャッシュを利用し、.\gradlew.bat --gradle-user-home .gradle-user-home --offline compileJava を実行。BUILD SUCCESSFUL。
+最初の標準キャッシュでの実行は配布ファイル取得時にネットワーク制限で失敗したため、既存プロジェクト内キャッシュへ切り替えました。
+
+37. test
+.\gradlew.bat --gradle-user-home .gradle-user-home --offline test が成功。全629件、失敗0、エラー0、スキップ0。最終ログstage9-test.log、クラス別件数stage9-tests.json。
+
+38. 第0～8段階回帰
+全既存528件成功。指定の514件に加え、前回stage8-reviewで追加済み14件があります（reports/stage8-review-completion.txtにも528件の記録）。Stage8のフォームなし・POST405の段階限定期待を今回の仕様へ更新した以外は、依存追加に伴うコンストラクター呼び出し更新のみ。対戦開始・Snapshot固定・READY・ルール・OriginalHand・④アクセス制御が成功。
+
+39. Spring Boot起動
+Gradle Wrapper bootRunでJava21/Spring Boot4.1.1がポート18089で正常起動。Started JankenApplicationとHTTP GET / 200を確認。確認後に今回起動したアプリPID7740を停止、プロセス不存在確認。実HTTP統合テストのランダムポートサーバーもテスト終了時に停止済み。
+
+40. HTTP基本確認
+SpringBootTest(RANDOM_PORT)の実HTTPでlogin→入室→Original作成→READY→開始→各手送信302→二重送信409→最後の手でROUND_RESULT、score/結果/履歴/transitionAtの正しさを確認。UIの本人表示・全ボタン無効化・他人非公開・他人のOriginal選択・入力400/古い対象409も確認。
+通常bootRunは起動/GET200の基本確認。内部score/historyはテスト内Storeで同じロックを使って確認し、検査用HTTP APIは追加していません。
+
+41. round-result画面
+未実装。round-result.html、/round-resultの仮API・仮画面なし。ROUND_RESULT後のGET /play表示は既存のSELECTING_HAND限定実装のままで、第11段階の統合対象です。最後のPOSTの302と内部確定状態までを検証しています。
+ROUND_RESULT後の不正POSTはServiceで409。現在画面の再表示が未導入状態で失敗する場合のみHtmlErrorHandlerが元HTTPエラーを維持して空応答を返します。新しい結果画面仕様は定義していません。
+
+42. advanceMatch等
+advanceMatch、finishNormal、abortMatch、次Round生成、手動次ラウンドAPI/ボタン、終了処理、Snapshot生成/保存を追加していません。stubもなし。
+
+43. docs変更なし
+git diff --name-only -- docs .gitignore は空。6設計書と.gitignoreを変更していません。
+
+44. bin生成物
+意図的な編集・削除なし。IDEによる同期で既存10ファイルが更新、新規7ファイルが生成。
+更新：GameController.class、HtmlErrorHandler.class、MatchService.class、ScreenService.class、play.html、StageEightWebTests.class、OriginalHandServiceTests.class、StageEightServiceTests.class、StageFourServiceTests.class、StageSixServiceTests.class。
+追加：HandSelectionForm.class、RoundJudgeService.class、ScreenService$OriginalHandOption.class、StageNineWebTests.class、StageNineWebTests$1.class、RoundJudgeServiceTests.class、StageNineServiceTests.class。
+パス詳細はstage9-changes.txt。
+
+45. 第10段階以降未実装
+連続使用制限/そのUI、結果・履歴UI、観戦、状態API、ポーリング、自動遷移、Scheduler/DisconnectMonitor、④途中退出統合、対戦終了は追加していません。ラウンド確定後はROUND_RESULTで停止。
+
+46. git diff/変更概要
+stage9-diff.txtに追跡済みsrcのdiffを保存。stage9-changes.txtに新規ソース・binを含む変更一覧。主変更は手確定・判定・ラウンド確定・本人限定表示、必要な単体/HTTPテスト。git diff --checkの問題なし。新規ファイルの内容は各ソースを参照。
+
+47. シグネチャ等が固定されていない部分の判断
+・FormをStringで保持し、業務順序の後にEnum/UUIDへ変換。
+・submitHand(HttpSession, HandSelectionForm)は検証したUUIDを返し、Controllerのリダイレクトに利用。
+・completeRound(GameMatch)はpublic void、同じ共有ロックを自ら取得し、不成立・重複時は無更新でreturn。
+・judgeRoundはRoundResultに番号を設定するため先頭にint roundNumberを追加。入力はactive参加者List、選択Map、Snapshot List、decidedAt。
+・compareHandsは単体テスト可能なpackage-private。手名変換は判定/本人表示で共用するstatic handName。
+・表示用OriginalHandOptionはID/nameだけのrecord（変更不可の値の構造）。DomainはModelへ渡さない。
+・空の不要手フィールドは未指定null/空文字だけを受け付け、空白は値として拒否。
+・第11段階の結果画面未導入中でも重複POSTの409を失わないよう、再表示不能な/playの業務エラーだけHTTPコードを維持。
+
+第9段階完了

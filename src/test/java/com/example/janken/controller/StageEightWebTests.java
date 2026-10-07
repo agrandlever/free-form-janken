@@ -118,7 +118,7 @@ class StageEightWebTests {
                 assertTrue(html.contains("先取勝数：<span>5</span>")); assertTrue(html.contains("現在の勝数：<span>0</span>"));
                 assertTrue(html.contains("あなたは対戦参加者です。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
                 assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("ON"));
-                for(var forbidden:List.of("action=\"/play\"","/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
+                for(var forbidden:List.of("/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
                     assertFalse(html.contains(forbidden),forbidden);
                 }
             }
@@ -139,7 +139,7 @@ class StageEightWebTests {
             assertTrue(response.body().contains(expected==403?"FORBIDDEN":"INVALID_STATE"));
         }
         synchronized(lock) { assertEquals(1,matches.findAll().size()); assertEquals(matchId,matches.findAll().getFirst().getId().toString()); }
-        assertEquals(405,http(a,"/play","matchId="+matchId).statusCode());
+        assertEquals(400,http(a,"/play","matchId="+matchId).statusCode());
     }
     @Test void getPlayRedirectsAnonymousAndNonParticipants() throws Exception {
         var client=browser(); redirect(http(client,"/play",null),"/");

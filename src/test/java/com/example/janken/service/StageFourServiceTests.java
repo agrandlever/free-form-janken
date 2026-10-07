@@ -37,7 +37,7 @@ class StageFourServiceTests {
     @BeforeEach void setup() {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users); clock = new TestClock();
-        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
+        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
         auth = new AuthService(lock, users, access, roomService, clock);
     }
 

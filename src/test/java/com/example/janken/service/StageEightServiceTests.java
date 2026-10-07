@@ -28,7 +28,7 @@ class StageEightServiceTests {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users);
         clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock));
+        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService()));
         auth = new AuthService(lock, users, access, service, clock);
         hands = new OriginalHandService(lock, access, rooms);
     }
@@ -152,7 +152,7 @@ class StageEightServiceTests {
     @Test void startRequiresLoginAndMatchServiceRequiresHeldLock() {
         error(401,"LOGIN_REQUIRED",()->service.startMatch(null,null));
         var sessions=prepared(2,true); var host=sessions.getFirst();
-        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock)
+        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService())
                 .startMatch(room(host),sessions.stream().map(this::user).toList()));
         assertTrue(matches.findAll().isEmpty()); assertNull(room(host).getCurrentMatchId());
     }
@@ -168,7 +168,7 @@ class StageEightServiceTests {
     @Test void clockFailureDuringConstructionLeavesNoPartialState() {
         var sessions=prepared(2,true); var host=sessions.getFirst(); var r=room(host);
         Clock broken=org.mockito.Mockito.mock(Clock.class); org.mockito.Mockito.when(broken.instant()).thenThrow(new IllegalStateException("clock"));
-        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken));
+        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService()));
         assertThrows(IllegalStateException.class,()->failing.startMatch(host,id(host)));
         assertTrue(matches.findAll().isEmpty()); assertNull(r.getCurrentMatchId());
         sessions.forEach(s->assertEquals(UserState.READY,user(s).getState()));

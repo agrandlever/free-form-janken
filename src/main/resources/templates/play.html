@@ -10,7 +10,19 @@
 <p>現在の勝数：<span th:text="${score}"></span></p>
 <p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
 <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
-<h2>利用可能な手</h2><ul><li>グー</li><li>チョキ</li><li>パー</li><li th:each="name : ${originalHandNames}" th:text="${name}"></li></ul>
-<!-- 第8段階は開始状態の表示のみ。手の確定フォームは第9段階で追加する。 -->
-<p>対戦が開始されました。手の選択機能は準備中です。</p>
+<h2>手を選択</h2>
+<p th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
+<!-- 対象IDと番号はサーバーで確認した現在値を送る。連続使用制限は第10段階で統合する。 -->
+<div>
+<form th:each="hand : ${ {'ROCK','SCISSORS','PAPER'} }" method="post" th:action="@{/play}">
+<input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
+<input type="hidden" name="type" value="NORMAL"><input type="hidden" name="normalHand" th:value="${hand}">
+<button type="submit" th:disabled="${selfHandConfirmed}" th:text="${hand == 'ROCK' ? 'グー' : hand == 'SCISSORS' ? 'チョキ' : 'パー'}"></button>
+</form>
+<form th:each="hand : ${originalHandOptions}" method="post" th:action="@{/play}">
+<input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
+<input type="hidden" name="type" value="ORIGINAL"><input type="hidden" name="originalHandId" th:value="${hand.originalHandId}">
+<button type="submit" th:disabled="${selfHandConfirmed}" th:text="${hand.name}"></button>
+</form>
+</div>
 </main></body></html>

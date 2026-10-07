@@ -1,0 +1,323 @@
+diff --git a/src/main/java/com/example/janken/controller/GameController.java b/src/main/java/com/example/janken/controller/GameController.java
+index 56c6624..83d54a5 100644
+--- a/src/main/java/com/example/janken/controller/GameController.java
++++ b/src/main/java/com/example/janken/controller/GameController.java
+@@ -1,6 +1,10 @@
+ package com.example.janken.controller;
+ 
+ import jakarta.servlet.http.HttpServletRequest;
++import com.example.janken.form.HandSelectionForm;
++import com.example.janken.service.MatchService;
++import org.springframework.web.bind.annotation.ModelAttribute;
++import org.springframework.web.bind.annotation.PostMapping;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+ import org.springframework.web.bind.annotation.GetMapping;
+@@ -9,9 +13,14 @@ import org.springframework.web.bind.annotation.RequestParam;
+ @Controller
+ public class GameController {
+     private final ScreenRenderer screens;
+-    public GameController(ScreenRenderer screens) { this.screens = screens; }
++    private final MatchService matches;
++    public GameController(ScreenRenderer screens, MatchService matches) { this.screens = screens; this.matches = matches; }
+     @GetMapping("/play")
+     public String play(@RequestParam(required = false) String matchId, HttpServletRequest request, Model model) {
+         return screens.play(request.getSession(false), matchId, model);
+     }
++    @PostMapping("/play")
++    public String submitHand(@ModelAttribute HandSelectionForm form, HttpServletRequest request) {
++        return "redirect:/play?matchId=" + matches.submitHand(request.getSession(false), form);
++    }
+ }
+diff --git a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+index 4f14265..585fa6c 100644
+--- a/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
++++ b/src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+@@ -46,6 +46,12 @@ public class HtmlErrorHandler {
+             default -> form = new LoginForm();
+         }
+         response.setStatus(error.getStatus());
+-        return screens.error(request.getSession(false), form, error, model);
++        try {
++            return screens.error(request.getSession(false), form, error, model);
++        } catch (GameOperationException unavailableScreen) {
++            if (!request.getRequestURI().equals("/play")) { throw unavailableScreen; }
++            // 結果画面は第11段階。仮画面を作らず、業務エラーのHTTPステータスを維持する。
++            return null;
++        }
+     }
+ }
+diff --git a/src/main/java/com/example/janken/service/MatchService.java b/src/main/java/com/example/janken/service/MatchService.java
+index f26266e..30dfa53 100644
+--- a/src/main/java/com/example/janken/service/MatchService.java
++++ b/src/main/java/com/example/janken/service/MatchService.java
+@@ -1,7 +1,11 @@
+ package com.example.janken.service;
+ 
+ import com.example.janken.domain.*;
+-import com.example.janken.domain.enums.UserState;
++import com.example.janken.domain.enums.*;
++import com.example.janken.form.HandSelectionForm;
++import com.example.janken.store.RoomStore;
++import jakarta.servlet.http.HttpSession;
++import java.time.Instant;
+ import com.example.janken.store.GameStateLock;
+ import com.example.janken.store.MatchStore;
+ import java.time.Clock;
+@@ -14,10 +18,17 @@ public class MatchService {
+     private final GameStateLock lock;
+     private final MatchStore matches;
+     private final Clock clock;
+-    public MatchService(GameStateLock lock, MatchStore matches, Clock clock) {
++    private final RoomStore rooms;
++    private final SessionUserAccess access;
++    private final RoundJudgeService judge;
++    public MatchService(GameStateLock lock, MatchStore matches, Clock clock, RoomStore rooms,
++            SessionUserAccess access, RoundJudgeService judge) {
+         this.lock = lock;
+         this.matches = matches;
+         this.clock = clock;
++        this.rooms = rooms;
++        this.access = access;
++        this.judge = judge;
+     }
+ 
+     /** RoomServiceだけが呼ぶ。検証から登録まで外側の共有ロックを保持する。 */
+@@ -45,4 +56,92 @@ public class MatchService {
+         readyParticipants.forEach(user -> user.setState(UserState.PLAYING));
+         return match.getId();
+     }
++
++    public UUID submitHand(HttpSession session, HandSelectionForm form) {
++        synchronized (lock) {
++            GameUser user = access.require(session);
++            if (user.getState() != UserState.PLAYING) { throw GameOperationException.invalidState(); }
++            UUID matchId = parseId(form.getMatchId(), "matchId");
++            int roundNumber;
++            try {
++                if (form.getRoundNumber() == null || !form.getRoundNumber().matches("[+-]?[0-9]+")) { throw new NumberFormatException(); }
++                roundNumber = Integer.parseInt(form.getRoundNumber());
++                if (roundNumber < 1) { throw new NumberFormatException(); }
++            } catch (NumberFormatException ex) {
++                throw GameOperationException.validation("roundNumber", "ラウンド番号は1以上の整数で指定してください。");
++            }
++            if (user.getCurrentRoomId() == null) { throw GameOperationException.invalidState(); }
++            Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
++            if (!matchId.equals(room.getCurrentMatchId())) { throw GameOperationException.invalidState(); }
++            GameMatch match = matches.findById(matchId).orElseThrow(GameOperationException::invalidState);
++            if (!matchId.equals(match.getId())) { throw GameOperationException.invalidState(); }
++            MatchParticipant participant = match.getParticipants().get(user.getId());
++            if (participant == null || !participant.isActive()) { throw GameOperationException.invalidState(); }
++            Round round = match.getCurrentRound();
++            if (round == null || roundNumber != round.getRoundNumber()) { throw GameOperationException.invalidState(); }
++            if (match.getState() != MatchState.SELECTING_HAND) { throw GameOperationException.invalidState(); }
++            // 値が不正な再送でも、確定済みを409で拒否して既存の手を守る。
++            if (round.getSelections().containsKey(user.getId())) { throw GameOperationException.invalidState(); }
++            HandSelection selection = validateHand(form, match);
++            round.getSelections().put(user.getId(), copy(selection));
++            if (match.getParticipants().values().stream().filter(MatchParticipant::isActive)
++                    .allMatch(p -> round.getSelections().containsKey(p.getUserId()))) {
++                completeRound(match);
++            }
++            return matchId;
++        }
++    }
++
++    private HandSelection validateHand(HandSelectionForm form, GameMatch match) {
++        if ("NORMAL".equals(form.getType())) {
++            if (!empty(form.getOriginalHandId())) { throw GameOperationException.validation("originalHandId", "通常手にはオリジナル手を指定できません。"); }
++            try {
++                return new HandSelection(SelectedHandType.NORMAL, NormalHandType.valueOf(form.getNormalHand() == null ? "" : form.getNormalHand()), null);
++            } catch (IllegalArgumentException ex) { throw GameOperationException.validation("normalHand", "グー・チョキ・パーから選択してください。"); }
++        }
++        if ("ORIGINAL".equals(form.getType())) {
++            if (!empty(form.getNormalHand())) { throw GameOperationException.validation("normalHand", "オリジナル手には通常手を指定できません。"); }
++            UUID id = parseId(form.getOriginalHandId(), "originalHandId");
++            if (match.getOriginalHands().stream().noneMatch(h -> h.getHandId().equals(id))) {
++                throw GameOperationException.validation("originalHandId", "対戦開始時に固定された手を選択してください。");
++            }
++            return new HandSelection(SelectedHandType.ORIGINAL, null, id);
++        }
++        throw GameOperationException.validation("type", "手の種類が不正です。");
++    }
++    private boolean empty(String value) { return value == null || value.isEmpty(); }
++    private UUID parseId(String value, String field) {
++        try {
++            UUID id = UUID.fromString(value == null ? "" : value);
++            if (!id.toString().equalsIgnoreCase(value)) { throw new IllegalArgumentException(); }
++            return id;
++        } catch (IllegalArgumentException ex) { throw GameOperationException.validation(field, "対象IDの指定が不正です。"); }
++    }
++    private HandSelection copy(HandSelection hand) {
++        return new HandSelection(hand.getType(), hand.getNormalHand(), hand.getOriginalHandId());
++    }
++
++    public void completeRound(GameMatch match) {
++        synchronized (lock) {
++            if (match.getState() != MatchState.SELECTING_HAND) { return; }
++            List<MatchParticipant> active = match.getParticipants().values().stream().filter(MatchParticipant::isActive).toList();
++            Round round = match.getCurrentRound();
++            if (round == null || active.size() < 2 || active.stream().anyMatch(p -> !round.getSelections().containsKey(p.getUserId()))) { return; }
++            // 確定時刻は1回だけ読み、結果と遷移期限で共用する。
++            Instant decidedAt = clock.instant();
++            RoundResult result = judge.judgeRound(round.getRoundNumber(), active, round.getSelections(), match.getOriginalHands(), decidedAt);
++            result.getEntries().stream().filter(RoundResultEntry::isWonRound).forEach(e -> {
++                MatchParticipant p = match.getParticipants().get(e.getUserId());
++                p.setScore(p.getScore() + 1);
++            });
++            active.forEach(p -> p.setPreviousHand(copy(round.getSelections().get(p.getUserId()))));
++            match.getRoundHistory().add(result);
++            List<UUID> winners = active.stream().filter(p -> p.getScore() >= match.getTargetWins()).map(MatchParticipant::getUserId).toList();
++            match.setPendingEndType(winners.isEmpty() ? null : MatchEndType.NORMAL);
++            match.getPendingWinnerIds().clear();
++            match.getPendingWinnerIds().addAll(winners);
++            match.setTransitionAt(decidedAt.plusSeconds(result.isHasWinner() || !winners.isEmpty() ? 10 : 5));
++            match.setState(MatchState.ROUND_RESULT);
++        }
++    }
+ }
+diff --git a/src/main/java/com/example/janken/service/ScreenService.java b/src/main/java/com/example/janken/service/ScreenService.java
+index 48d78f8..437679d 100644
+--- a/src/main/java/com/example/janken/service/ScreenService.java
++++ b/src/main/java/com/example/janken/service/ScreenService.java
+@@ -95,6 +95,8 @@ public class ScreenService {
+ 
+     public record ParticipantView(String username, int score) { }
+ 
++    public record OriginalHandOption(String originalHandId, String name) { }
++
+     private Screen playScreen(GameUser user, Map<String, Object> model) {
+         if (user.getCurrentRoomId() == null) { throw GameOperationException.invalidState(); }
+         Room room = rooms.findById(user.getCurrentRoomId()).orElseThrow(GameOperationException::invalidState);
+@@ -119,6 +121,12 @@ public class ScreenService {
+         // 他人の未公開相性や変更可能なDomainを表示用Modelへ渡さない。
+         model.put("originalHandNames", match.getOriginalHands().stream()
+                 .map(OriginalHandSnapshot::getName).toList());
++        model.put("originalHandOptions", match.getOriginalHands().stream()
++                .map(h -> new OriginalHandOption(h.getHandId().toString(), h.getName())).toList());
++        // 本人の表示名だけをコピーし、他参加者のselectionや相性は公開しない。
++        var self = match.getCurrentRound().getSelections().get(user.getId());
++        model.put("selfHandConfirmed", self != null);
++        model.put("selfSelectedHandName", self == null ? null : RoundJudgeService.handName(self, match.getOriginalHands()));
+         return screen("/play?matchId=" + match.getId(), "play", model);
+     }
+ 
+diff --git a/src/main/resources/templates/play.html b/src/main/resources/templates/play.html
+index 74dc8a8..9852c88 100644
+--- a/src/main/resources/templates/play.html
++++ b/src/main/resources/templates/play.html
+@@ -10,7 +10,19 @@
+ <p>現在の勝数：<span th:text="${score}"></span></p>
+ <p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+ <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
+-<h2>利用可能な手</h2><ul><li>グー</li><li>チョキ</li><li>パー</li><li th:each="name : ${originalHandNames}" th:text="${name}"></li></ul>
+-<!-- 第8段階は開始状態の表示のみ。手の確定フォームは第9段階で追加する。 -->
+-<p>対戦が開始されました。手の選択機能は準備中です。</p>
++<h2>手を選択</h2>
++<p th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
++<!-- 対象IDと番号はサーバーで確認した現在値を送る。連続使用制限は第10段階で統合する。 -->
++<div>
++<form th:each="hand : ${ {'ROCK','SCISSORS','PAPER'} }" method="post" th:action="@{/play}">
++<input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
++<input type="hidden" name="type" value="NORMAL"><input type="hidden" name="normalHand" th:value="${hand}">
++<button type="submit" th:disabled="${selfHandConfirmed}" th:text="${hand == 'ROCK' ? 'グー' : hand == 'SCISSORS' ? 'チョキ' : 'パー'}"></button>
++</form>
++<form th:each="hand : ${originalHandOptions}" method="post" th:action="@{/play}">
++<input type="hidden" name="matchId" th:value="${matchId}"><input type="hidden" name="roundNumber" th:value="${roundNumber}">
++<input type="hidden" name="type" value="ORIGINAL"><input type="hidden" name="originalHandId" th:value="${hand.originalHandId}">
++<button type="submit" th:disabled="${selfHandConfirmed}" th:text="${hand.name}"></button>
++</form>
++</div>
+ </main></body></html>
+diff --git a/src/test/java/com/example/janken/controller/StageEightWebTests.java b/src/test/java/com/example/janken/controller/StageEightWebTests.java
+index ba80694..383a288 100644
+--- a/src/test/java/com/example/janken/controller/StageEightWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageEightWebTests.java
+@@ -118,7 +118,7 @@ class StageEightWebTests {
+                 assertTrue(html.contains("先取勝数：<span>5</span>")); assertTrue(html.contains("現在の勝数：<span>0</span>"));
+                 assertTrue(html.contains("あなたは対戦参加者です。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
+                 assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("ON"));
+-                for(var forbidden:List.of("action=\"/play\"","/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
++                for(var forbidden:List.of("/room/leave","/logout","/api/status","vsRock","/original-hand/save")) {
+                     assertFalse(html.contains(forbidden),forbidden);
+                 }
+             }
+@@ -139,7 +139,7 @@ class StageEightWebTests {
+             assertTrue(response.body().contains(expected==403?"FORBIDDEN":"INVALID_STATE"));
+         }
+         synchronized(lock) { assertEquals(1,matches.findAll().size()); assertEquals(matchId,matches.findAll().getFirst().getId().toString()); }
+-        assertEquals(405,http(a,"/play","matchId="+matchId).statusCode());
++        assertEquals(400,http(a,"/play","matchId="+matchId).statusCode());
+     }
+     @Test void getPlayRedirectsAnonymousAndNonParticipants() throws Exception {
+         var client=browser(); redirect(http(client,"/play",null),"/");
+diff --git a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+index 6a485c2..201e6dc 100644
+--- a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
++++ b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+@@ -29,7 +29,7 @@ class OriginalHandServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
++        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
+         auth = new AuthService(lock, users, access, roomService, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }
+diff --git a/src/test/java/com/example/janken/service/StageEightServiceTests.java b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+index 4b20889..60fbd7b 100644
+--- a/src/test/java/com/example/janken/service/StageEightServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+@@ -28,7 +28,7 @@ class StageEightServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock));
++        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService()));
+         auth = new AuthService(lock, users, access, service, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }
+@@ -152,7 +152,7 @@ class StageEightServiceTests {
+     @Test void startRequiresLoginAndMatchServiceRequiresHeldLock() {
+         error(401,"LOGIN_REQUIRED",()->service.startMatch(null,null));
+         var sessions=prepared(2,true); var host=sessions.getFirst();
+-        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock)
++        assertThrows(IllegalStateException.class,()->new MatchService(lock,matches,clock,rooms,access,new RoundJudgeService())
+                 .startMatch(room(host),sessions.stream().map(this::user).toList()));
+         assertTrue(matches.findAll().isEmpty()); assertNull(room(host).getCurrentMatchId());
+     }
+@@ -168,7 +168,7 @@ class StageEightServiceTests {
+     @Test void clockFailureDuringConstructionLeavesNoPartialState() {
+         var sessions=prepared(2,true); var host=sessions.getFirst(); var r=room(host);
+         Clock broken=org.mockito.Mockito.mock(Clock.class); org.mockito.Mockito.when(broken.instant()).thenThrow(new IllegalStateException("clock"));
+-        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken));
++        var failing=new RoomService(lock,rooms,access,clock,users,new MatchService(lock,matches,broken,rooms,access,new RoundJudgeService()));
+         assertThrows(IllegalStateException.class,()->failing.startMatch(host,id(host)));
+         assertTrue(matches.findAll().isEmpty()); assertNull(r.getCurrentMatchId());
+         sessions.forEach(s->assertEquals(UserState.READY,user(s).getState()));
+diff --git a/src/test/java/com/example/janken/service/StageFourServiceTests.java b/src/test/java/com/example/janken/service/StageFourServiceTests.java
+index 2829126..5757c18 100644
+--- a/src/test/java/com/example/janken/service/StageFourServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageFourServiceTests.java
+@@ -37,7 +37,7 @@ class StageFourServiceTests {
+     @BeforeEach void setup() {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users); clock = new TestClock();
+-        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
++        roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
+         auth = new AuthService(lock, users, access, roomService, clock);
+     }
+ 
+diff --git a/src/test/java/com/example/janken/service/StageSixServiceTests.java b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+index d376a27..b97511f 100644
+--- a/src/test/java/com/example/janken/service/StageSixServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+@@ -26,7 +26,7 @@ class StageSixServiceTests {
+         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
+         access = new SessionUserAccess(users);
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
++        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
+         auth = new AuthService(lock, users, access, service, clock);
+         hands = new OriginalHandService(lock, access, rooms);
+     }

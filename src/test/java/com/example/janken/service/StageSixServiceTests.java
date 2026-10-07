@@ -26,7 +26,7 @@ class StageSixServiceTests {
         lock = new GameStateLock(); users = new UserStore(); rooms = new RoomStore();
         access = new SessionUserAccess(users);
         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
-        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock));
+        service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService()));
         auth = new AuthService(lock, users, access, service, clock);
         hands = new OriginalHandService(lock, access, rooms);
     }

@@ -1,0 +1,37 @@
+ M bin/main/com/example/janken/controller/GameController.class
+ M bin/main/com/example/janken/controller/HtmlErrorHandler.class
+ M bin/main/com/example/janken/service/MatchService.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/templates/play.html
+ M bin/test/com/example/janken/controller/StageEightWebTests.class
+ M bin/test/com/example/janken/service/OriginalHandServiceTests.class
+ M bin/test/com/example/janken/service/StageEightServiceTests.class
+ M bin/test/com/example/janken/service/StageFourServiceTests.class
+ M bin/test/com/example/janken/service/StageSixServiceTests.class
+ M src/main/java/com/example/janken/controller/GameController.java
+ M src/main/java/com/example/janken/controller/HtmlErrorHandler.java
+ M src/main/java/com/example/janken/service/MatchService.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/resources/templates/play.html
+ M src/test/java/com/example/janken/controller/StageEightWebTests.java
+ M src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ M src/test/java/com/example/janken/service/StageEightServiceTests.java
+ M src/test/java/com/example/janken/service/StageFourServiceTests.java
+ M src/test/java/com/example/janken/service/StageSixServiceTests.java
+?? bin/main/com/example/janken/form/HandSelectionForm.class
+?? bin/main/com/example/janken/service/RoundJudgeService.class
+?? bin/main/com/example/janken/service/ScreenService$OriginalHandOption.class
+?? bin/test/com/example/janken/controller/StageNineWebTests$1.class
+?? bin/test/com/example/janken/controller/StageNineWebTests.class
+?? bin/test/com/example/janken/service/RoundJudgeServiceTests.class
+?? bin/test/com/example/janken/service/StageNineServiceTests.class
+?? reports/stage9-boot-error.log
+?? reports/stage9-boot.log
+?? reports/stage9-diff.txt
+?? reports/stage9-test.log
+?? reports/stage9-tests.json
+?? src/main/java/com/example/janken/form/HandSelectionForm.java
+?? src/main/java/com/example/janken/service/RoundJudgeService.java
+?? src/test/java/com/example/janken/controller/StageNineWebTests.java
+?? src/test/java/com/example/janken/service/RoundJudgeServiceTests.java
+?? src/test/java/com/example/janken/service/StageNineServiceTests.java

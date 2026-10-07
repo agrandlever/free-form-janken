@@ -1,0 +1,177 @@
+[
+  {
+    "name": "com.example.janken.controller.OriginalHandWebTests",
+    "tests": 63,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.controller.StageEightWebTests",
+    "tests": 4,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.controller.StageFourWebTests",
+    "tests": 10,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.controller.StageNineWebTests",
+    "tests": 10,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.controller.StageSixWebTests",
+    "tests": 12,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.BasicDomainTests",
+    "tests": 6,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.GameMatchTests",
+    "tests": 4,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.MatchParticipantTests",
+    "tests": 3,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.MatchResultSnapshotTests",
+    "tests": 10,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.OriginalHandSnapshotTests",
+    "tests": 3,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.RoundResultEntryTests",
+    "tests": 2,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.RoundResultTests",
+    "tests": 4,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.domain.RoundTests",
+    "tests": 3,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.JankenApplicationTests",
+    "tests": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.OriginalHandServiceTests",
+    "tests": 195,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.RoundJudgeServiceTests",
+    "tests": 27,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.StageEightServiceTests",
+    "tests": 53,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.StageFourServiceTests",
+    "tests": 105,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.StageNineServiceTests",
+    "tests": 64,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.service.StageSixServiceTests",
+    "tests": 32,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.store.GameStateLockTests",
+    "tests": 1,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.store.MatchResultStoreTests",
+    "tests": 4,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.store.MatchStoreTests",
+    "tests": 4,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.store.RoomStoreTests",
+    "tests": 6,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  {
+    "name": "com.example.janken.store.UserStoreTests",
+    "tests": 3,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  }
+]
