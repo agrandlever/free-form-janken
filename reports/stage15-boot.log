@@ -1,0 +1,21 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.1)
+
+2026-10-08T12:29:05.601+09:00  INFO 22896 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Starting JankenApplication v0.0.1-SNAPSHOT using Java 21.0.11 with PID 22896 (C:\exPractice\free-form-janken\build\libs\free-form-janken-0.0.1-SNAPSHOT.jar started by academia in C:\exPractice\free-form-janken)
+2026-10-08T12:29:05.606+09:00  INFO 22896 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T12:29:07.069+09:00  INFO 22896 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8085 (http)
+2026-10-08T12:29:07.079+09:00  INFO 22896 --- [free-form-janken] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T12:29:07.079+09:00  INFO 22896 --- [free-form-janken] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-10-08T12:29:07.112+09:00  INFO 22896 --- [free-form-janken] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1433 ms
+2026-10-08T12:29:08.212+09:00  INFO 22896 --- [free-form-janken] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8085 (http) with context path '/'
+2026-10-08T12:29:08.258+09:00  INFO 22896 --- [free-form-janken] [           main] com.example.janken.JankenApplication     : Started JankenApplication in 3.253 seconds (process running for 3.95)
+2026-10-08T12:30:02.440+09:00  INFO 22896 --- [free-form-janken] [nio-8085-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-08T12:30:02.440+09:00  INFO 22896 --- [free-form-janken] [nio-8085-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-08T12:30:02.440+09:00  INFO 22896 --- [free-form-janken] [nio-8085-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms

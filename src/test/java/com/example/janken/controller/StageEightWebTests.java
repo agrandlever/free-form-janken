@@ -124,11 +124,11 @@ class StageEightWebTests {
             }
         }
         if(!hostReady) {
-            String html=http(host,"/room",null).body(); assertTrue(html.contains("対戦が進行中です。"));
-            assertTrue(html.contains("現在対戦中")); assertFalse(html.contains("/room/start")); assertFalse(html.contains("対戦を見る"));
-            redirect(http(host,play,null),"/room");
-            // 開始後に③になっても、今回の段階では観戦者として通さない。
-            createAndReady(host,id,"HH"); redirect(http(host,play,null),"/room");
+            String html=http(host,"/room",null).body(); assertTrue(html.contains("現在対戦中です"));
+            assertTrue(html.contains("現在対戦中")); assertFalse(html.contains("/room/start")); assertTrue(html.contains("対戦を見る"));
+            assertEquals(200,http(host,play,null).statusCode());
+            // 第15段階：開始後の②・③は同じ対戦を観戦できる。
+            createAndReady(host,id,"HH"); assertEquals(200,http(host,play,null).statusCode());
         }
         for(var path:List.of("/room/start","/room/ready","/room/ready/cancel","/room/rules","/original-hand/save","/original-hand/delete")) {
             String body=path.startsWith("/original-hand")?saveBody(id,"Changed"):"roomId="+id+"&targetWins=9";

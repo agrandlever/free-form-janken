@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "observations": [
+    {
+      "name": "M0正常終了",
+      "detail": {
+        "matchId": "f1ac675c-a49a-4749-a1ba-a9b5f9fdc1ce"
+      }
+    },
+    {
+      "name": "②・③観戦開始と途中入室確認",
+      "detail": {
+        "matchId": "f036a97f-e23d-400c-aa20-17809626b53a",
+        "C": "ROOM_WAITING",
+        "D": "READY"
+      }
+    },
+    {
+      "name": "Aだけ確定：HTML／JSON非公開と②・③直接POST拒否",
+      "detail": true
+    },
+    {
+      "name": "ROUND_RESULT公開・Cルーム戻り・別タブM0維持",
+      "detail": true
+    },
+    {
+      "name": "Scheduler次Round：同じM1維持とroom継続",
+      "detail": true
+    },
+    {
+      "name": "NORMAL終了：同じM1結果・C②／D③・M0維持",
+      "detail": true
+    },
+    {
+      "name": "観戦後のready／cancelReady",
+      "detail": true
+    },
+    {
+      "name": "ABORTED：観戦者をactiveへ数えずC②／D③維持",
+      "detail": true
+    },
+    {
+      "name": "観戦後退出・ログアウトのアクセス制御",
+      "detail": true
+    }
+  ]
+}

@@ -51,7 +51,17 @@
                 move(matchUrl('MATCH_RESULT', page.dataset.matchId));
                 return;
             }
-            if (kind === 'match-result' && status.displayMatchId === page.dataset.matchId
+            if ((kind === 'play' || kind === 'round-result') && status.displayMatchId === page.dataset.matchId
+                    && ['SELECTING_HAND', 'ROUND_RESULT'].includes(status.displayMatchState)) {
+                const destination = matchUrl(status.displayMatchState, page.dataset.matchId);
+                if ((kind === 'play' && status.displayMatchState !== 'SELECTING_HAND')
+                        || (kind === 'round-result' && status.displayMatchState !== 'ROUND_RESULT')
+                        || status.displayRoundNumber !== Number(page.dataset.roundNumber)) {
+                    move(destination);
+                    return;
+                }
+                // ②・③の観戦同期はdisplay対象だけに従う。
+            } else if (kind === 'match-result' && status.displayMatchId === page.dataset.matchId
                     && status.displayMatchState === 'MATCH_RESULT') {
                 // ②・③は同じ結果を維持する。lastCompletedMatchIdは表示対象に使わない。
             } else if (kind !== 'room') { move('/room'); return; }

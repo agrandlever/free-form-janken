@@ -1,0 +1,95 @@
+第15段階「観戦」完了報告
+確認日：2026-10-08（日本時間）
+対象：docs/の6設計書、第15段階のみ。第16段階には進んでいません。
+
+1. 作成・変更ファイル
+   src/main/java/com/example/janken/controller/ScreenRenderer.java
+   src/main/java/com/example/janken/service/ScreenService.java
+   src/main/resources/static/js/play.js
+   src/main/resources/static/js/room.js
+   src/main/resources/static/js/status-polling.js
+   src/main/resources/templates/play.html
+   src/main/resources/templates/room.html
+   src/main/resources/templates/round-result.html
+   src/test/java/com/example/janken/controller/StageEightWebTests.java
+   src/test/java/com/example/janken/controller/StageElevenWebTests.java
+   src/test/js/sync-test-support.cjs
+   src/test/java/com/example/janken/controller/StageFifteenWebTests.java
+   src/test/js/stage15-sync.test.cjs
+   検証資料：reports/stage15-*.log、stage15-tests.json、stage15-http-check.cjs、stage15-http-observations.json、stage15-changes.txt、stage15-diff.txt、本報告。
+   bin/の生成物は71を参照。
+2. roomの「対戦を見る」：現在対戦中です／対戦を見るを追加。現在Room.currentMatchId付きのリンクを生成。内部IDは本文へ表示しません。
+3. 観戦開始方法：本人がGET /play?matchId=対象IDへ移動します。開始専用POST・APIは追加していません。
+4. 観戦対象matchId保持方法：タブのURLと、そのURLをサーバーで検証したHTML制御用data-match-id。pollingも同じIDを指定します。
+5. Sessionへの保存：観戦対象を保存していません。GameUserにも保存していません。Sessionの属性が既存USER_IDだけであることを新規テストで確認しました。
+6. ②観戦条件：ログイン済みROOM_WAITING、現在Roomの所属メンバー、同じRoomの現在進行中GameMatch、本人がactive参加者でないことを共通ロック内で確認します。
+7. ③観戦条件：READYでも6と同じ確認を行い、準備状態を変更せず観戦できます。
+8. ②状態維持：観戦GET／結果閲覧／ルーム戻りではROOM_WAITINGを変更しません。正常終了・中止でも維持します。
+9. ③状態維持：READYを変更しません。観戦開始・ルーム戻りをready／cancelReadyとして扱いません。正常終了・中止でも維持します。
+10. GameMatch.participants：観戦者を追加せず、一時的なMatchParticipantも作りません。固定手一覧・ルール・score・selectionsも観戦操作で変更しません。
+11. GET /play：ScreenService.gamePageで②・③の対象を検証し、SELECTING_HANDを観戦Modelで表示します。
+12. GET /round-result：同じ対象解決を使用し、ROUND_RESULTを観戦Modelで表示します。
+13. GET /play状態別遷移：SELECTING_HANDはplay。ROUND_RESULTは同じIDのround-resultへ302。終了済みは同じIDのmatch-resultへ302。無効・他Room・無指定で現在対戦なしはroomへ302。④は本人の現在対戦が優先です。
+14. GET /round-result状態別遷移：ROUND_RESULTはround-result。SELECTING_HANDは同じIDのplayへ302。終了済みは同じIDのmatch-resultへ302。無効対象等は13と同じアクセス制御です。
+15. 観戦者play Model：username、userState、roomId、matchId、roundNumber、targetWins、matchParticipant=false、participants、roundHistory、selectedHand=null、selfHandConfirmed=null、selfSelectedHandName=null。選択処理用データは渡しません。
+16. 観戦者round-result Model：15の安全な共通値にresults、scores、hasRoundWinner、transitionAt、matchFinishedを追加。roundHistoryもコピーします。
+17. 手選択UI：参加者専用sectionをThymeleafの条件表示で除外。通常手・OriginalHand・確定フォーム・本人手表示・連続使用メッセージを観戦HTMLへ生成しません。
+18. ルーム退出UI：play／round-resultの退出formは参加者だけに生成します。観戦者には生成しません。
+19. ルームへ戻る：GET /roomのリンク。状態・所属・Room・GameMatch・結果・他タブの対象を変更しません。
+20. 強制再観戦防止：roomの②・③は対戦開始・Round進行・終了でもroomに留まります。TC-115相当のJavaScriptテストで確認しました。
+21. selectedHand=null：観戦Modelに明示的にnullを設定しています。
+22. selfHandConfirmed=null：既存StatusServiceの本人④・active参加者限定条件を維持。②・③はnullで確認済みです。
+23. selfSelectedHand=null：22と同じ既存条件により、②・③ではnullです。falseや他人の選択へ置き換えていません。
+24. 確定前の他人手非公開：観戦ModelへcurrentRound.selectionsをコピーしません。Aだけ確定時のHTML・JSON、本人手表示・フォーム・制御データの不在を確認しました。
+25. 相性非公開：観戦中のplay／round-result／statusにはvsRock・vsScissors・vsPaper・vsOriginalを含めません。終了済みmatch-resultの既存公開仕様は維持しています。
+26. POST /play拒否：MatchServiceの既存④限定検証を維持。②・③の直接HTTP要求は409／INVALID_STATE。selection・score・state・history不変を検証しました。
+27. currentMatch／displayMatch分離：currentMatchはRoomの現在対戦、displayMatchは指定対象。観戦同期はdisplayMatchを使用。StatusServiceの既存仕様を再利用しています。
+28. play→round-result同期：displayMatchIdがそのタブと一致しROUND_RESULTになったとき、同じIDへ移動します。
+29. round-result→play同期：Scheduler後のSELECTING_HANDを確認して同じIDへ移動します。新Round番号ではGET Modelを再取得します。
+30. 観戦→match-result同期：NORMAL／ABORTEDともdisplayMatchState=MATCH_RESULTで同じ対象IDへ移動します。
+31. 同じmatchId維持：SELECTING_HAND→ROUND_RESULT→次Round→MATCH_RESULTを、Java・JavaScript・実HTTPで検証しました。
+32. lastCompletedMatchId置換なし：観戦終了の遷移先にlastCompletedMatchIdを使用しません。
+33. 別タブ結果対象：共有観戦対象を持たず、旧結果M0と新観戦M1を独立維持。Java・JavaScript・実HTTPで確認済みです。
+34. room polling：既存部分更新へ現在対戦中表示とリンクのhref更新を追加。終了時は導線を非表示にしhrefを除去します。許可されたフォームの入力値を保持します。
+35. roomから自動観戦なし：currentMatchId出現だけで②・③をplayへ移動させません。本人のリンク選択で開始します。
+36. 観戦中④化：GETは本人の現在対戦を優先。pollingもPLAYING判定を観戦表示より優先し、新しい現在対戦のplay／round-resultへ移動します。
+37. 観戦中①化：GETと次回pollingでroomsへ移動します。ログアウトは既存のログイン画面への誘導を維持します。
+38. 他Room対象非公開：play／round-resultはroomへ302。statusのdisplay関連値はnull。既存UUID形式不正のstatus 400仕様も維持します。
+39. 参加者一覧生成元：GameMatch.participants。Room.memberIdsを対戦参加者一覧へ使用しません。開始時の全参加者名を保持する既存表現です。
+40. score生成元：MatchParticipant.scoreを共通ロック内で表示用recordへコピー。観戦者本人のscoreは追加しません。
+41. active人数：観戦者はGameMatch.participantsへ入らないため数えません。
+42. Schedulerへの影響：本体は変更していません。既存runTransitions→advanceMatchで次Round・正常終了を確認しました。
+43. 中止判定：本体は変更していません。観戦者②・③が残っていても、参加者退出でactiveが1人になるとABORTEDになります。
+44. GameStateLock：userState・所属・Room.currentMatchId・指定対象・match state・参加者・score・履歴・表示対象の確認とコピーを既存単一lock内で実行。新しい観戦用lockはありません。描画はコピーを使いロック解放後に行います。
+45. TC-056相当：成功。②維持、play表示、手選択UIなし、ルーム戻り、確定前非公開を検証しました。
+46. TC-057相当：成功。③維持、READY解除なし、手選択UIなし、ルーム戻りを検証しました。
+47. TC-058相当：成功。②・③のNORMAL／ORIGINAL直接POSTを拒否し、対戦情報不変を検証しました。
+48. TC-084：成功。対戦中の入室で①→②、participantsと固定手不変、観戦可能、手UIなし、POST拒否、確定前非公開を確認しました。
+49. TC-085：成功。NORMAL／ABORTEDの双方で非参加C=②、D=③を維持。参加者だけ終了処理の対象であることを確認しました。
+50. TC-115：成功。roomへ戻ったタブは開始／次Round／ROUND_RESULT／MATCH_RESULTで再観戦しません。別の観戦タブは同じdisplay対象へ追従することをJavaScriptで検証しました。
+51. 確定前非公開テスト：成功。Aのみ確定・B未確定で、通常手／OriginalHandの双方と②・③のHTML／JSONを検証しました。全員確定後のRoundResult公開も確認しました。
+52. 相性非公開テスト：成功。進行中HTML／JSONで4相性フィールド不在。観戦Modelに相性Domain参照・手選択用データがないことも確認しました。
+53. 観戦対象ID維持テスト：成功。進行状態変化に同じIDで追従。lastCompletedMatchIdや別currentMatchIdで観戦対象を書き換えないJavaScriptケースも成功しました。
+54. 別タブ結果維持テスト：成功。M0結果閲覧をM1観戦・M1正常終了・後続ABORTED結果で置換しません。Session属性の不変も確認しました。
+55. ②観戦後ready：成功。roomへ戻った後、通常のOriginalHand作成・readyで③になれます。
+56. ③観戦後cancelReady：成功。roomへ戻った後、通常の取消で②になれます。観戦履歴を状態判定へ使用しません。
+57. UIテスト：Javaの実HTTP・Thymeleaf描画テスト4ケース、および実サーバーHTTPで成功。手form／退出form不在、参加者名・勝数・履歴・戻り導線、確定後の結果公開を確認。既存CSSのviewport、768px以下のレイアウト、結果tableの横スクロールを確認しました。Chromeの実画面・狭幅スクリーンショット確認はツール起動障害のため未実施です。
+58. pollingテスト：状態別追従、room維持、カウント0非遷移、①化・④化・ログアウト、対象不一致、フォーム保持を成功確認。2秒pollingと同じ対象IDを維持します。
+59. JavaScriptテスト：node --testの既存方式で52件成功、失敗0。reports/stage15-javascript-test.log参照。
+60. 新規Javaテスト件数：38件（パラメーター別実行を含む）。StageFifteenWebTestsに追加しました。
+61. 新規JavaScriptテスト件数：17件。stage15-sync.test.cjsに追加しました。
+62. compileJava結果：Gradle Wrapperで成功（最終実行はUP-TO-DATE）。
+63. test結果：Gradle WrapperでBUILD SUCCESSFUL。988件、失敗0、エラー0、スキップ0。stage15-gradle-test.log／stage15-tests.json参照。
+64. 既存Java950件：全件成功。ただしStageEightWebTestsとStageElevenWebTestsの「観戦未導入として②・③をroomへ戻す」という期待値を、第15段階の観戦可能仕様へ更新しています。参加者の既存検証は維持しています。
+65. 既存JavaScript35件：全件成功。既存テストの期待値は変更せず、DOMテスト補助へwatch-match要素・removeAttribute操作を追加しました。
+66. Spring Boot起動結果：WrapperでbootJar作成後、Java 21でポート8085に正常起動。実際の500ms Schedulerを有効にして確認しました。確認後、起動したPIDだけを停止し、8085のECONNREFUSEDを確認済みです。
+67. HTTP／Chrome：実HTTPの4ユーザーフローは成功。次Round・正常終了・中止・準備取消・退出・ログアウト・M0維持を確認しました。stage15-http-observations.json／stage15-http-test.log参照。Chrome操作は「failed to start codex app-server: 指定されたパスが見つかりません。(os error 3)」で開始できず、Chromeでの視覚確認は未実施です。
+68. DisconnectMonitor：未実装。1秒Scheduled監視・30秒timeout・lastSeenAt期限の退出・切断による参加者退出は追加していません。既存StatusServiceのlastSeenAt更新は維持しています。
+69. docs/：変更なし。6設計書を実装基準として扱いました。
+70. .gitignore：変更なし。
+71. bin/生成物変化：追跡済み15ファイル更新、StageFifteenWebTests関連class4ファイル新規生成。Javaの表示record・ScreenRenderer・ScreenService・既存テストclass、変更したJS／HTMLの生成コピーです。bin/を実装の正にはしていません。stage15-changes.txtに一覧を記録しています。
+72. git diff／変更概要：本体8ファイル、既存テスト・補助3ファイル、新規テスト2ファイル。観戦専用状態やAPIを増やさず、画面解決と表示コピー、参加者限定操作表示、displayMatch同期を追加。追跡済みsrc差分はstage15-diff.txt、新規ファイルを含む一覧はstage15-changes.txt。git diff --check成功です。
+73. 固定されていない部分の実装判断：ScreenService.gamePage(session, matchId)を追加してGETの対象確認とコピーを統合しました。既存画面とrecordを再利用し、ModelのmatchParticipantで操作表示を切り替えます。観戦者へavailableHands等の選択用データは渡しません。round-result履歴は初期閉状態のdetailsで表示し、既存round-result.jsのカウント処理をそのまま利用しました。StatusServiceとSchedulerは既存実装が要件を満たすため変更せず統合テストで確認しました。保存済みSnapshotだけが残る対象は既存MatchResultServiceで同じIDの権限確認を行います。
+
+第15段階完了
+第16段階には進んでいません。

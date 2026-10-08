@@ -101,6 +101,9 @@
         nextReady.id = 'ready-action'; ready.replaceWith(nextReady);
         const running = status.roomState === 'PLAYING';
         document.getElementById('match-running').hidden = !running;
+        const watch = document.getElementById('watch-match');
+        if (running) watch.setAttribute('href', '/play?matchId=' + encodeURIComponent(status.currentMatchId));
+        else watch.removeAttribute('href');
         const isHost = room.hostUserId === page.dataset.selfUserId;
         const start = document.getElementById('start-action');
         const canStart = isHost && !running && room.members.filter(m => m.userState === 'READY').length >= 2;

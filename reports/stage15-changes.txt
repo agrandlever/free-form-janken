@@ -1,0 +1,42 @@
+ M bin/main/com/example/janken/controller/ScreenRenderer.class
+ M bin/main/com/example/janken/service/ScreenService$HistoryView.class
+ M bin/main/com/example/janken/service/ScreenService$OriginalHandOption.class
+ M bin/main/com/example/janken/service/ScreenService$ParticipantView.class
+ M bin/main/com/example/janken/service/ScreenService$ResultView.class
+ M bin/main/com/example/janken/service/ScreenService$ScoreView.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/static/js/play.js
+ M bin/main/static/js/room.js
+ M bin/main/static/js/status-polling.js
+ M bin/main/templates/play.html
+ M bin/main/templates/room.html
+ M bin/main/templates/round-result.html
+ M bin/test/com/example/janken/controller/StageEightWebTests.class
+ M bin/test/com/example/janken/controller/StageElevenWebTests.class
+ M src/main/java/com/example/janken/controller/ScreenRenderer.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/resources/static/js/play.js
+ M src/main/resources/static/js/room.js
+ M src/main/resources/static/js/status-polling.js
+ M src/main/resources/templates/play.html
+ M src/main/resources/templates/room.html
+ M src/main/resources/templates/round-result.html
+ M src/test/java/com/example/janken/controller/StageEightWebTests.java
+ M src/test/java/com/example/janken/controller/StageElevenWebTests.java
+ M src/test/js/sync-test-support.cjs
+?? bin/test/com/example/janken/controller/StageFifteenWebTests$1.class
+?? bin/test/com/example/janken/controller/StageFifteenWebTests$TestClock.class
+?? bin/test/com/example/janken/controller/StageFifteenWebTests$TimeConfig.class
+?? bin/test/com/example/janken/controller/StageFifteenWebTests.class
+?? reports/stage15-boot.log
+?? reports/stage15-changes.txt
+?? reports/stage15-completion.txt
+?? reports/stage15-diff.txt
+?? reports/stage15-gradle-test.log
+?? reports/stage15-http-check.cjs
+?? reports/stage15-http-observations.json
+?? reports/stage15-http-test.log
+?? reports/stage15-javascript-test.log
+?? reports/stage15-tests.json
+?? src/test/java/com/example/janken/controller/StageFifteenWebTests.java
+?? src/test/js/stage15-sync.test.cjs

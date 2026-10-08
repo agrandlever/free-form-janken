@@ -197,11 +197,11 @@ class StageElevenWebTests {
         assertFalse(http(a,"/round-result?matchId="+mid,null).body().contains("SECRET"));
     }
     @ParameterizedTest @ValueSource(strings={"anonymous","none","waiting","ready"})
-    void nonParticipantsCannotViewResults(String state) throws Exception {
+    void nonParticipantsUseSpectatorAccessRules(String state) throws Exception {
         var a=browser();var b=browser();String mid=startHttp(a,b)[1];var visitor=browser();
         if(!state.equals("anonymous"))http(visitor,"/login","username=Visitor");
         if(state.equals("waiting")||state.equals("ready")){http(visitor,"/rooms/enter","roomName=R");if(state.equals("ready")){String rid=hiddenRoom(http(visitor,"/room",null).body());createAndReady(visitor,rid,"VisitorHand");}}
-        redirect(http(visitor,"/round-result?matchId="+mid,null),state.equals("anonymous")?"/":state.equals("none")?"/rooms":"/room");
+        redirect(http(visitor,"/round-result?matchId="+mid,null),state.equals("anonymous")?"/":state.equals("none")?"/rooms":"/play?matchId="+mid);
     }
     @Test void historyHtmlMultipleWinnersNoScoresAndNoWinner() throws Exception {
         var a=browser();var b=browser();String mid=startHttp(a,b)[1];

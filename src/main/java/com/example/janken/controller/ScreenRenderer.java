@@ -36,12 +36,11 @@ public class ScreenRenderer {
     }
 
     private String matchPage(HttpSession session, String matchId, String template, Model model) {
-        ScreenService.Screen screen = screens.current(session);
+        ScreenService.Screen screen = screens.gamePage(session, matchId);
         if (!screen.template().equals(template)) {
-            if (screen.template().equals("room") && matchId != null) {
-                // 進行中の観戦は導入せず、終了保存済みの同じ対象だけ結果へ誘導する。
-                var result = results.page(session, matchId);
-                return "redirect:" + result.path();
+            if ("/room".equals(screen.path()) && matchId != null) {
+                // 保存済みSnapshotだけが残る場合も、同じIDの閲覧権限を確認する。
+                return "redirect:" + results.page(session, matchId).path();
             }
             return "redirect:" + screen.path();
         }

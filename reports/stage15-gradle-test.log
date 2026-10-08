@@ -1,0 +1,36 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :resolveMainClassName
+> Task :bootJar
+
+> Task :compileTestJava
+
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+> Task :test
+
+2026-10-08T12:28:46.475+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.500+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.564+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.585+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.610+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.635+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.653+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.674+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.689+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.709+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.723+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.745+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-10-08T12:28:46.762+09:00  INFO 24280 --- [free-form-janken] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T12:28:46.785+09:00  INFO 24280 --- [free-form-janken] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+
+[Incubating] Problems report is available at: file:///C:/exPractice/free-form-janken/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 42s
+6 actionable tasks: 4 executed, 2 up-to-date
+ノート: C:\exPractice\free-form-janken\src\test\java\com\example\janken\controller\StageFifteenWebTests.javaは推奨されないAPIを使用またはオーバーライドしています。
+ノート: 詳細は、-Xlint:deprecationオプションを指定して再コンパイルしてください。
+ノート: C:\exPractice\free-form-janken\src\test\java\com\example\janken\controller\StageFifteenWebTests.javaの操作は、未チェックまたは安全ではありません。
+ノート: 詳細は、-Xlint:uncheckedオプションを指定して再コンパイルしてください。
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended

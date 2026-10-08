@@ -8,6 +8,8 @@
         toggle.textContent = history.hidden ? 'ラウンド履歴を表示' : 'ラウンド履歴を非表示';
         toggle.setAttribute('aria-expanded', String(!history.hidden));
     });
+    // 観戦者には本人手という概念がないため、手UI同期を登録しない。
+    if (page.dataset.matchParticipant === 'false') return;
     // 初期HTMLも含め、同じRoundの確定状態はtrueからfalseへ戻さない。
     let confirmed = page.dataset.selfHandConfirmed === 'true';
     document.addEventListener('janken:status', ({ detail: status }) => {

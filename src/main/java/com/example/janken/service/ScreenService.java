@@ -100,6 +100,52 @@ public class ScreenService {
         }
     }
 
+    /** 観戦対象はURLから毎回解決し、ユーザーやSessionへ保存しない。 */
+    public Screen gamePage(HttpSession session, String matchId) {
+        synchronized (lock) {
+            GameUser user = access.find(session);
+            // ④・①・未ログインは既存の正規画面を優先する。
+            if (user == null || (user.getState() != UserState.ROOM_WAITING && user.getState() != UserState.READY)) {
+                return current(session);
+            }
+            Room room = user.getCurrentRoomId() == null ? null : rooms.findById(user.getCurrentRoomId()).orElse(null);
+            if (room == null || !room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
+            UUID id = room.getCurrentMatchId();
+            if (matchId != null) {
+                try {
+                    id = UUID.fromString(matchId);
+                    if (!id.toString().equalsIgnoreCase(matchId)) { return screen("/room", "", Map.of()); }
+                } catch (IllegalArgumentException ex) { return screen("/room", "", Map.of()); }
+            }
+            GameMatch match = id == null ? null : matches.findById(id).orElse(null);
+            if (match == null || !room.getId().equals(match.getRoomId())) { return screen("/room", "", Map.of()); }
+            if (match.getState() == MatchState.MATCH_RESULT) {
+                return screen("/match-result?matchId=" + id, "", Map.of());
+            }
+            // 現在Roomの進行中対戦だけを観戦し、active参加者を観戦者として扱わない。
+            MatchParticipant participant = match.getParticipants().get(user.getId());
+            if (!id.equals(room.getCurrentMatchId()) || (participant != null && participant.isActive())
+                    || match.getCurrentRound() == null) { return screen("/room", "", Map.of()); }
+            Map<String, Object> model = new LinkedHashMap<>();
+            model.put("username", user.getUsername());
+            model.put("userState", user.getState());
+            model.put("roomId", room.getId().toString());
+            model.put("matchId", id.toString());
+            model.put("roundNumber", match.getCurrentRound().getRoundNumber());
+            model.put("targetWins", match.getTargetWins());
+            model.put("matchParticipant", false);
+            model.put("selectedHand", null);
+            model.put("selfHandConfirmed", null);
+            model.put("selfSelectedHandName", null);
+            model.put("participants", match.getParticipants().values().stream()
+                    .map(p -> new ParticipantView(p.getUsername(), p.getScore())).toList());
+            model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
+            // 選択UI用データ・現在selections・OriginalHand相性はコピーしない。
+            if (match.getState() == MatchState.ROUND_RESULT) { return roundResultScreen(match, model); }
+            return screen("/play?matchId=" + id, "play", model);
+        }
+    }
+
     public record ParticipantView(String username, int score) { }
 
     public record OriginalHandOption(String originalHandId, String name, boolean consecutiveUseRestricted) { }
@@ -119,6 +165,8 @@ public class ScreenService {
         model.put("roomId", match.getRoomId().toString());
         model.put("matchId", match.getId().toString());
         model.put("roundNumber", match.getCurrentRound().getRoundNumber());
+        model.put("matchParticipant", true);
+        model.put("roundHistory", match.getRoundHistory().stream().map(this::historyView).toList());
         RoomActionForm leave = new RoomActionForm();
         leave.setRoomId(room.getId().toString());
         model.put("roomActionForm", leave);

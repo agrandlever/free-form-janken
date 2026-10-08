@@ -12,5 +12,14 @@
 </tr></tbody></table></div>
 <p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
 <p id="transition-count" role="status" th:text="${matchFinished ? '対戦結果まで：時刻を確認中' : '次のラウンドまで：時刻を確認中'}"></p>
-<form method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
+<a th:unless="${matchParticipant}" th:href="@{/room}">ルームへ戻る</a>
+<details><summary>ラウンド履歴を表示</summary>
+<h2>ラウンド履歴</h2>
+<section th:each="round : ${roundHistory}">
+<h3>第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
+<ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
+<span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong>
+</li></ul><p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
+</section></details>
+<form th:if="${matchParticipant}" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
 </main></body></html>

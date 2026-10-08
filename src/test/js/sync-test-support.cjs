@@ -23,6 +23,7 @@ class Element {
     }
     get lastChild() { return this.children.at(-1); }
     setAttribute(key, value) { this.attributes[key] = value; }
+    removeAttribute(key) { delete this.attributes[key]; }
     addEventListener(name, fn) { (this.listeners[name] ??= []).push(fn); }
     emit(name, data) { for (const fn of this.listeners[name] ?? []) fn(data); }
     querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
@@ -53,7 +54,7 @@ function environment(kind, confirmed = false) {
         ids
     };
     for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
-        'rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
+        'watch-match','rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
         'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities']) {
         ids[id] = document.createElement('div'); ids[id].id = id;
     }

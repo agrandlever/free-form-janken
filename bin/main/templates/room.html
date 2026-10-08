@@ -18,7 +18,7 @@
 <form id="ready-action" th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button type="submit">準備取消</button>
 </form>
-<p id="match-running" th:hidden="${!matchRunning}">対戦が進行中です。</p>
+<div id="match-running" th:hidden="${!matchRunning}"><p>現在対戦中です</p><a id="watch-match" th:href="${matchRunning} ? @{/play(matchId=${currentMatchId})} : null">対戦を見る</a></div>
 <div id="start-action"><form th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
 <input type="hidden" name="roomId" th:value="${roomId}"><button type="submit">対戦開始</button>
 </form></div>

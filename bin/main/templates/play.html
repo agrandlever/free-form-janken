@@ -2,13 +2,14 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/play.js}"></script></head>
 <body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
-<main data-page="play" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-self-hand-confirmed=${selfHandConfirmed}">
+<main data-page="play" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-self-hand-confirmed=${selfHandConfirmed},data-match-participant=${matchParticipant}">
 <section th:replace="~{login :: errors}"></section>
 <h1>第<span th:text="${roundNumber}"></span>ラウンド</h1>
 <p th:if="${matchParticipant}">あなたは対戦参加者です。</p>
+<p th:unless="${matchParticipant}">観戦中です。</p>
 <p>先取勝数：<span th:text="${targetWins}"></span></p>
-<p>現在の勝数：<span th:text="${score}"></span></p>
-<p>同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+<p th:if="${matchParticipant}">現在の勝数：<span th:text="${score}"></span></p>
+<p th:if="${matchParticipant}">同一オリジナル手の連続使用を禁止する：<span th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
 <h2>対戦開始時の参加者</h2><ul><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
 <section>
 <button id="toggle-round-history" type="button" aria-controls="round-history" aria-expanded="false">ラウンド履歴を表示</button>
@@ -21,6 +22,7 @@
 </li></ul><p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
 </section></div>
 </section>
+<section th:if="${matchParticipant}">
 <h2>手を選択</h2>
 <p id="self-hand-status" th:if="${selfHandConfirmed}">確定済みの手：<strong th:text="${selfSelectedHandName}"></strong>。他の参加者の確定を待っています。</p>
 <p id="self-hand-status" th:unless="${selfHandConfirmed}" aria-live="polite"></p>
@@ -38,5 +40,7 @@
 <button type="submit" th:disabled="${selfHandConfirmed or hand.consecutiveUseRestricted}" th:text="${hand.name}"></button>
 </form>
 </div>
-<form method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
+</section>
+<a th:unless="${matchParticipant}" th:href="@{/room}">ルームへ戻る</a>
+<form th:if="${matchParticipant}" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
 </main></body></html>

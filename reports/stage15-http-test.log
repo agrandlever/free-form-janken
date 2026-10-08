@@ -1,0 +1,9 @@
+M0正常終了
+②・③観戦開始と途中入室確認
+Aだけ確定：HTML／JSON非公開と②・③直接POST拒否
+ROUND_RESULT公開・Cルーム戻り・別タブM0維持
+Scheduler次Round：同じM1維持とroom継続
+NORMAL終了：同じM1結果・C②／D③・M0維持
+観戦後のready／cancelReady
+ABORTED：観戦者をactiveへ数えずC②／D③維持
+観戦後退出・ログアウトのアクセス制御
