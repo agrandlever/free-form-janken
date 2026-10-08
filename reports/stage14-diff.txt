@@ -1,0 +1,290 @@
+diff --git a/src/main/java/com/example/janken/controller/ScreenRenderer.java b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+index 4fce3d2..0739c59 100644
+--- a/src/main/java/com/example/janken/controller/ScreenRenderer.java
++++ b/src/main/java/com/example/janken/controller/ScreenRenderer.java
+@@ -55,6 +55,15 @@ public class ScreenRenderer {
+ 
+     public String error(HttpSession session, Object form, GameOperationException error, Model model) {
+         ScreenService.Screen screen = screens.current(session);
++        String resultId = form instanceof OriginalHandForm hand ? hand.getResultMatchId()
++                : form instanceof OriginalHandDeleteForm delete ? delete.getResultMatchId() : null;
++        String returnPage = form instanceof OriginalHandForm hand ? hand.getReturnPage()
++                : form instanceof OriginalHandDeleteForm delete ? delete.getReturnPage() : null;
++        if ("MATCH_RESULT".equals(returnPage) && resultId != null && !resultId.isEmpty()) {
++            // 明示された対象だけを再表示し、最新結果への再解決はしない。
++            ScreenService.Screen result = results.page(session, resultId);
++            if (result.template().equals("match-result")) { screen = result; }
++        }
+         model.addAllAttributes(screen.model());
+         model.addAttribute("errorCode", error.getCode());
+         model.addAttribute("errorMessages", error.getErrorMessages());
+@@ -89,6 +98,7 @@ public class ScreenRenderer {
+             display.setVsOriginal(hand.getVsOriginal());
+             display.setReturnPage(current.getReturnPage());
+             display.setRoomId(current.getRoomId());
++            display.setResultMatchId(current.getResultMatchId());
+             model.addAttribute("originalHandForm", display);
+             model.addAttribute("originalHandFormOpen", true);
+         } else if (Boolean.TRUE.equals(screen.model().get("canEditOriginalHand"))
+@@ -100,6 +110,14 @@ public class ScreenRenderer {
+     }
+ 
+     private boolean canRedisplay(ScreenService.Screen screen, String returnPage, String roomId) {
++        if ("MATCH_RESULT".equals(returnPage) && screen.template().equals("match-result")) {
++            // 形式不正のhiddenは現在の検証済み値で置き換える。別RoomのUUIDは使わない。
++            try {
++                java.util.UUID target = java.util.UUID.fromString(roomId == null ? "" : roomId);
++                return !target.toString().equalsIgnoreCase(roomId)
++                        || target.toString().equals(screen.model().get("roomId"));
++            } catch (IllegalArgumentException ex) { return true; }
++        }
+         if ("ROOMS".equals(returnPage)) { return screen.template().equals("rooms"); }
+         if (!"ROOM".equals(returnPage) || !screen.template().equals("room")) { return false; }
+         try {
+diff --git a/src/main/java/com/example/janken/service/MatchResultService.java b/src/main/java/com/example/janken/service/MatchResultService.java
+index d0837b1..ef7902f 100644
+--- a/src/main/java/com/example/janken/service/MatchResultService.java
++++ b/src/main/java/com/example/janken/service/MatchResultService.java
+@@ -3,6 +3,8 @@ package com.example.janken.service;
+ import com.example.janken.domain.*;
+ import com.example.janken.domain.enums.*;
+ import com.example.janken.form.MatchResultReturnForm;
++import com.example.janken.form.OriginalHandForm;
++import com.example.janken.form.OriginalHandDeleteForm;
+ import com.example.janken.store.*;
+ import jakarta.servlet.http.HttpSession;
+ import java.time.Instant;
+@@ -82,6 +84,19 @@ public class MatchResultService {
+             if (matchId == null) { return redirect(url); }
+             Map<String, Object> model = new LinkedHashMap<>(displayModel(snapshot));
+             model.put("username", user.getUsername()); model.put("userState", user.getState());
++            // 編集値は現在のGameUserからコピーし、過去相性はdisplayModelのまま保つ。
++            if (user.getState() == UserState.ROOM_WAITING) {
++                ScreenService.originalHandModel(user, "MATCH_RESULT", room.getId().toString(), model);
++                ((OriginalHandForm) model.get("originalHandForm")).setResultMatchId(id.toString());
++                ((OriginalHandDeleteForm) model.get("originalHandDeleteForm")).setResultMatchId(id.toString());
++            } else {
++                model.put("originalHandFormOpen", false);
++            }
++            model.put("canEditOriginalHand", user.getState() == UserState.ROOM_WAITING);
++            model.put("currentOriginalHand", user.getOriginalHand() == null ? null
++                    : new AffinityView(user.getOriginalHand().getId(), user.getOriginalHand().getName(),
++                            user.getOriginalHand().getVsRock(), user.getOriginalHand().getVsScissors(),
++                            user.getOriginalHand().getVsPaper(), user.getOriginalHand().getVsOriginal()));
+             return new ScreenService.Screen(url, "match-result", Collections.unmodifiableMap(model));
+         }
+     }
+diff --git a/src/main/java/com/example/janken/service/OriginalHandService.java b/src/main/java/com/example/janken/service/OriginalHandService.java
+index 364fd58..e00fdb6 100644
+--- a/src/main/java/com/example/janken/service/OriginalHandService.java
++++ b/src/main/java/com/example/janken/service/OriginalHandService.java
+@@ -9,6 +9,7 @@ import com.example.janken.form.OriginalHandForm;
+ import com.example.janken.form.OriginalHandDeleteForm;
+ import com.example.janken.store.GameStateLock;
+ import com.example.janken.store.RoomStore;
++import com.example.janken.store.MatchResultStore;
+ import jakarta.servlet.http.HttpSession;
+ import java.util.LinkedHashMap;
+ import java.util.List;
+@@ -24,11 +25,13 @@ public class OriginalHandService {
+     private final GameStateLock lock;
+     private final SessionUserAccess access;
+     private final RoomStore rooms;
++    private final MatchResultStore results;
+ 
+-    public OriginalHandService(GameStateLock lock, SessionUserAccess access, RoomStore rooms) {
++    public OriginalHandService(GameStateLock lock, SessionUserAccess access, RoomStore rooms, MatchResultStore results) {
+         this.lock = lock;
+         this.access = access;
+         this.rooms = rooms;
++        this.results = results;
+     }
+ 
+     public String save(HttpSession session, OriginalHandForm form) {
+@@ -64,7 +67,7 @@ public class OriginalHandService {
+     private String validateTarget(GameUser user, String returnPage, String roomId, String resultMatchId) {
+         // 古い②フォームでも、最新状態が③・④なら入力検証・変更より先に拒否する。
+         if (user.getState() == UserState.READY || user.getState() == UserState.PLAYING) { throw GameOperationException.invalidState(); }
+-        if (!"ROOMS".equals(returnPage) && !"ROOM".equals(returnPage)) {
++        if (!"ROOMS".equals(returnPage) && !"ROOM".equals(returnPage) && !"MATCH_RESULT".equals(returnPage)) {
+             throw GameOperationException.validation("returnPage", "返却先の指定が不正です。");
+         }
+         if ("ROOMS".equals(returnPage)) {
+@@ -89,6 +92,19 @@ public class OriginalHandService {
+             Room room = rooms.findById(target).orElseThrow(GameOperationException::invalidState);
+             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
+         }
++        if ("MATCH_RESULT".equals(returnPage)) {
++            UUID id;
++            try {
++                id = UUID.fromString(resultMatchId == null ? "" : resultMatchId);
++                if (!id.toString().equalsIgnoreCase(resultMatchId)) { throw new IllegalArgumentException(); }
++            } catch (IllegalArgumentException ex) {
++                throw GameOperationException.validation("resultMatchId", "対戦結果の指定が不正です。");
++            }
++            // 保存済み結果を参照するだけで、現在手の更新対象にはしない。
++            var snapshot = results.findById(id).orElseThrow(GameOperationException::invalidState);
++            if (!snapshot.getRoomId().equals(user.getCurrentRoomId())) { throw GameOperationException.invalidState(); }
++            return "/match-result?matchId=" + id;
++        }
+         if (resultMatchId != null && !resultMatchId.isEmpty()) {
+             throw GameOperationException.validation("resultMatchId", "この画面では対戦結果を指定できません。");
+         }
+diff --git a/src/main/java/com/example/janken/service/ScreenService.java b/src/main/java/com/example/janken/service/ScreenService.java
+index 57566f0..734280f 100644
+--- a/src/main/java/com/example/janken/service/ScreenService.java
++++ b/src/main/java/com/example/janken/service/ScreenService.java
+@@ -176,7 +176,7 @@ public class ScreenService {
+         return screen("/round-result?matchId=" + match.getId(), "round-result", model);
+     }
+ 
+-    private void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
++    static void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
+         OriginalHand hand = user.getOriginalHand();
+         OriginalHandForm form = new OriginalHandForm();
+         form.setReturnPage(returnPage);
+diff --git a/src/main/resources/static/js/match-result.js b/src/main/resources/static/js/match-result.js
+index c01b527..b700d67 100644
+--- a/src/main/resources/static/js/match-result.js
++++ b/src/main/resources/static/js/match-result.js
+@@ -3,6 +3,15 @@
+     const button = document.getElementById('toggle-affinities');
+     const table = document.getElementById('original-hand-affinities');
+     if (!button || !table) return;
++    // ②のままならフォームを触らず、入力中の値を保持する。
++    document.addEventListener('janken:status', (event) => {
++        if (event.detail.userState === 'ROOM_WAITING') return;
++        const editor = document.getElementById('result-original-hand-editor');
++        if (!editor) return;
++        editor.hidden = true;
++        editor.querySelectorAll('input, select, button').forEach(control => { control.disabled = true; });
++        // ③→②の後も無効な操作を復活させず、明示的な再表示で最新フォームを取得する。
++    });
+     button.addEventListener('click', () => {
+         // 表示だけを切り替える。サーバーへ状態変更を送信しない。
+         table.hidden = !table.hidden;
+diff --git a/src/main/resources/templates/fragments/original-hand.html b/src/main/resources/templates/fragments/original-hand.html
+index 0064631..e64acd2 100644
+--- a/src/main/resources/templates/fragments/original-hand.html
++++ b/src/main/resources/templates/fragments/original-hand.html
+@@ -5,12 +5,13 @@
+ <p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
+ <p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
+ <button th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
+-        th:text="${hasOriginalHand ? 'オリジナル手を編集' : 'オリジナル手を作成'}"></button>
++        th:text="${hasOriginalHand ? (originalHandForm.returnPage == 'MATCH_RESULT' ? '自分のオリジナル手を編集' : 'オリジナル手を編集') : 'オリジナル手を作成'}"></button>
+ <div th:if="${canEditOriginalHand}" id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
+ <section th:replace="~{login :: errors}"></section>
+ <form method="post" th:action="@{/original-hand/save}" th:object="${originalHandForm}">
+ <input id="original-save-returnPage" type="hidden" th:field="*{returnPage}">
+ <input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
++<input th:if="${originalHandForm.resultMatchId != null}" id="original-save-resultMatchId" type="hidden" th:field="*{resultMatchId}">
+ <label for="original-hand-name">名前（前後の空白を除いて1～20文字）</label>
+ <input id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-errors">
+ <ul id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
+@@ -49,6 +50,7 @@
+ <form th:if="${hasOriginalHand}" method="post" th:action="@{/original-hand/delete}" th:object="${originalHandDeleteForm}">
+ <input id="original-delete-returnPage" type="hidden" th:field="*{returnPage}">
+ <input th:if="${originalHandDeleteForm.roomId != null}" id="original-delete-roomId" type="hidden" th:field="*{roomId}">
++<input th:if="${originalHandDeleteForm.resultMatchId != null}" id="original-delete-resultMatchId" type="hidden" th:field="*{resultMatchId}">
+ <button type="submit">オリジナル手を削除</button>
+ </form>
+ </div>
+diff --git a/src/main/resources/templates/match-result.html b/src/main/resources/templates/match-result.html
+index 494a548..4ab5fce 100644
+--- a/src/main/resources/templates/match-result.html
++++ b/src/main/resources/templates/match-result.html
+@@ -1,8 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/match-result.js}"></script></head>
++<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/match-result.js}"></script><script defer th:src="@{/js/original-hand.js}"></script></head>
+ <body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
+-<main data-page="match-result" th:attr="data-match-id=${matchId},data-room-id=${roomId}">
++<main data-page="match-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-user-state=${userState}">
+ <section th:replace="~{login :: errors}"></section>
+ <h1>対戦終了</h1>
+ <section th:if="${endType.name() == 'NORMAL'}"><h2>勝者</h2><ul><li th:each="winner : ${winners}" th:text="${winner.username}"></li></ul></section>
+@@ -15,11 +15,13 @@
+ <ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}"><span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong></li></ul>
+ <p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
+ </section>
+-<button id="toggle-affinities" type="button" aria-controls="original-hand-affinities" aria-expanded="false">オリジナル手の相性を表示</button>
+-<div id="original-hand-affinities" class="table-scroll" hidden>
++<button id="toggle-affinities" type="button" aria-controls="original-hand-affinities" th:attr="aria-expanded=${originalHandFormOpen}" th:text="${originalHandFormOpen ? 'オリジナル手の相性を非表示' : 'オリジナル手の相性を表示'}">オリジナル手の相性を表示</button>
++<div id="original-hand-affinities" class="table-scroll" th:hidden="${!originalHandFormOpen}">
+ <table class="affinity-table"><thead><tr><th scope="col">オリジナル手</th><th scope="col">グー</th><th scope="col">チョキ</th><th scope="col">パー</th><th scope="col">他のオリジナル手</th></tr></thead>
+ <tbody><tr th:each="hand : ${originalHandAffinities}"><th scope="row" th:text="${hand.handName}"></th>
+ <td th:each="relation : ${ {hand.vsRock, hand.vsScissors, hand.vsPaper, hand.vsOriginal} }" th:text="${relation.name() == 'WIN' ? '勝ち' : relation.name() == 'LOSE' ? '負け' : '引き分け'}"></td>
+-</tr></tbody></table></div>
++</tr></tbody></table>
++<div id="result-original-hand-editor" th:if="${canEditOriginalHand and userState.name() == 'ROOM_WAITING'}"><section th:replace="~{fragments/original-hand :: editor}"></section></div>
++</div>
+ <form method="post" th:action="@{/match-result/return}" th:object="${matchResultReturnForm}"><input type="hidden" th:field="*{roomId}"><input type="hidden" th:field="*{matchId}"><button type="submit">ルームへ戻る</button></form>
+ </main></body></html>
+diff --git a/src/test/java/com/example/janken/controller/StageTwelveWebTests.java b/src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+index abc6eb6..2ffcd6d 100644
+--- a/src/test/java/com/example/janken/controller/StageTwelveWebTests.java
++++ b/src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+@@ -90,7 +90,11 @@ class StageTwelveWebTests {
+         normal();var viewer=login("Visitor","R");if(state==UserState.READY)ready(viewer,"HV");
+         mvc.perform(get("/match-result").session(viewer).param("matchId",matchId.toString())).andExpect(status().isOk()).andExpect(view().name("match-result"))
+             .andExpect(model().attributeExists("roomId","matchId","endType","winners","finalScores","roundHistory","originalHandAffinities","userState","matchResultReturnForm"))
+-            .andExpect(model().attributeDoesNotExist("originalHandForm","originalHandDeleteForm")).andExpect(model().attribute("userState",state));
++            .andExpect(model().attribute("canEditOriginalHand",state == UserState.ROOM_WAITING)).andExpect(model().attribute("userState",state));
++        if (state == UserState.READY) {
++            mvc.perform(get("/match-result").session(viewer).param("matchId",matchId.toString()))
++                .andExpect(model().attributeDoesNotExist("originalHandForm","originalHandDeleteForm"));
++        }
+         mvc.perform(post("/match-result/return").session(viewer).param("roomId",roomId.toString()).param("matchId",matchId.toString()))
+             .andExpect(status().isFound()).andExpect(redirectedUrl("/room"));assertEquals(state,user(viewer).getState());
+     }
+@@ -221,7 +225,8 @@ class StageTwelveWebTests {
+         var result=http(ca,"/match-result?matchId="+mid,null);assertEquals(200,result.statusCode(),result.body());String html=result.body();
+         for(String text:List.of("対戦終了","最終結果","Alice","Bob","ラウンド履歴","グー","チョキ","HA","HB","勝ち","負け","引き分け","他のオリジナル手","ルームへ戻る"))assertTrue(html.contains(text),text);
+         assertTrue(html.contains("id=\"original-hand-affinities\" class=\"table-scroll\" hidden"));assertTrue(html.contains("/js/status-polling.js"));assertTrue(html.contains("/js/match-result.js"));
+-        assertFalse(html.contains("/original-hand/save"));assertFalse(html.contains("/original-hand/delete"));assertFalse(html.contains("自分のオリジナル手を編集"));
++        // 第14段階で②向け編集を統合したため、終了済み結果の閲覧に加えて導線を確認する。
++        assertTrue(html.contains("/original-hand/save"));assertTrue(html.contains("/original-hand/delete"));assertTrue(html.contains("自分のオリジナル手を編集"));
+         if(mode.equals("aborted")){assertTrue(html.contains("参加人数が不足したため対戦を終了しました"));assertTrue(html.contains("勝者はいません"));}else assertTrue(html.contains("<h2>勝者</h2>"));
+         // 制御用属性とhiddenを除いた本文に内部IDを出さない。
+         String bodyText=html.replaceAll("<[^>]+>","");assertFalse(bodyText.contains(mid));assertFalse(bodyText.contains(rid));
+diff --git a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+index 6322612..7e7c2b7 100644
+--- a/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
++++ b/src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+@@ -31,7 +31,7 @@ class OriginalHandServiceTests {
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+         roomService = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, roomService, clock);
+-        hands = new OriginalHandService(lock, access, rooms);
++        hands = new OriginalHandService(lock, access, rooms, new com.example.janken.store.MatchResultStore());
+     }
+     MockHttpSession login(String name) {
+         MockHttpServletRequest request = new MockHttpServletRequest(); auth.login(request, name);
+diff --git a/src/test/java/com/example/janken/service/StageEightServiceTests.java b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+index 09d48c3..1849555 100644
+--- a/src/test/java/com/example/janken/service/StageEightServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageEightServiceTests.java
+@@ -30,7 +30,7 @@ class StageEightServiceTests {
+         clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+         service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, matches = new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, service, clock);
+-        hands = new OriginalHandService(lock, access, rooms);
++        hands = new OriginalHandService(lock, access, rooms, new com.example.janken.store.MatchResultStore());
+     }
+     MockHttpSession member(String username, String roomName, String handName) {
+         MockHttpServletRequest request = new MockHttpServletRequest(); auth.login(request, username);
+diff --git a/src/test/java/com/example/janken/service/StageSixServiceTests.java b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+index 55419a9..a9e3de1 100644
+--- a/src/test/java/com/example/janken/service/StageSixServiceTests.java
++++ b/src/test/java/com/example/janken/service/StageSixServiceTests.java
+@@ -28,7 +28,7 @@ class StageSixServiceTests {
+         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
+         service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
+         auth = new AuthService(lock, users, access, service, clock);
+-        hands = new OriginalHandService(lock, access, rooms);
++        hands = new OriginalHandService(lock, access, rooms, new com.example.janken.store.MatchResultStore());
+     }
+     MockHttpSession member(String username, String roomName, String handName) {
+         MockHttpServletRequest request = new MockHttpServletRequest(); auth.login(request, username);

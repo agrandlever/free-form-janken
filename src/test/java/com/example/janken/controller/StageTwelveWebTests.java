@@ -90,7 +90,11 @@ class StageTwelveWebTests {
         normal();var viewer=login("Visitor","R");if(state==UserState.READY)ready(viewer,"HV");
         mvc.perform(get("/match-result").session(viewer).param("matchId",matchId.toString())).andExpect(status().isOk()).andExpect(view().name("match-result"))
             .andExpect(model().attributeExists("roomId","matchId","endType","winners","finalScores","roundHistory","originalHandAffinities","userState","matchResultReturnForm"))
-            .andExpect(model().attributeDoesNotExist("originalHandForm","originalHandDeleteForm")).andExpect(model().attribute("userState",state));
+            .andExpect(model().attribute("canEditOriginalHand",state == UserState.ROOM_WAITING)).andExpect(model().attribute("userState",state));
+        if (state == UserState.READY) {
+            mvc.perform(get("/match-result").session(viewer).param("matchId",matchId.toString()))
+                .andExpect(model().attributeDoesNotExist("originalHandForm","originalHandDeleteForm"));
+        }
         mvc.perform(post("/match-result/return").session(viewer).param("roomId",roomId.toString()).param("matchId",matchId.toString()))
             .andExpect(status().isFound()).andExpect(redirectedUrl("/room"));assertEquals(state,user(viewer).getState());
     }
@@ -221,7 +225,8 @@ class StageTwelveWebTests {
         var result=http(ca,"/match-result?matchId="+mid,null);assertEquals(200,result.statusCode(),result.body());String html=result.body();
         for(String text:List.of("対戦終了","最終結果","Alice","Bob","ラウンド履歴","グー","チョキ","HA","HB","勝ち","負け","引き分け","他のオリジナル手","ルームへ戻る"))assertTrue(html.contains(text),text);
         assertTrue(html.contains("id=\"original-hand-affinities\" class=\"table-scroll\" hidden"));assertTrue(html.contains("/js/status-polling.js"));assertTrue(html.contains("/js/match-result.js"));
-        assertFalse(html.contains("/original-hand/save"));assertFalse(html.contains("/original-hand/delete"));assertFalse(html.contains("自分のオリジナル手を編集"));
+        // 第14段階で②向け編集を統合したため、終了済み結果の閲覧に加えて導線を確認する。
+        assertTrue(html.contains("/original-hand/save"));assertTrue(html.contains("/original-hand/delete"));assertTrue(html.contains("自分のオリジナル手を編集"));
         if(mode.equals("aborted")){assertTrue(html.contains("参加人数が不足したため対戦を終了しました"));assertTrue(html.contains("勝者はいません"));}else assertTrue(html.contains("<h2>勝者</h2>"));
         // 制御用属性とhiddenを除いた本文に内部IDを出さない。
         String bodyText=html.replaceAll("<[^>]+>","");assertFalse(bodyText.contains(mid));assertFalse(bodyText.contains(rid));

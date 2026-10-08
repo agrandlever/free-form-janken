@@ -55,6 +55,15 @@ public class ScreenRenderer {
 
     public String error(HttpSession session, Object form, GameOperationException error, Model model) {
         ScreenService.Screen screen = screens.current(session);
+        String resultId = form instanceof OriginalHandForm hand ? hand.getResultMatchId()
+                : form instanceof OriginalHandDeleteForm delete ? delete.getResultMatchId() : null;
+        String returnPage = form instanceof OriginalHandForm hand ? hand.getReturnPage()
+                : form instanceof OriginalHandDeleteForm delete ? delete.getReturnPage() : null;
+        if ("MATCH_RESULT".equals(returnPage) && resultId != null && !resultId.isEmpty()) {
+            // 明示された対象だけを再表示し、最新結果への再解決はしない。
+            ScreenService.Screen result = results.page(session, resultId);
+            if (result.template().equals("match-result")) { screen = result; }
+        }
         model.addAllAttributes(screen.model());
         model.addAttribute("errorCode", error.getCode());
         model.addAttribute("errorMessages", error.getErrorMessages());
@@ -89,6 +98,7 @@ public class ScreenRenderer {
             display.setVsOriginal(hand.getVsOriginal());
             display.setReturnPage(current.getReturnPage());
             display.setRoomId(current.getRoomId());
+            display.setResultMatchId(current.getResultMatchId());
             model.addAttribute("originalHandForm", display);
             model.addAttribute("originalHandFormOpen", true);
         } else if (Boolean.TRUE.equals(screen.model().get("canEditOriginalHand"))
@@ -100,6 +110,14 @@ public class ScreenRenderer {
     }
 
     private boolean canRedisplay(ScreenService.Screen screen, String returnPage, String roomId) {
+        if ("MATCH_RESULT".equals(returnPage) && screen.template().equals("match-result")) {
+            // 形式不正のhiddenは現在の検証済み値で置き換える。別RoomのUUIDは使わない。
+            try {
+                java.util.UUID target = java.util.UUID.fromString(roomId == null ? "" : roomId);
+                return !target.toString().equalsIgnoreCase(roomId)
+                        || target.toString().equals(screen.model().get("roomId"));
+            } catch (IllegalArgumentException ex) { return true; }
+        }
         if ("ROOMS".equals(returnPage)) { return screen.template().equals("rooms"); }
         if (!"ROOM".equals(returnPage) || !screen.template().equals("room")) { return false; }
         try {

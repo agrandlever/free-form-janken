@@ -3,6 +3,8 @@ package com.example.janken.service;
 import com.example.janken.domain.*;
 import com.example.janken.domain.enums.*;
 import com.example.janken.form.MatchResultReturnForm;
+import com.example.janken.form.OriginalHandForm;
+import com.example.janken.form.OriginalHandDeleteForm;
 import com.example.janken.store.*;
 import jakarta.servlet.http.HttpSession;
 import java.time.Instant;
@@ -82,6 +84,19 @@ public class MatchResultService {
             if (matchId == null) { return redirect(url); }
             Map<String, Object> model = new LinkedHashMap<>(displayModel(snapshot));
             model.put("username", user.getUsername()); model.put("userState", user.getState());
+            // 編集値は現在のGameUserからコピーし、過去相性はdisplayModelのまま保つ。
+            if (user.getState() == UserState.ROOM_WAITING) {
+                ScreenService.originalHandModel(user, "MATCH_RESULT", room.getId().toString(), model);
+                ((OriginalHandForm) model.get("originalHandForm")).setResultMatchId(id.toString());
+                ((OriginalHandDeleteForm) model.get("originalHandDeleteForm")).setResultMatchId(id.toString());
+            } else {
+                model.put("originalHandFormOpen", false);
+            }
+            model.put("canEditOriginalHand", user.getState() == UserState.ROOM_WAITING);
+            model.put("currentOriginalHand", user.getOriginalHand() == null ? null
+                    : new AffinityView(user.getOriginalHand().getId(), user.getOriginalHand().getName(),
+                            user.getOriginalHand().getVsRock(), user.getOriginalHand().getVsScissors(),
+                            user.getOriginalHand().getVsPaper(), user.getOriginalHand().getVsOriginal()));
             return new ScreenService.Screen(url, "match-result", Collections.unmodifiableMap(model));
         }
     }

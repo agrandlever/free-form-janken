@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "roomName": "stage14-http",
+  "matchId": "c21f924f-1429-4e3d-9596-0c6f168da61f",
+  "roomId": "c97ee33c-ad42-472c-90c3-a2d1823fa6e9",
+  "observations": [
+    {
+      "step": "終了・②編集導線・制御値",
+      "status": 200,
+      "matchId": "c21f924f-1429-4e3d-9596-0c6f168da61f",
+      "roomId": "c97ee33c-ad42-472c-90c3-a2d1823fa6e9"
+    },
+    {
+      "step": "現在手更新・同一結果・過去相性不変",
+      "status": 302
+    },
+    {
+      "step": "入力エラー・入力値保持・フォーム展開・同一結果",
+      "status": 400
+    },
+    {
+      "step": "相性の不正値もHTMLへ保持",
+      "status": 400
+    },
+    {
+      "step": "削除・同一結果・過去相性残存・作成導線",
+      "status": 302
+    },
+    {
+      "step": "未作成削除拒否・再作成後も過去相性不変",
+      "status": 409
+    },
+    {
+      "step": "③は閲覧のみ・操作導線なし",
+      "status": 200
+    },
+    {
+      "step": "③旧フォームの保存・削除拒否",
+      "status": 409
+    }
+  ]
+}

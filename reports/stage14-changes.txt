@@ -1,0 +1,96 @@
+ M bin/main/com/example/janken/controller/ScreenRenderer.class
+ M bin/main/com/example/janken/service/MatchResultService$AffinityView.class
+ M bin/main/com/example/janken/service/MatchResultService$WinnerView.class
+ M bin/main/com/example/janken/service/MatchResultService.class
+ M bin/main/com/example/janken/service/OriginalHandService.class
+ M bin/main/com/example/janken/service/ScreenService.class
+ M bin/main/static/js/match-result.js
+ M bin/main/templates/fragments/original-hand.html
+ M bin/main/templates/match-result.html
+ M bin/test/com/example/janken/controller/StageTwelveWebTests.class
+ M bin/test/com/example/janken/service/OriginalHandServiceTests.class
+ M bin/test/com/example/janken/service/StageEightServiceTests.class
+ M bin/test/com/example/janken/service/StageSixServiceTests.class
+ M src/main/java/com/example/janken/controller/ScreenRenderer.java
+ M src/main/java/com/example/janken/service/MatchResultService.java
+ M src/main/java/com/example/janken/service/OriginalHandService.java
+ M src/main/java/com/example/janken/service/ScreenService.java
+ M src/main/resources/static/js/match-result.js
+ M src/main/resources/templates/fragments/original-hand.html
+ M src/main/resources/templates/match-result.html
+ M src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+ M src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ M src/test/java/com/example/janken/service/StageEightServiceTests.java
+ M src/test/java/com/example/janken/service/StageSixServiceTests.java
+?? bin/test/com/example/janken/controller/StageFourteenWebTests$1.class
+?? bin/test/com/example/janken/controller/StageFourteenWebTests$TestClock.class
+?? bin/test/com/example/janken/controller/StageFourteenWebTests$TimeConfig.class
+?? bin/test/com/example/janken/controller/StageFourteenWebTests.class
+?? bin/test/com/example/janken/service/StageFourteenServiceTests$MutableClock.class
+?? bin/test/com/example/janken/service/StageFourteenServiceTests.class
+?? hs_err_pid11628.log
+?? hs_err_pid11984.log
+?? hs_err_pid12256.log
+?? hs_err_pid12684.log
+?? hs_err_pid13216.log
+?? hs_err_pid13884.log
+?? hs_err_pid14312.log
+?? hs_err_pid15072.log
+?? hs_err_pid15736.log
+?? hs_err_pid16988.log
+?? hs_err_pid17396.log
+?? hs_err_pid18940.log
+?? hs_err_pid19116.log
+?? hs_err_pid20400.log
+?? hs_err_pid22168.log
+?? hs_err_pid26804.log
+?? hs_err_pid26872.log
+?? hs_err_pid27816.log
+?? hs_err_pid28052.log
+?? hs_err_pid29356.log
+?? hs_err_pid30928.log
+?? hs_err_pid32028.log
+?? hs_err_pid32096.log
+?? hs_err_pid34104.log
+?? hs_err_pid34468.log
+?? hs_err_pid6552.log
+?? hs_err_pid7988.log
+?? hs_err_pid8184.log
+?? replay_pid11628.log
+?? replay_pid11984.log
+?? replay_pid12256.log
+?? replay_pid12684.log
+?? replay_pid13216.log
+?? replay_pid13884.log
+?? replay_pid15072.log
+?? replay_pid15736.log
+?? replay_pid16988.log
+?? replay_pid17396.log
+?? replay_pid19116.log
+?? replay_pid20400.log
+?? replay_pid22168.log
+?? replay_pid26804.log
+?? replay_pid26872.log
+?? replay_pid27816.log
+?? replay_pid28052.log
+?? replay_pid29356.log
+?? replay_pid30928.log
+?? replay_pid32028.log
+?? replay_pid32096.log
+?? replay_pid34104.log
+?? replay_pid34468.log
+?? replay_pid6552.log
+?? replay_pid7988.log
+?? replay_pid8184.log
+?? reports/stage14-boot.log
+?? reports/stage14-chrome-deleted.png
+?? reports/stage14-chrome-input-error.png
+?? reports/stage14-diff.txt
+?? reports/stage14-gradle-test.log
+?? reports/stage14-http-check.cjs
+?? reports/stage14-http-observations.json
+?? reports/stage14-javascript-test.log
+?? reports/stage14-tests.json
+?? src/test/java/com/example/janken/controller/StageFourteenWebTests.java
+?? src/test/java/com/example/janken/service/StageFourteenServiceTests.java
+?? src/test/js/stage14-sync.test.cjs

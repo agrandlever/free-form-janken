@@ -28,7 +28,7 @@ class StageSixServiceTests {
         Clock clock = Clock.fixed(Instant.parse("2026-10-07T00:00:00Z"), ZoneOffset.UTC);
         service = new RoomService(lock, rooms, access, clock, users, new MatchService(lock, new MatchStore(), clock, rooms, access, new RoundJudgeService(), users, new MatchResultService(lock, new com.example.janken.store.MatchResultStore(), access, rooms, new MatchStore())));
         auth = new AuthService(lock, users, access, service, clock);
-        hands = new OriginalHandService(lock, access, rooms);
+        hands = new OriginalHandService(lock, access, rooms, new com.example.janken.store.MatchResultStore());
     }
     MockHttpSession member(String username, String roomName, String handName) {
         MockHttpServletRequest request = new MockHttpServletRequest(); auth.login(request, username);

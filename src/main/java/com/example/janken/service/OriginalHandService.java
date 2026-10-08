@@ -9,6 +9,7 @@ import com.example.janken.form.OriginalHandForm;
 import com.example.janken.form.OriginalHandDeleteForm;
 import com.example.janken.store.GameStateLock;
 import com.example.janken.store.RoomStore;
+import com.example.janken.store.MatchResultStore;
 import jakarta.servlet.http.HttpSession;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,11 +25,13 @@ public class OriginalHandService {
     private final GameStateLock lock;
     private final SessionUserAccess access;
     private final RoomStore rooms;
+    private final MatchResultStore results;
 
-    public OriginalHandService(GameStateLock lock, SessionUserAccess access, RoomStore rooms) {
+    public OriginalHandService(GameStateLock lock, SessionUserAccess access, RoomStore rooms, MatchResultStore results) {
         this.lock = lock;
         this.access = access;
         this.rooms = rooms;
+        this.results = results;
     }
 
     public String save(HttpSession session, OriginalHandForm form) {
@@ -64,7 +67,7 @@ public class OriginalHandService {
     private String validateTarget(GameUser user, String returnPage, String roomId, String resultMatchId) {
         // 古い②フォームでも、最新状態が③・④なら入力検証・変更より先に拒否する。
         if (user.getState() == UserState.READY || user.getState() == UserState.PLAYING) { throw GameOperationException.invalidState(); }
-        if (!"ROOMS".equals(returnPage) && !"ROOM".equals(returnPage)) {
+        if (!"ROOMS".equals(returnPage) && !"ROOM".equals(returnPage) && !"MATCH_RESULT".equals(returnPage)) {
             throw GameOperationException.validation("returnPage", "返却先の指定が不正です。");
         }
         if ("ROOMS".equals(returnPage)) {
@@ -88,6 +91,19 @@ public class OriginalHandService {
             if (!target.equals(user.getCurrentRoomId())) { throw GameOperationException.invalidState(); }
             Room room = rooms.findById(target).orElseThrow(GameOperationException::invalidState);
             if (!room.getMemberIds().contains(user.getId())) { throw GameOperationException.invalidState(); }
+        }
+        if ("MATCH_RESULT".equals(returnPage)) {
+            UUID id;
+            try {
+                id = UUID.fromString(resultMatchId == null ? "" : resultMatchId);
+                if (!id.toString().equalsIgnoreCase(resultMatchId)) { throw new IllegalArgumentException(); }
+            } catch (IllegalArgumentException ex) {
+                throw GameOperationException.validation("resultMatchId", "対戦結果の指定が不正です。");
+            }
+            // 保存済み結果を参照するだけで、現在手の更新対象にはしない。
+            var snapshot = results.findById(id).orElseThrow(GameOperationException::invalidState);
+            if (!snapshot.getRoomId().equals(user.getCurrentRoomId())) { throw GameOperationException.invalidState(); }
+            return "/match-result?matchId=" + id;
         }
         if (resultMatchId != null && !resultMatchId.isEmpty()) {
             throw GameOperationException.validation("resultMatchId", "この画面では対戦結果を指定できません。");

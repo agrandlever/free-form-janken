@@ -1,0 +1,12 @@
+{
+  "tests": 950,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "newTests": 91,
+  "javascript": {
+    "tests": 35,
+    "newTests": 6,
+    "failures": 0
+  }
+}

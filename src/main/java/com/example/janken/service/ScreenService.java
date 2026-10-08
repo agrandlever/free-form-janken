@@ -176,7 +176,7 @@ public class ScreenService {
         return screen("/round-result?matchId=" + match.getId(), "round-result", model);
     }
 
-    private void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
+    static void originalHandModel(GameUser user, String returnPage, String roomId, Map<String, Object> model) {
         OriginalHand hand = user.getOriginalHand();
         OriginalHandForm form = new OriginalHandForm();
         form.setReturnPage(returnPage);

@@ -5,12 +5,13 @@
 <p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
 <p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
 <button th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
-        th:text="${hasOriginalHand ? 'オリジナル手を編集' : 'オリジナル手を作成'}"></button>
+        th:text="${hasOriginalHand ? (originalHandForm.returnPage == 'MATCH_RESULT' ? '自分のオリジナル手を編集' : 'オリジナル手を編集') : 'オリジナル手を作成'}"></button>
 <div th:if="${canEditOriginalHand}" id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
 <section th:replace="~{login :: errors}"></section>
 <form method="post" th:action="@{/original-hand/save}" th:object="${originalHandForm}">
 <input id="original-save-returnPage" type="hidden" th:field="*{returnPage}">
 <input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
+<input th:if="${originalHandForm.resultMatchId != null}" id="original-save-resultMatchId" type="hidden" th:field="*{resultMatchId}">
 <label for="original-hand-name">名前（前後の空白を除いて1～20文字）</label>
 <input id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-errors">
 <ul id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
@@ -49,6 +50,7 @@
 <form th:if="${hasOriginalHand}" method="post" th:action="@{/original-hand/delete}" th:object="${originalHandDeleteForm}">
 <input id="original-delete-returnPage" type="hidden" th:field="*{returnPage}">
 <input th:if="${originalHandDeleteForm.roomId != null}" id="original-delete-roomId" type="hidden" th:field="*{roomId}">
+<input th:if="${originalHandDeleteForm.resultMatchId != null}" id="original-delete-resultMatchId" type="hidden" th:field="*{resultMatchId}">
 <button type="submit">オリジナル手を削除</button>
 </form>
 </div>

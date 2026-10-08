@@ -1,0 +1,122 @@
+第14段階 完了報告
+再開・報告日：2026-10-08（日本時間）。実装・全件テスト・起動・HTTP／Chrome操作の主な証跡は中断前の2026-10-07に保存。
+対象：第14段階「対戦結果画面からのオリジナル手操作」のみ。
+結論：第14段階完了。第15段階以降へは進んでいない。
+
+1. 作成・変更ファイル
+本体変更7ファイル：
+ src/main/java/com/example/janken/controller/ScreenRenderer.java
+ src/main/java/com/example/janken/service/OriginalHandService.java
+ src/main/java/com/example/janken/service/MatchResultService.java
+ src/main/java/com/example/janken/service/ScreenService.java
+ src/main/resources/templates/match-result.html
+ src/main/resources/templates/fragments/original-hand.html
+ src/main/resources/static/js/match-result.js
+新規テスト3ファイル：
+ src/test/java/com/example/janken/controller/StageFourteenWebTests.java
+ src/test/java/com/example/janken/service/StageFourteenServiceTests.java
+ src/test/js/stage14-sync.test.cjs
+既存テスト変更4ファイル：
+ src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+ src/test/java/com/example/janken/service/OriginalHandServiceTests.java
+ src/test/java/com/example/janken/service/StageEightServiceTests.java
+ src/test/java/com/example/janken/service/StageSixServiceTests.java
+reports/stage14-* は検証証跡・実HTTP検証スクリプト・本報告。build/stage14/ は実行中のログ。
+既存Serviceテスト3ファイルは追加されたMatchResultStoreのコンストラクター引数を渡す修正。
+StageTwelveWebTestsは②に編集機能がないという旧段階の期待値を更新し、③は編集FormのModelがないことを維持。
+
+2. match-resultへの現在OriginalHand統合：MatchResultService.pageで現在ユーザー設定の表示コピーと既存Formを追加。
+3. Snapshotと現在手の分離：winners／finalScores／roundHistory／originalHandAffinitiesはdisplayModel(snapshot)からのみ生成。currentOriginalHandとFormは現在GameUser.originalHandからコピー。
+4. ②の作成導線：現在手なしなら「オリジナル手を作成」。過去手を復元せず空の作成Formを表示。
+5. ②の編集導線：現在手ありなら「自分のオリジナル手を編集」。過去相性ではなく現在値を初期値にする。
+6. ③の非表示：canEditOriginalHand=false、編集FormのModelを新規生成しない。テンプレートもROOM_WAITINGだけ編集領域を描画。
+7. ④の古いフォーム拒否：既存のREADY／PLAYING優先検証を維持。保存・削除は409／INVALID_STATE。エラー画面は既存の現在対戦画面を優先。
+8. インラインフォーム：相性表領域内へ既存fragments/original-hand :: editorを配置。新規編集GET画面なし。
+9. OriginalHandForm制御値：returnPage=MATCH_RESULT、roomId=現在Room内部ID、resultMatchId=表示中matchId。nameと相性4項目は現在値。
+10. OriginalHandDeleteForm制御値：同じ3制御値をhiddenで保持。対象の手ID・名前を外部入力から選ばせない。
+11. 保存POST再利用：既存/original-hand/saveとOriginalHandController・OriginalHandService.saveを使用。
+12. 削除POST再利用：既存/original-hand/deleteとOriginalHandController・OriginalHandService.deleteを使用。
+13. MATCH_RESULT返却先処理：既存ROOMS／ROOMへMATCH_RESULTを統合。別系統CRUDや新returnPage値なし。
+14. roomId形式検証：既存UUID変換と標準表現の一致確認を再利用。未指定・空・不正・短縮UUIDは400。
+15. resultMatchId形式検証：必須UUIDとして同じ基準を追加。未指定・空・不正・短縮UUIDは400。
+16. roomId一致：currentRoomId一致、Room存在、本人memberIds所属を既存検証で確認。不一致は409。
+17. resultMatchId権限：MatchResultStoreの保存済み結果存在と内部roomId一致を共有ロック内で確認。不存在・未終了・他Room・同名別Roomは409。
+18. 無効returnPage：許可値以外は400／VALIDATION_ERROR。ServiceではROOMS等へ補正しない。
+19. save正常リダイレクト：302 → /match-result?matchId=resultMatchId。
+20. delete正常リダイレクト：同じ302返却先。
+21. 対象ID維持：FormのresultMatchIdを直接使う。lastCompletedMatchIdを保存・削除・入力エラーの対象決定に使わない。
+22. 入力エラー再表示：明示された結果が閲覧可能ならHTTP400のまま同じmatch-resultを再構築。Form・相性表を開いた状態にする。
+23. fieldErrors：既存例外からerrorCode／errorMessages／fieldErrors／formを渡す。型変換エラーのBindingResultも維持。
+24. 入力値：name・相性を表示Formへコピー。不正相性文字列は既存originalHandRejectedValuesとBindingResultで選択肢へ保持。
+25. 状態エラー：③で対象結果を閲覧可能ならエラー付き同一結果を再表示し編集不可。④は現在play／round-result。無効・未指定結果IDは結果を推測せず安全な現在画面へ再表示。
+26. 禁止名：既存完全一致検証を再利用。strip後のグー／チョキ／パーを400で拒否し既存メッセージをnameとerrorMessagesへ表示。
+27. Unicode：既存NameInputのstrip後1～20コードポイント検証を維持。21個の絵文字の拒否を新規テスト。
+28. LOSE：既存相性検証を維持。4項目必須、許可Enumのみ、最低1項目LOSE必須。MATCH_RESULTでもLOSEなしを拒否。
+29. 更新ID：既存IDを使った新OriginalHandを全検証後に一括設定。入力エラーでは元オブジェクトを変更しない。
+30. 削除後作成導線：GameUser.originalHand=nullにより、同じ結果の再表示で作成導線に変わる。Web・実HTTP・Chromeで確認。
+31. Snapshot保護：OriginalHandServiceはMatchResultStoreを権限確認のため読み取るのみ。Snapshotへの書き込み処理なし。
+32. 過去相性：現在手のWIN→LOSE更新、削除、再作成後も古い結果相性はWIN。テストと実HTTPの相性table全体比較で確認。
+33. 次対戦：更新・再作成後のready→startで新しいGameMatchの固定手に更新後のname／vsRockが入り、M1は古い値のまま。
+34. 相性閲覧：JavaScriptのhidden／aria／文言だけを変更。サーバー操作なし。閲覧・結果から戻る・readyの一連動作で余計な警告なし。
+35. polling共存：既存status-polling.jsは変更なし。②ならmatch-result.jsはFormを変更せず、入力値・展開状態を保持。
+36. ③化：janken:status受信時、編集領域を隠しinput／select／buttonを無効化。POSTも409。
+37. ④化：既存pollingにより本人の現在play／round-resultへ移動。編集中でも遷移を止めない。
+38. GameStateLock：状態、Room一致、結果存在・Room権限、現在手取得、保存／削除まで既存synchronized(lock)内で実行。新ロックなし。
+39. save vs ready：保存先行なら更新後の手でready成功。ready先行ならsave409、元の手維持。待機・ロック再確認2条件と実競合20反復で確認。
+40. delete vs ready：削除先行ならreadyはORIGINAL_HAND_REQUIRED。ready先行ならdelete409、手維持。ロック確認と実競合20反復で確認。
+41. 古いフォーム vs 次対戦：ready→start後のsave／deleteを409で拒否。新対戦のOriginalHandSnapshotも変更しない。
+42. TC-073：成功。現在設定のForm初期値、相性表内編集導線、同一画面展開をWeb／Chromeで確認。
+43. TC-074：成功。過去相性WINと現在手LOSEを分離、過去結果不変を確認。
+44. TC-075：成功。相性開閉で通信・状態変更なし。結果閲覧後に戻ってready成功、追加注意・確認・警告なし。
+45. TC-076：成功。③のForm Model生成なし、HTMLに作成／編集／削除／Formなし。サーバー拒否も確認。
+46. TC-112：成功。既存ROOMS／ROOM削除回帰とMATCH_RESULT削除、同じM1への302、過去相性不変。
+47. TC-113：成功。保存・削除の400／409で共通エラーModelを確認。保存入力不正時は通常結果Model・入力値・Form展開を保持。
+48. save入力エラー：新規パラメーター化テスト22件。name未入力・空・空白・21絵文字・禁止3名・前後空白グー、各相性不正、LOSEなし、returnPage不正、各必須ID未指定／空／不正／短縮UUID。400、現在手・結果不変を確認。
+49. save状態エラー：READY／PLAYING／roomId不一致／結果不存在／未終了／他Room／同名別内部Roomの7条件。409、手・結果不変。
+50. delete：正常削除、未作成409、上記状態7条件409、必須ID8条件400。本人現在手のみ削除。同じ結果302、不変確認。
+51. M1／M2維持：M2開始→終了でlastCompletedMatchId=M2になってもM1のsave成功／delete成功／save入力エラーはM1。
+52. Snapshot不変：現在手更新→削除→再作成でparticipantNames／winnerIds／finalScores／roundHistory／originalHandAffinitiesを比較して不変。
+53. 次対戦Snapshot：更新後nameとvsRockを新対戦で確認。古いM1の値は不変。
+54. UI：②手あり編集、②手なし作成、Form開閉・入力保持、成功後M1、入力エラー展開、削除後作成導線をChromeで確認。③HTMLの導線なしは実HTTPで確認。Chromeの別タブ③化直後の観測はpoll前であり、中断のため更新後の最終観測は未取得。別タブ同期そのものはJavaScriptテストで成功。
+55. JavaScript：35件すべて成功。既存29件と追加6件。作成／編集展開、相性開閉共存、②入力保持、③無効化、④play／round-result優先。
+56. 新規Java：91件（StageFourteenWebTests47件、StageFourteenServiceTests44件。反復・パラメーター展開後）。
+57. 新規JavaScript：6件。
+58. compileJava：成功。最終全件実行でもコンパイル成功。
+59. test：成功。950件、失敗0、エラー0、スキップ0。最終Gradle実行BUILD SUCCESSFUL。
+60. 既存Java859件：全件成功。第12段階の旧「②編集なし」期待値を本段階の仕様に更新したうえで回帰成功。
+61. 既存JavaScript29件：全件成功。
+62. Spring Boot：通常bootRunで正常起動。Spring Boot4.1.1／Java21／8080。通常Schedulerで10秒後の正常終了を確認。再開時に127.0.0.1:8080の接続拒否を確認し、検証サーバー停止済み。
+63. HTTP／Chrome：reports/stage14-http-check.cjsで通常サーバーの実HTTP確認成功、8グループの証跡をJSONへ保存。Chromeで相性表・作成・編集初期値・開閉・入力エラー・同一結果・削除・再作成・ルーム戻りを確認。画像2枚を保存。上記54のChrome別タブ最終観測は未取得だが自動テストで検証済み。
+64. 観戦：第15段階の進行中観戦機能は追加していない。
+65. DisconnectMonitor：追加なし。1秒Scheduler・30秒切断処理なし。既存MatchTransitionScheduler変更なし。
+66. docs/：変更なし。6設計書を参照。
+67. .gitignore：変更なし。
+68. bin/：IDEにより本体class・画面／JSコピー・テストclassが更新、新規第14段階テストclassも生成。意図的な編集・削除はしていない。詳細はstage14-changes.txt。
+69. git差分：本体7ファイル、既存テスト4ファイルの変更と新規テスト3ファイル。git diff --check成功。stage14-diff.txt、stage14-changes.txtを保存。
+70. 固定されていない部分の実装判断：
+ ・ScreenServiceの既存現在手Model生成をパッケージ内staticメソッドとして共用し、重複CRUDやForm初期化を避けた。
+ ・OriginalHandServiceにMatchResultStoreを注入し、保存済み結果だけを終了確認・所属確認の根拠にした。
+ ・currentOriginalHandは可変Domain参照ではなく表示recordへコピー。Snapshot由来の過去相性とは別インスタンス。
+ ・③は閲覧Modelのみ、操作Formを作らない。②から③化した既存Formは非表示・無効化し、③→②へ戻っても古いFormを自動復活させず明示再表示で最新設定を取る。
+ ・必須結果IDが不明／不正なら元結果を推測できないため、latestへ置き換えず安全な現在画面へエラー再表示する。
+ ・既存READY／PLAYINGの状態優先検証順を維持し、入力検証前に409で拒否する。
+ ・専用GET／専用API／別ロックは追加しない。OriginalHandForm／DeleteForm／Controller／original-hand.js／status-polling.jsは既存を再利用。
+ ・400はPOST応答の本文として結果画面を再描画するため、ブラウザーのアドレスは/original-hand/saveとなるが、Model・hidden・polling対象は同じresultMatchId。成功時は指定結果URLへ302。
+
+再開時の環境補足：
+ルートにhs_err_pid*.log／replay_pid*.logが追加生成されていた。確認したJVMログはネイティブメモリ不足を記録し、ユーザー側GradleキャッシュのDaemonコマンドを示す。本変更との因果関係は断定できない。これら生成ログは削除せず残している。今回のコード・テストは中断前の最終全件成功後に変更していない。
+PowerShell実行ツールが開始時に起動できなかったため、Nodeのファイル読み書きとchild_processからGradle Wrapper／Nodeを実行した。最終停止確認は実HTTP接続拒否による。
+
+主要証跡：
+ reports/stage14-tests.json
+ reports/stage14-gradle-test.log
+ reports/stage14-javascript-test.log
+ reports/stage14-boot.log
+ reports/stage14-http-observations.json
+ reports/stage14-http-check.cjs
+ reports/stage14-chrome-input-error.png
+ reports/stage14-chrome-deleted.png
+ reports/stage14-diff.txt
+ reports/stage14-changes.txt
+
+第14段階完了。第15段階以降には進んでいない。
