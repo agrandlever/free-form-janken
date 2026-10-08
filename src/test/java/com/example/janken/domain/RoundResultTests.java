@@ -1,6 +1,5 @@
 package com.example.janken.domain;
 
-import com.example.janken.domain.enums.*;
 import java.lang.reflect.Modifier;
 import java.time.Instant;
 import java.util.*;

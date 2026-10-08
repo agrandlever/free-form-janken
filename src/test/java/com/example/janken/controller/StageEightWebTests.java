@@ -1,8 +1,5 @@
 package com.example.janken.controller;
 
-import com.example.janken.domain.enums.UserState;
-import com.example.janken.form.RoomRuleForm;
-import com.example.janken.service.*;
 import com.example.janken.store.*;
 import java.net.*;
 import java.net.http.*;

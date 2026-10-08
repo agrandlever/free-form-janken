@@ -1,8 +1,6 @@
 package com.example.janken.controller;
 
 import com.example.janken.domain.enums.UserState;
-import com.example.janken.form.RoomRuleForm;
-import com.example.janken.service.*;
 import com.example.janken.store.*;
 import java.net.*;
 import java.net.http.*;
@@ -99,7 +97,7 @@ class StageElevenWebTests {
         var response=http(browser(),"/api/status",null);
         assertEquals(401,response.statusCode());assertTrue(response.headers().firstValue("content-type").orElseThrow().contains("application/json"));
         var json=json(response);
-        assertEquals("LOGIN_REQUIRED",json.get("code").asText());assertTrue(json.get("errors").isArray());
+        assertEquals("LOGIN_REQUIRED",json.get("code").asString());assertTrue(json.get("errors").isArray());
         assertFalse(response.body().contains("<html"));assertTrue(response.headers().firstValue("location").isEmpty());
     }
     tools.jackson.databind.JsonNode json(HttpResponse<String> response) throws Exception {
@@ -111,18 +109,18 @@ class StageElevenWebTests {
         assertEquals(Set.of("serverTime","userState","currentRoomId","roomState","currentMatchId","matchState","roundNumber",
                 "transitionAt","lastCompletedMatchId","displayMatchId","displayMatchState","displayRoundNumber",
                 "displayTransitionAt","selfHandConfirmed","selfSelectedHand","room"), j.propertyNames());
-        assertEquals("ROOM_NONE",j.get("userState").asText());assertEquals("NONE",j.get("roomState").asText());
-        java.time.Instant.parse(j.get("serverTime").asText());
+        assertEquals("ROOM_NONE",j.get("userState").asString());assertEquals("NONE",j.get("roomState").asString());
+        java.time.Instant.parse(j.get("serverTime").asString());
         for(String key:j.propertyNames()){if(!List.of("serverTime","userState","roomState").contains(key))assertTrue(j.get(key).isNull(),key);}
     }
     @ParameterizedTest @ValueSource(strings={"","bad","1-1-1-1-1"})
     void malformedStatus400JsonAndNoHeartbeat(String id) throws Exception {
-        var a=browser();var b=browser();String mid=startHttp(a,b)[1];java.time.Instant old;
+        var a=browser();var b=browser();startHttp(a,b);java.time.Instant old;
         synchronized(lock){var u=users.findAll().stream().filter(x->x.getUsername().equals("Alice")).findFirst().orElseThrow();u.setLastSeenAt(java.time.Instant.EPOCH);old=u.getLastSeenAt();}
         var response=http(a,"/api/status?matchId="+id,null);
         assertEquals(400,response.statusCode());var j=json(response);
-        assertEquals(Set.of("code","message","errors"),j.propertyNames());assertEquals("VALIDATION_ERROR",j.get("code").asText());
-        assertEquals("matchId",j.get("errors").get(0).get("field").asText());assertFalse(j.has("selfHandConfirmed"));
+        assertEquals(Set.of("code","message","errors"),j.propertyNames());assertEquals("VALIDATION_ERROR",j.get("code").asString());
+        assertEquals("matchId",j.get("errors").get(0).get("field").asString());assertFalse(j.has("selfHandConfirmed"));
         synchronized(lock){assertEquals(old,users.findAll().stream().filter(x->x.getUsername().equals("Alice")).findFirst().orElseThrow().getLastSeenAt());}
     }
     @ParameterizedTest @ValueSource(strings={"ROCK","SCISSORS","PAPER","ORIGINAL"})
@@ -136,10 +134,10 @@ class StageElevenWebTests {
         var response=http(a,path+"&userId="+otherId+"&submittedUserId="+otherId,null);var j=json(response);
         assertTrue(j.get("selfHandConfirmed").asBoolean());var h=j.get("selfSelectedHand");
         assertEquals(Set.of("type","normalHand","originalHandId","handName"),h.propertyNames());
-        assertEquals(type.equals("ORIGINAL")?"ORIGINAL":"NORMAL",h.get("type").asText());
-        assertEquals(type.equals("ORIGINAL")?"HB":switch(type){case "ROCK"->"グー";case "SCISSORS"->"チョキ";default->"パー";},h.get("handName").asText());
-        if(type.equals("ORIGINAL")){assertTrue(h.get("normalHand").isNull());assertEquals(originalId.toString(),h.get("originalHandId").asText());}
-        else{assertEquals(type,h.get("normalHand").asText());assertTrue(h.get("originalHandId").isNull());}
+        assertEquals(type.equals("ORIGINAL")?"ORIGINAL":"NORMAL",h.get("type").asString());
+        assertEquals(type.equals("ORIGINAL")?"HB":switch(type){case "ROCK"->"グー";case "SCISSORS"->"チョキ";default->"パー";},h.get("handName").asString());
+        if(type.equals("ORIGINAL")){assertTrue(h.get("normalHand").isNull());assertEquals(originalId.toString(),h.get("originalHandId").asString());}
+        else{assertEquals(type,h.get("normalHand").asString());assertTrue(h.get("originalHandId").isNull());}
         var other=json(http(b,path,null));assertFalse(other.get("selfHandConfirmed").asBoolean());assertTrue(other.get("selfSelectedHand").isNull());
         for(String secret:List.of("selections","vsRock","vsScissors","vsPaper","vsOriginal"))assertFalse(response.body().contains(secret));
         var memberKeys=j.get("room").get("members").get(0).propertyNames();
@@ -152,7 +150,7 @@ class StageElevenWebTests {
         if(kind.equals("unknown"))query="?matchId="+UUID.randomUUID();
         if(kind.equals("foreign"))synchronized(lock){var m=new com.example.janken.domain.GameMatch(UUID.randomUUID(),UUID.randomUUID(),"SECRET",3,false);m.setCurrentRound(new com.example.janken.domain.Round(99,java.time.Instant.EPOCH));matches.save(m);query="?matchId="+m.getId();}
         var response=http(a,"/api/status"+query,null);var j=json(response);
-        assertEquals(mid,j.get("currentMatchId").asText());
+        assertEquals(mid,j.get("currentMatchId").asString());
         for(String key:List.of("displayMatchId","displayMatchState","displayRoundNumber","displayTransitionAt","selfHandConfirmed","selfSelectedHand"))assertTrue(j.get(key).isNull(),key);
         assertFalse(response.body().contains("SECRET"));
     }
@@ -160,10 +158,10 @@ class StageElevenWebTests {
     void roomJsonWaitingAndReady(String state) throws Exception {
         var a=browser();var b=browser();String[] ids=startHttp(a,b);
         synchronized(lock){rooms.findById(UUID.fromString(ids[0])).orElseThrow().setCurrentMatchId(null);users.findAll().forEach(u->u.setState(UserState.valueOf(state)));}
-        var j=json(http(a,"/api/status",null));assertEquals(state,j.get("userState").asText());assertEquals("WAITING",j.get("roomState").asText());
+        var j=json(http(a,"/api/status",null));assertEquals(state,j.get("userState").asString());assertEquals("WAITING",j.get("roomState").asString());
         assertTrue(j.get("currentMatchId").isNull());assertEquals(2,j.get("room").get("members").size());
         assertEquals(Set.of("id","name","hostUserId","targetWins","preventConsecutiveSameOriginalHand","members"),j.get("room").propertyNames());
-        assertEquals("Alice",j.get("room").get("members").get(0).get("username").asText());
+        assertEquals("Alice",j.get("room").get("members").get(0).get("username").asString());
         assertTrue(j.get("room").get("members").get(0).get("isHost").asBoolean());
     }
     @ParameterizedTest @CsvSource({"ROCK,SCISSORS,false,10","ROCK,ROCK,false,5","ROCK,SCISSORS,true,10"})
@@ -180,9 +178,9 @@ class StageElevenWebTests {
         assertTrue(html.contains(finalRound?"対戦結果まで":"次のラウンドまで"));
         assertTrue(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
         assertFalse(html.contains("vsRock"));assertFalse(html.contains("vsOriginal"));
-        var j=json(http(a,"/api/status?matchId="+mid,null));assertEquals("ROUND_RESULT",j.get("matchState").asText());
+        var j=json(http(a,"/api/status?matchId="+mid,null));assertEquals("ROUND_RESULT",j.get("matchState").asString());
         assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());
-        synchronized(lock){var m=matches.findById(UUID.fromString(mid)).orElseThrow();assertEquals(m.getRoundHistory().getFirst().getDecidedAt().plusSeconds(seconds).toString(),j.get("transitionAt").asText());}
+        synchronized(lock){var m=matches.findById(UUID.fromString(mid)).orElseThrow();assertEquals(m.getRoundHistory().getFirst().getDecidedAt().plusSeconds(seconds).toString(),j.get("transitionAt").asString());}
     }
     @ParameterizedTest @ValueSource(strings={"none","unknown","foreign","malformed"})
     void roundResultDirectAccessAlwaysUsesCurrent(String kind) throws Exception {

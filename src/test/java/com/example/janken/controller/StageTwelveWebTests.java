@@ -169,9 +169,9 @@ class StageTwelveWebTests {
         synchronized(lock){clock.now=matches.findById(matchId).orElseThrow().getTransitionAt();}service.finishNormal(matchId);
         var model=mvc.perform(get("/match-result").session(a).param("matchId",matchId.toString())).andReturn().getModelAndView().getModel();
         assertEquals(MatchEndType.NORMAL,model.get("endType"));assertEquals(2,((List<?>)model.get("winners")).size());
-        var scores=(List<ScreenService.ScoreView>)model.get("finalScores");assertEquals(List.of("Alice","Bob","Carol"),scores.stream().map(ScreenService.ScoreView::username).toList());
+        var scores=((List<?>)model.get("finalScores")).stream().map(ScreenService.ScoreView.class::cast).toList();assertEquals(List.of("Alice","Bob","Carol"),scores.stream().map(ScreenService.ScoreView::username).toList());
         assertEquals(List.of(1,1,0),scores.stream().map(ScreenService.ScoreView::score).toList());
-        var history=(List<ScreenService.HistoryView>)model.get("roundHistory");assertEquals(1,history.size());assertEquals(3,history.getFirst().results().size());
+        var history=((List<?>)model.get("roundHistory")).stream().map(ScreenService.HistoryView.class::cast).toList();assertEquals(1,history.size());assertEquals(3,history.getFirst().results().size());
         assertEquals(3,((List<?>)model.get("originalHandAffinities")).size());
         var saved=results.findById(matchId).orElseThrow();user(a).getOriginalHand().setVsRock(HandRelation.LOSE);
         assertEquals(HandRelation.WIN,saved.getOriginalHandAffinities().getFirst().getVsRock());

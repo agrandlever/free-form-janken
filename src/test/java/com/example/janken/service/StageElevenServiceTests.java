@@ -176,8 +176,9 @@ class StageElevenServiceTests {
         assertEquals(1,model.get("roundNumber"));assertEquals(UserState.PLAYING,model.get("userState"));
         assertEquals(winner,model.get("hasRoundWinner"));assertEquals(finished,model.get("matchFinished"));
         assertEquals(now.plusSeconds(seconds).toString(),model.get("transitionAt"));
-        var results=(List<ScreenService.ResultView>)model.get("results");
-        var scores=(List<ScreenService.ScoreView>)model.get("scores");
+        // List<?>で受け取り、要素ごとに型を確認して安全に扱う。
+        var results=((List<?>)model.get("results")).stream().map(ScreenService.ResultView.class::cast).toList();
+        var scores=((List<?>)model.get("scores")).stream().map(ScreenService.ScoreView.class::cast).toList();
         assertEquals(List.of("開始時Alice","開始時Bob"),results.stream().map(ScreenService.ResultView::username).toList());
         assertEquals(List.of("グー","チョキ"),results.stream().map(ScreenService.ResultView::handName).toList());
         assertEquals(List.of(winner,winner),results.stream().map(ScreenService.ResultView::wonRound).toList());
@@ -187,7 +188,7 @@ class StageElevenServiceTests {
         assertEquals(2,scores.getFirst().score());assertEquals(2,results.size());
         assertEquals(List.of("userId","username","handName","wonRound"),
                 Arrays.stream(ScreenService.ResultView.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
-        assertThrows(UnsupportedOperationException.class,()->results.clear());
+        assertThrows(UnsupportedOperationException.class,()->((List<?>)model.get("results")).clear());
     }
     @Test void pendingNormalIsDisplayFlagNotFinishedState() {
         result(true,true);screens.current(session);poll();
@@ -198,13 +199,14 @@ class StageElevenServiceTests {
         result(true,false);
         match.getRoundHistory().add(new RoundResult(2,List.of(new RoundResultEntry(self.getId(),"Alice","パー",false)),false,now));
         match.setCurrentRound(new Round(3,now));match.setState(MatchState.SELECTING_HAND);match.setTransitionAt(null);
-        var history=(List<ScreenService.HistoryView>)screens.current(session).model().get("roundHistory");
+        var historyModel=screens.current(session).model();
+        var history=((List<?>)historyModel.get("roundHistory")).stream().map(ScreenService.HistoryView.class::cast).toList();
         assertEquals(List.of(1,2),history.stream().map(ScreenService.HistoryView::roundNumber).toList());
         assertTrue(history.getFirst().hasRoundWinner());assertFalse(history.getLast().hasRoundWinner());
         assertEquals(2,history.getFirst().results().stream().filter(ScreenService.ResultView::wonRound).count());
         assertEquals("パー",history.getLast().results().getFirst().handName());
         match.getRoundHistory().clear();assertEquals(2,history.size());
-        assertThrows(UnsupportedOperationException.class,()->history.clear());
+        assertThrows(UnsupportedOperationException.class,()->((List<?>)historyModel.get("roundHistory")).clear());
         assertEquals(List.of("roundNumber","results","hasRoundWinner"),
                 Arrays.stream(ScreenService.HistoryView.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName).toList());
     }

@@ -155,7 +155,8 @@ class StageFifteenWebTests {
         var status=statuses.status(s,matchId.toString());assertNull(status.selfHandConfirmed());assertNull(status.selfSelectedHand());assertEquals(clock.instant(),user(s).getLastSeenAt());
         mvc.perform(get("/room").session(s)).andExpect(status().isOk()).andExpect(model().attribute("currentMatchId",matchId)).andExpect(model().attribute("matchRunning",true));
         synchronized(lock){assertEquals(participantIds,m.getParticipants().keySet());assertEquals(hands,m.getOriginalHands());m.getParticipants().values().forEach(p->p.setScore(7));}
-        assertTrue(((List<ScreenService.ParticipantView>)model.get("participants")).stream().allMatch(p->p.score()==0));assertSpectator(s,state);
+        // 要素ごとに型を確認し、保存済みの表示データが変わらないことを検証する。
+        assertTrue(((List<?>)model.get("participants")).stream().map(ScreenService.ParticipantView.class::cast).allMatch(p->p.score()==0));assertSpectator(s,state);
     }
     @ParameterizedTest @EnumSource(MatchEndType.class)
     void tc085NormalAndAbortedKeepBothSpectatorStatesAndSameResult(MatchEndType end) throws Exception {
@@ -209,11 +210,11 @@ class StageFifteenWebTests {
         assertTrue(html.contains("観戦中です"));assertTrue(html.contains("ルームへ戻る"));assertTrue(html.contains("Alice"));assertTrue(html.contains("Bob"));
         for(String secret:List.of("action=\"/play\"","ルームを退出","手を選択","self-hand-status","グー","チョキ","パー","HA","HB","同じオリジナル手"))assertFalse(html.contains(secret),secret);
         for(String secret:List.of("vsRock","vsScissors","vsPaper","vsOriginal","selections","ROCK","\"HA\"","\"HB\"","グー")){assertFalse(html.contains(secret),secret);assertFalse(json.contains(secret),secret);}
-        var j=tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);assertEquals(state.name(),j.get("userState").asText());assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());
+        var j=tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);assertEquals(state.name(),j.get("userState").asString());assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());
         assertEquals(409,http(c,"/play",body).statusCode());submit(b,"ROCK");redirect(http(c,"/play?matchId="+matchId,null),"/round-result?matchId="+matchId);
         html=http(c,"/round-result?matchId="+matchId,null).body();assertTrue(html.contains(type.equals("NORMAL")?"グー":"HA"));assertTrue(html.contains("ルームへ戻る"));assertFalse(html.contains("ルームを退出"));assertTrue(html.contains("ラウンド履歴"));
         for(String secret:List.of("vsRock","vsScissors","vsPaper","vsOriginal"))assertFalse(html.contains(secret));
-        assertEquals(200,http(c,"/room",null).statusCode());assertEquals(state.name(),tools.jackson.databind.json.JsonMapper.builder().build().readTree(http(c,"/api/status",null).body()).get("userState").asText());
+        assertEquals(200,http(c,"/room",null).statusCode());assertEquals(state.name(),tools.jackson.databind.json.JsonMapper.builder().build().readTree(http(c,"/api/status",null).body()).get("userState").asString());
     }
     @Test void targetIdsAndSessionStayIndependentAcrossOldResultAndNewSpectating() throws Exception {
         normal();var old=matchId;var c=spectator(UserState.ROOM_WAITING);

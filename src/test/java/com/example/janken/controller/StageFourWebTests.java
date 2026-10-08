@@ -1,6 +1,5 @@
 package com.example.janken.controller;
 
-import com.example.janken.service.*;
 import com.example.janken.store.*;
 import com.example.janken.domain.enums.UserState;
 import java.time.*;
