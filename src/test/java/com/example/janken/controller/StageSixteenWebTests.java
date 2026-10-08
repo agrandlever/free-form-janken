@@ -212,8 +212,11 @@ class StageSixteenWebTests {
     }
     @Test void tc080ResponsiveCssAndWinnerLabelsAreServed() throws Exception {
         var response=http(client(),"/css/style.css",null);assertEquals(200,response.statusCode());String css=response.body();
-        assertTrue(css.contains("@media (max-width: 768px)"));assertTrue(css.contains("overflow-x: auto"));assertTrue(css.contains("min-width: 580px"));assertTrue(css.contains("flex-wrap: wrap"));
-        assertTrue(css.contains(".round-winner"));assertTrue(css.contains("font-weight: bold"));
+        assertTrue(css.contains("@media (max-width: 575.98px)"));assertTrue(css.contains("grid-template-columns: repeat(2, minmax(0, 1fr))"));assertTrue(css.contains("min-width: 580px"));
+        // 横スクロールやボタンの基本表示は、ローカル配信するBootstrapが担当する。
+        var bootstrap=http(client(),"/vendor/bootstrap/bootstrap.min.css",null);assertEquals(200,bootstrap.statusCode());
+        assertTrue(bootstrap.body().contains(".table-responsive{overflow-x:auto"));assertTrue(bootstrap.body().contains(".btn-primary"));
+        assertTrue(css.contains(".round-winner"));assertTrue(css.contains("font-weight: 700"));
         // 表の全列と文字の勝利表示はHTMLテストでも確認し、CSSだけを合否根拠にしない。
         normal();var s=client();http(s,"/login","username=Viewer");http(s,"/rooms/enter","roomName=R");
         var html=http(s,"/match-result?matchId="+matchId,null).body();assertTrue(html.contains("table-scroll"));assertTrue(html.contains("他のオリジナル手"));assertTrue(html.contains("グー"));assertTrue(html.contains("チョキ"));assertTrue(html.contains("パー"));

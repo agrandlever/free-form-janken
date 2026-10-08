@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
-<body><main>
-<h1>簡易自由律じゃんけん</h1>
-<section th:fragment="errors" th:if="${errorCode != null}" role="alert" class="errors">
-<p th:text="${errorCode}"></p><ul><li th:each="message : ${errorMessages}" th:text="${message}"></li></ul>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>簡易自由律じゃんけん</title><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body class="login-page"><main class="container app-main shadow-sm login-card"><div class="game-symbol" aria-hidden="true">✊ ✌️ ✋</div><p class="text-primary fw-semibold mb-2">自分だけの手で、いざ勝負。</p>
+<h1 class="h2 fw-bold page-title">簡易自由律じゃんけん</h1><p class="text-body-secondary mb-4">名前を決めて、みんなでじゃんけんを楽しもう。</p>
+<section th:fragment="errors" th:if="${errorCode != null}" role="alert" class="errors alert alert-danger">
+<p th:text="${errorCode}"></p><ul class="list-unstyled app-list"><li th:each="message : ${errorMessages}" th:text="${message}"></li></ul>
 </section>
-<form method="post" th:action="@{/login}" th:object="${loginForm}">
-<label for="username">ユーザー名（前後の空白を除いて1～20文字）</label>
-<input id="username" type="text" th:field="*{username}" autocomplete="nickname" aria-describedby="username-errors">
-<ul id="username-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['username']}" th:text="${message}"></li></ul>
-<button type="submit">ログイン</button>
+<form class="app-form" method="post" th:action="@{/login}" th:object="${loginForm}">
+<label class="form-label" for="username">ユーザー名（前後の空白を除いて1～20文字）</label>
+<input class="form-control" id="username" type="text" th:field="*{username}" autocomplete="nickname" aria-describedby="username-errors">
+<ul class="list-unstyled app-list" id="username-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['username']}" th:text="${message}"></li></ul>
+<button class="btn btn-primary btn-lg w-100" type="submit">ログイン</button>
 </form>
 </main></body></html>

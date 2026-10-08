@@ -210,7 +210,7 @@ class StageElevenWebTests {
             ps.forEach(p->p.setScore(7));m.setCurrentRound(new com.example.janken.domain.Round(3,java.time.Instant.EPOCH));
         }
         String html=http(a,"/play?matchId="+mid,null).body();
-        String history=html.substring(html.indexOf("<div id=\"round-history\""),html.indexOf("<h2>手を選択</h2>"));
+        String history=html.substring(html.indexOf("<div id=\"round-history\""),html.indexOf(">手を選択</h2>"));
         assertTrue(history.contains("hidden"));assertTrue(html.contains("ラウンド履歴を表示"));assertTrue(history.contains("第<span>1</span>ラウンド"));assertTrue(history.contains("第<span>2</span>ラウンド"));
         assertTrue(history.contains("Alice"));assertTrue(history.contains("Bob"));assertTrue(history.contains("履歴手"));assertEquals(2,count(history,">勝利</strong>"));
         assertTrue(history.contains("このラウンドの勝者はいません"));assertFalse(history.contains("7"));assertFalse(history.contains("score"));assertFalse(history.contains("vsOriginal"));

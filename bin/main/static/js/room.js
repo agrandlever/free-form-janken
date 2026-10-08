@@ -20,11 +20,14 @@
 
     const actionForm = (url, label, roomId) => {
         const form = document.createElement('form');
-        form.method = 'post'; form.action = url;
+        form.method = 'post'; form.action = url; form.className = 'app-form';
         const hidden = document.createElement('input');
         hidden.type = 'hidden'; hidden.name = 'roomId'; hidden.value = roomId;
         const button = document.createElement('button');
         button.type = 'submit'; button.textContent = label;
+        // 自動更新で作り直すボタンにも、初期HTMLと同じBootstrapの色を適用する。
+        button.className = url === '/room/ready' || url === '/room/start'
+            ? 'btn btn-success' : url === '/room/ready/cancel' ? 'btn btn-outline-secondary' : 'btn btn-primary';
         form.append(hidden, button);
         return form;
     };
@@ -33,12 +36,14 @@
         if (form) return form;
         form = actionForm('/room/rules', 'ルール変更', room.id);
         const label = document.createElement('label');
-        label.textContent = '先取勝数';
+        label.textContent = '先取勝数'; label.className = 'form-label';
         const wins = document.createElement('input');
-        wins.name = 'targetWins'; wins.type = 'text'; wins.inputMode = 'numeric';
+        wins.className = 'form-control'; wins.name = 'targetWins'; wins.type = 'text'; wins.inputMode = 'numeric';
         label.append(wins);
         const preventLabel = document.createElement('label');
+        preventLabel.className = 'form-label';
         const prevent = document.createElement('input');
+        prevent.className = 'form-check-input me-2';
         prevent.type = 'checkbox'; prevent.name = 'preventConsecutiveSameOriginalHand'; prevent.value = 'true';
         preventLabel.append(prevent, document.createTextNode('同一オリジナル手の連続使用を禁止する'));
         form.insertBefore(label, form.lastChild); form.insertBefore(preventLabel, form.lastChild);

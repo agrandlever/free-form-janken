@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
-<body><header><p>ユーザー：<span th:text="${username}"></span></p><form method="post" th:action="@{/logout}"><button type="submit">ログアウト</button></form></header>
-<main data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
+<body><header th:replace="~{rooms :: header}"></header>
+<main class="container app-main shadow-sm" data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
 <section th:replace="~{login :: errors}"></section>
-<h1>第<span th:text="${roundNumber}"></span>ラウンド結果</h1>
-<div class="table-scroll"><table><thead><tr><th scope="col">参加者</th><th scope="col">選択した手</th><th scope="col">ラウンド結果</th><th scope="col">現在の累積勝数</th></tr></thead>
+<h1 class="h2 fw-bold page-title">第<span th:text="${roundNumber}"></span>ラウンド結果</h1>
+<div class="table-scroll table-responsive"><table class="table table-hover align-middle"><thead><tr><th scope="col">参加者</th><th scope="col">選択した手</th><th scope="col">ラウンド結果</th><th scope="col">現在の累積勝数</th></tr></thead>
 <tbody><tr th:each="entry : ${results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
 <td th:text="${entry.username}"></td><td th:text="${entry.handName}"></td><td><strong th:if="${entry.wonRound}">勝利</strong><span th:unless="${entry.wonRound}">—</span></td>
 <td><th:block th:each="score : ${scores}" th:if="${score.userId == entry.userId}"><span th:text="${score.score}"></span>勝</th:block></td>
 </tr></tbody></table></div>
 <p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
 <p id="transition-count" role="status" th:text="${matchFinished ? '対戦結果まで：時刻を確認中' : '次のラウンドまで：時刻を確認中'}"></p>
-<a th:unless="${matchParticipant}" th:href="@{/room}">ルームへ戻る</a>
-<details><summary>ラウンド履歴を表示</summary>
-<h2>ラウンド履歴</h2>
+<a class="btn btn-outline-primary" th:unless="${matchParticipant}" th:href="@{/room}">ルームへ戻る</a>
+<details class="card card-body my-4"><summary class="fw-semibold text-primary">ラウンド履歴を表示</summary>
+<h2 class="h5 fw-bold">ラウンド履歴</h2>
 <section th:each="round : ${roundHistory}">
-<h3>第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
-<ul><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
+<h3 class="h6 fw-bold">第<span th:text="${round.roundNumber}"></span>ラウンド</h3>
+<ul class="list-unstyled app-list"><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}">
 <span th:text="${entry.username}"></span>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong>
 </li></ul><p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
 </section></details>
-<form th:if="${matchParticipant}" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button type="submit">ルームを退出</button></form>
+<form class="app-form" th:if="${matchParticipant}" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}"><input type="hidden" th:field="*{roomId}"><button class="btn btn-outline-danger" type="submit">ルームを退出</button></form>
 </main></body></html>
