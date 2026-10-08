@@ -76,8 +76,8 @@ public class RoomService {
         }
     }
 
-    /** ログアウトからも呼ぶ。外側のロックを解放せず、所属整理を完了する。 */
-    void leaveRoom(GameUser user) {
+    /** ログアウト・通信監視からも呼ぶ。共有ロック内で所属整理を完了する。 */
+    public void leaveRoom(GameUser user) {
         synchronized (lock) {
             if (!isLeaveState(user) || user.getCurrentRoomId() == null) {
                 throw GameOperationException.invalidState();

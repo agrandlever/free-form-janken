@@ -1,0 +1,34 @@
+{
+  "result": "PASS",
+  "observations": [
+    {
+      "check": "通常起動：最終Round結果",
+      "state": "PLAYING",
+      "matchState": "ROUND_RESULT",
+      "transitionAt": "2026-10-08T03:56:54.137688500Z"
+    },
+    {
+      "check": "正常2秒polling継続",
+      "elapsedMilliseconds": 34530,
+      "state": "ROOM_WAITING"
+    },
+    {
+      "check": "状態確認停止後timeout・同じCookieのstatus200",
+      "lastHeartbeat": "2026-10-08T03:56:43.994281Z",
+      "now": "2026-10-08T03:57:18.679056100Z",
+      "userState": "ROOM_NONE",
+      "room": null
+    },
+    {
+      "check": "timeout後の画面アクセス",
+      "roomRedirect": "/rooms",
+      "roomsStatus": 200
+    },
+    {
+      "check": "通常起動：500ms Scheduler正常終了",
+      "state": "ROOM_WAITING",
+      "displayMatchState": "MATCH_RESULT",
+      "resultStatus": 200
+    }
+  ]
+}

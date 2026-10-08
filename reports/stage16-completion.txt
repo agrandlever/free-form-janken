@@ -1,0 +1,319 @@
+第16段階「通信監視・切断処理」完了レポート
+作成日：2026-10-08（日本時間）
+結論：第16段階完了
+Java 1,079件成功／JavaScript 62件成功／TC-001～TC-130：PASS 130・FAIL 0。
+正はdocs/の6設計書。実装・監査でdocsを変更していない。
+TC個別記録：reports/final-tc001-130-audit.txt。
+
+01. 作成・変更ファイル
+新規：src/main/java/com/example/janken/scheduler/DisconnectMonitor.java。
+変更：src/main/java/com/example/janken/service/RoomService.java（GameUserを受け取る既存退出メソッドをpublic化）。
+変更：build.gradle（固定Clockテスト中のMonitor自動実行を無効化）。
+変更：src/test/java/com/example/janken/scheduler/MatchTransitionSchedulingTests.java（2タスクと各間隔を確認）。
+新規：src/test/java/com/example/janken/service/StageSixteenServiceTests.java（59件）。
+新規：src/test/java/com/example/janken/controller/StageSixteenWebTests.java（32件）。
+新規：src/test/js/stage16-sync.test.cjs（10件）。
+新規：reports/の監査・完了レポート、試験ログ、集計JSON、通常起動HTTP検証スクリプト。
+.vscode/settings.jsonとbin/にも作業中の差分あり。詳細は63・64参照。
+
+02. DisconnectMonitor構造
+@ComponentでSpring管理Bean化。GameStateLock、UserStore、RoomService、Clockをコンストラクターで受け取る。
+runChecks()で1回分を直接実行可能。退出に伴う処理はRoomServiceへ委譲。
+
+03. 1秒Scheduled設定
+@Scheduled(fixedRate = 1000)。通常起動で登録をTRACEログ確認。
+既存EnableSchedulingを再利用し、重複設定なし。
+
+04. Clock利用方法
+既存の共通Clockを注入。共有ロック内でclock.instant()を使用。
+MonitorにInstant.now()なし。ログイン・入室・正常statusも既存Clockを維持。
+テストでは差し替えClockの時刻を進め、実時間sleepを判定の正にしていない。
+
+05. 監視対象②③④
+ROOM_WAITING、READY、PLAYINGを明示的に判定。
+
+06. ①の監視対象除外
+ROOM_NONEは条件を満たさない。30・60・600秒、手あり／なしでユーザー・セッション・手の維持を確認。
+
+07. 30秒判定
+!clock.instant().isBefore(user.getLastSeenAt().plusSeconds(30))。
+now >= lastSeenAt + 30秒でのみ退出し、期限到達後の次回Monitorで処理。
+
+08. 30秒ちょうど
+切断可能。②③④で29.999秒、期限-1ns、ちょうど、期限+1nsを固定Clockで確認。
+1秒タスクによる実処理のミリ秒一致は要求しない。
+
+09. UserStore走査
+共有ロック取得後にusers.findAll()。RoomStoreだけの走査ではない。
+findAll()の一覧構造はコピーだが要素は最新GameUser参照。
+
+10. 最新lastSeenAt再確認
+全走査・各ユーザーのstate/currentRoomId/lastSeenAt/Clock確認・Service退出完了を同じロック内で実行。
+ロック外の候補収集・古い時刻の保持なし。前の退出後も次のユーザーの状態をその都度読む。
+
+11. statusとの競合対策
+StatusServiceと同じ単一GameStateLock。status先なら更新した時刻で非切断。
+Monitor先なら退出後の①をstatusが返し、その正常statusで時刻更新。
+両順を別スレッドで競合させて確認。専用ロック・Heartbeat API追加なし。
+
+12. 二重切断防止
+既存退出が①・所属なしにするため次回走査は対象外。
+複数Monitor・手動退出・logoutと競合して退出、Room削除、Snapshot保存が1回であることを検証。
+
+13. 入室時lastSeenAt初期化
+既存RoomService.enterRoomでjoinedRoomAtとlastSeenAtを入室時刻へ同時更新。変更不要。
+①で長時間待ってから入室してもログイン時刻を期限に使わない。
+
+14. 正常status時lastSeenAt更新
+既存StatusServiceを維持。正常GET /api/statusだけをHeartbeatにする。
+未ログイン401・UUID形式不正400はHeartbeatにしないことを確認。
+
+15. ②timeout処理
+既存leaveRoomでmemberIds除外、①化、currentRoomId=null。
+ホスト移譲・最後のRoom削除を実行。ユーザー・ログイン・手は維持。
+
+16. ③timeout処理
+同じ既存退出を利用。準備対象・名前競合対象から除外し、GameMatch参加者へ変換しない。
+ホスト移譲・最後のRoom削除も確認。
+
+17. ④timeout処理
+RoomServiceの既存退出からMatchService.handleParticipantLeaveへ委譲。
+Room退出・①化・MatchParticipant.active=falseを共有ロック内で整合。
+
+18. ホスト移譲
+既存transferHostを使用。最古参残存メンバーへ移譲。Monitor内に選定処理なし。
+
+19. Room削除
+既存RoomService／RoomStoreによる削除・名前索引整理。
+複数同時期限・最後のメンバー退出でもRoom削除1回を確認。
+
+20. SELECTING_HAND切断
+提出済み切断者の現在selectionだけを削除。過去RoundResult、score、previousHand、固定手を保持。
+残存active2人以上では未確定者待機、残存全員確定ならcompleteRound1回。
+
+21. ROUND_RESULT未決着切断
+確定済み結果を再判定しない。履歴、score、previousHand、transitionAtを維持。
+残存2人以上では継続し、退出者は次Roundのactive対象外。
+
+22. 残存1人以下ABORTED
+最終勝者未確定の場合は既存途中退出仕様どおり即時ABORTED。
+winnerIds空・不戦勝なし。確定済み履歴と加算済みscoreは保持。
+
+23. 最終勝者確定後NORMAL保護
+ROUND_RESULT、pendingEndType=NORMALの10秒表示中はABORTEDへ変更しない。
+既存MatchServiceの最終確定保護をそのまま再利用。
+
+24. 勝者本人切断
+pendingWinnerIds、score、最終結果、履歴、元transitionAtを保持。勝者から除外しない。
+
+25. 全員切断・Room削除後NORMAL終了
+全参加者退出後もMatchStoreの固定情報を維持。
+元transitionAtでMatchTransitionSchedulerを呼びNORMAL Snapshot1件保存を確認。
+
+26. 同名Room再作成保護
+内部roomIdで参照。旧Room削除後の同名別RoomのcurrentMatchId、latestMatchId、ルールを変更しない。
+旧結果に新Roomメンバーの閲覧権限を与えないことも回帰確認。
+
+27. 観戦者timeout
+非参加②③はRoomから退出するだけ。participants、active、score、selections、固定手を変更しない。
+正常pollingの観戦者は誤切断されない。
+
+28. timeout時ログイン維持
+MonitorからHTTPセッションをinvalidateしない。GameUserをUserStoreから削除しない。
+明示logoutだけは既存仕様どおり退出後セッション終了・UserStore削除。
+
+29. OriginalHand維持
+退出前の現在手のID・名前・相性・オブジェクトを維持。ログインID・usernameも保持。
+手動退出とtimeoutの両方を比較確認。
+
+30. timeout後status①応答
+同一CookieでGET /api/statusは200、userState=ROOM_NONE、room=null。
+/room等のアクセスは/roomsへ誘導。401になる明示logoutとの違いを実HTTPで確認。
+
+31. TC-064
+PASS。tc064DeadlineBoundary、realHttpPollingTimeoutKeepsCookieIdentityAndHand。
+3状態の期限前・境界・超過を固定Clockで確認。
+
+32. TC-065
+PASS。tc065RoomTimeoutTransfersOldestAndKeepsLoginAndHand、lastMemberTimeoutDeletesRoomAndAllowsNameReuse、readyTimeoutReleasesNamesAndCannotBecomeMatchParticipant。
+②③・ホスト有無・手維持・準備解除・Room削除を確認。
+
+33. TC-066
+PASS。tc066SelectingRemovesOnlyCurrentSelectionAndWaits、tc066UnconfirmedTimeoutCompletesRemainingRoundExactlyOnce、tc066SelectingOneRemainingAbortsWithoutForfeit、tc066UndecidedResultPreservesAllConfirmedData。
+提出・未確定、人数、未決着ROUND_RESULTを確認。
+
+34. TC-067
+PASS。tc067NormalProtectedIncludingDeletedRoomAndSameNameReplacement、monitorVsTransitionNormalOnceInBothOrders。
+勝者・他参加者・全員切断でも元期限後NORMAL1件。
+
+35. TC-117
+PASS。tc117LongRoomNoneWaitThenEntryAndStatusResetDeadline、roomNoneNeverExpires。
+①非監視、入室時再設定、正常status基準の期限更新。
+
+36. status vs Monitor
+statusVsMonitorBothLockOrders：共有ロックの両取得順で不整合なし。
+
+37. Monitor vs leave
+monitorVsDepartureBothLockOrders：両順で退出1回。Monitor先の古い手動leaveは409。
+
+38. Monitor vs logout
+同テスト：両順でMatchParticipant処理・Snapshot保存1回。
+logout成立後はUserStore削除とセッション無効化を確認。
+
+39. Monitor vs Scheduler
+monitorVsTransitionNormalOnceInBothOrders：境界で両順を実行しNORMAL1件、ABORTEDなし。
+
+40. Monitor vs submitHand
+monitorVsSubmitConsistentInBothOrders：最後の提出／未完了提出と両順を確認。
+先に切断されたユーザーの旧POSTは拒否。提出先でも確定済み結果を保持。
+
+41. 複数ユーザー同時timeout
+concurrentMonitorsExitAndAbortAndDeleteOnlyOnce、laterUsersUseLatestHeartbeatAndStateAfterEarlierExit。
+先の退出によるMatch終了・state変更や後続Heartbeatを踏まえて最新状態で処理。
+二重Room削除・二重Snapshot保存なし。
+
+42. polling継続中非切断
+固定Clockで②③④を2秒ごと120秒pollし、非切断。
+観戦・別タブ本人確定は64秒の2秒pollでも正常。
+通常起動実HTTPでは2秒pollingを約34.5秒継続し②を維持。
+
+43. polling停止後timeout
+固定Clockで最後の正常statusから30秒未満は維持、30秒で退出。
+通常起動実HTTPでも状態確認停止後のMonitor退出を確認。
+実時間確認は補助証跡であり、30秒sleepだけのテストではない。
+
+44. compileJava結果
+Gradle Wrapper compileJava --rerun-tasks：BUILD SUCCESSFUL、終了コード0。
+証跡：reports/stage16-compile.log。最終compileJava testも成功。
+
+45. Java test総数
+1,079件、失敗0、エラー0、スキップ0。
+証跡：stage16-gradle-test.log、stage16-tests.json、build/test-results/test/TEST-*.xml。
+
+46. 既存Java988件回帰
+開始時点の988件を実行し全成功（stage16-baseline-test.log／stage16-baseline-tests.json）。
+最終実行でも既存988件すべてを含めて成功。新規91件。
+既存Schedulingテストの登録件数は新Monitor追加に合わせ1→2へ変更し、両間隔を検証追加。
+
+47. JavaScript test総数
+62件成功、失敗0・キャンセル0・スキップ0。
+証跡：reports/stage16-javascript-test.log。
+
+48. 既存JavaScript52件回帰
+既存52件を変更せず全件成功。10件追加。本番JavaScript変更なし。
+
+49. Spring Boot起動結果
+bootJar成功後、通常のjava -jarで起動。port=18016、Scheduler登録ログのTRACE設定のみ追加。
+Monitor／遷移Schedulerの無効化やテストClockなし。Started JankenApplication確認。
+確認後に当該PID・起動コマンドを照合して停止済み。
+
+50. MatchTransitionScheduler起動確認
+通常起動ログでrunTransitions、fixedRate=500を確認。
+実HTTPの最終Round結果が10秒期限後に正常結果画面へ遷移。
+本番500ms設定を変更していない。
+
+51. DisconnectMonitor起動確認
+通常起動ログでrunChecks、fixedRate=1000を確認。
+実HTTPで最後のstatusから期限経過後、Room所属が解除された。
+
+52. HTTP確認結果
+通常起動：login→入室→status→2秒poll継続／別ユーザーpoll停止→timeout→同じCookieのstatus①200→/rooms200。
+固定Clockの実HTTP統合テスト：②③④の29.999秒非切断／30秒切断、login・hand維持、再入室、400非Heartbeat。
+明示logout旧Cookieの保護GET／全11変更POST／status401、NORMAL結果のScheduler遷移も確認。
+通常起動証跡：stage16-http-test.log、stage16-http-observations.json、stage16-http-check.cjs。
+
+53. Chrome確認・環境制約
+computer-useスキルを読み起動を試行。cua.getState()も試行。
+両ツールとも「trusted Node process exited unexpectedly; kernel reset, rerun your request」で起動不能。
+Chrome等の視覚ブラウザー操作・実画面の目視確認は未実施。
+ツール起動不能を実装の問題と扱わず、HTTP・DOMを模したJavaScriptテスト・HTML/CSS検証で補完。
+TC-080は自動テスト＋画面設計照合によるPASSであり、目視によるPASSではない。
+
+54. TC-001～TC-130全件監査
+全130件を省略なしで別レポートに記録。
+各TCの番号・タイトル・判定・方法・対応テスト・確認内容・備考を明記。
+既存テストで薄かった項目は57のテストを追加。
+
+55. TC監査PASS数
+130件。自動テストで確認120件／既存自動テスト＋設計照合で確認10件。
+
+56. TC監査FAIL数
+0件。未解消の仕様不一致なし。
+
+57. 最終監査で追加したテスト
+第16段階全体：Service59件、Web32件、JavaScript10件。
+全件監査の追加補強：TC-027（④同名ユーザー名／手名／両方の観戦③準備）3件。
+TC-080（配信CSSの768px条件・横スクロール・全相性列・勝利表示）1件。
+TC-125（logout途中退出の選択・確定・結果・人数条件）8件。
+TC-129（手動退出7画面条件、login・hand・①・再入室・結果保護）7件。
+TC-127の実旧Cookie全保護ルート、TC-128全状態検証順、TC-130正常pollingと本人同期も新規Webで確認。
+JSのコピー成功／失敗とインラインフォーム開閉入力保持・イベント重複防止も追加。
+
+58. 最終監査で修正した実装
+監査で追加の本番仕様不一致は見つからず、Monitor新規と既存退出メソッドpublic化以外の業務処理変更なし。
+設計書をテストに合わせて変更していない。
+初期新規Webテストでは、対象④だけがtimeoutする前提なのに相手も期限切れとなりABORTEDになる設定ミスがあった。
+相手の正常statusでHeartbeatを維持するよう新規テストの前提を修正。実装は変更せず、最終全件成功。
+初期失敗ログはstage16-web-initial-test.logとして残し、最終判定はstage16-gradle-test.logの成功を使用。
+新規テストのコンパイル時のアクセサー名等・HTTPリダイレクトの絶対URL比較・JS仮想時計更新順も実際の契約へ修正済み。
+既存テストの意味・期待仕様を緩める変更なし。
+
+59. セキュリティ／情報非公開監査
+StageElevenWebTests.realHttpSelfOnlyFixedHandAndIdentity、StageFifteenWebTests.realHttpSpectatorHtmlJsonPrivacyAndPublishedRound等で確認。
+確定前の他参加者の手・進行中OriginalHand相性・他Room対象をHTML/JSONへ公開しない。
+ユーザーはHttpSessionから決定し、入力userIdで切替不可。内部IDは必要なAPI／hidden識別に限定し利用者向け不要表示なし。
+UserStateはROOM_NONE／ROOM_WAITING／READY／PLAYINGの既存4状態だけ。観戦・切断状態追加なし。
+
+60. 同時実行監査
+同名Room同時作成、7人Room同時入室、同一ユーザー別Room同時入室、最後の退出vs同名入室：StageFourServiceTests。
+READY同名競合：StageSixServiceTests。手二重送信：StageNineServiceTests。
+最後の手vsleave：StageTwelveServiceTests。Scheduler vs leave/logout：StageThirteenServiceTests。
+Monitor vs status/leave/logout/Scheduler/submitHand：StageSixteenServiceTests。
+すべて共有GameStateLockで両順または競合を確認し、二重確定・二重保存なし。
+
+61. docs変更なし
+git diffとgit diff --cachedのdocs/差分とも0。6設計書を変更していない。
+docs/progress.md等への保存なし。GitHub学習進捗管理なし。
+
+62. .gitignore変更なし
+未ステージ・ステージの.gitignore差分とも0。
+
+63. bin生成物変化
+手動編集なし。作業中にビルド／IDE由来の生成物差分が発生。
+変更：bin/main/.../service/RoomService.class、bin/test/.../scheduler/MatchTransitionSchedulingTests.class。
+新規：DisconnectMonitor.class、StageSixteenServiceTests.classとTestClock、StageSixteenWebTests.classと$1／TestClock／TimeConfig。
+binはソースの正として扱わず、生成物の変化として報告。
+
+64. git diff・変更概要
+reports/stage16-diff.txt：追跡済み実装・設定・テスト差分。
+reports/stage16-changes.txt：新規ファイルを含む作業ツリー一覧（レポート生成途中の取得時点）。
+.vscode/settings.jsonのjava.configuration.updateBuildConfiguration=automatic差分も観測。こちらから当該ファイルを編集していないため保持。
+この作業でgit commit・進捗確定は行っていない。
+
+65. 設計書に固定シグネチャがない部分の判断
+実行メソッド名はrunChecks()。既存GameUser引数のleaveRoomをpublic化して別packageのschedulerから委譲。
+新しいHTTP退出APIや独立退出処理を作らない。
+既存Schedulerと同様、enabledプロパティを設け既定true、通常起動で有効。
+固定ClockテストのみGradleでfalseとし、登録テストはtrueへ上書きして両タスクを確認。
+fixedRate=1000は既存500msタスクの書式と整合。各ユーザーの比較時点でClockを共有ロック内から読む。
+Room所属はcurrentRoomId条件と既存Serviceの最新memberIds検証で整合。
+
+66. 最終アプリケーション状態
+第16段階実装・全回帰・全TC監査完了。通常起動で両Scheduler有効。
+検証用サーバーは停止済み（stage16-server-stop.txt）。通常起動のインメモリ検証データは終了とともに消失する既存仕様。
+第16段階より後の未定義機能追加なし。
+
+67. 第0～16段階を通した残課題
+6設計書・TC-001～TC-130で要求された範囲に既知の未解消仕様不一致なし。
+環境制約として視覚ブラウザー起動不能が残る。画面の実目視確認はその環境が復旧した場合に実施可能。
+学習分野終了・Project進捗確定には進んでいない。
+
+検証コマンド（Windows PowerShell、個別実行）
+.\gradlew.bat --gradle-user-home .gradle-user-home compileJava --rerun-tasks
+.\gradlew.bat --gradle-user-home .gradle-user-home compileJava test
+node --test src/test/js/*.test.cjs
+.\gradlew.bat --gradle-user-home .gradle-user-home bootJar
+java -jar build/libs/free-form-janken-0.0.1-SNAPSHOT.jar --server.port=18016 --logging.level.org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor=TRACE
+node reports/stage16-http-check.cjs
+
+最終判定：第16段階完了

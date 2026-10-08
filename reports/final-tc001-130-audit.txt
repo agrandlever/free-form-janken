@@ -1,0 +1,1194 @@
+第16段階・最終 TC-001～TC-130 全件監査
+監査日：2026-10-08（日本時間）
+判定：PASS 130件／FAIL 0件／未確認TC 0件
+
+正：docs/の6設計書。設計書への変更なし。
+確認：各TCの仕様を対応テストの検証内容・実装・テンプレートと個別に照合。
+JUnit全件成功だけからTC合格を推測したものではない。
+最終Java：1,079件、失敗0・エラー0・スキップ0。
+既存988件＋新規91件（Service 59件、Web 32件）。
+最終JavaScript：62件、成功62・失敗0・キャンセル0・スキップ0。
+既存52件＋新規10件。本番JavaScriptは変更なし。
+証跡：reports/stage16-gradle-test.log、stage16-tests.json、stage16-javascript-test.log。
+実HTTP証跡：stage16-http-test.log、stage16-http-observations.json。
+JUnit詳細：build/test-results/test/TEST-*.xml、build/reports/tests/test/index.html。
+
+確認方法の区分：自動テストで確認120件、既存自動テスト＋設計照合で確認10件。
+実HTTP統合テストも自動テストの区分に含む。別途通常起動で実HTTP確認済み。
+視覚ブラウザー：computer-use／cua両ツールが trusted Node process exited unexpectedly で起動不能。
+TC-080等の表示項目はHTML・CSS検証と画面設計照合でPASS。実画面の目視確認を実施したという意味ではない。
+以下のテスト参照は実在するメソッド・ファイルを検証し、対応JUnitクラスの全件成功を確認済み。
+パラメーター付きテストは全入力ケースを含む。
+
+TC-001｜正常ログイン
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#validLoginAndRoomNames
+確認内容：正常ログイン、①・セッション関連付け・時刻・名前保存。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-002｜同一ユーザー名で別セッションログイン
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#duplicateUsernameAllowedAndReloginPreservesEverything
+確認内容：同名を別ID・別セッションで許可し再ログインは拒否。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-003｜ユーザー名空欄・文字数
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#validLoginAndRoomNames
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#invalidNamesHaveNoPartialUpdates
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#loginAndEnterValidationAndStatePriority
+確認内容：strip、半角・タブ・全角空白、0/1/20/21コードポイント、補助平面文字。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-004｜存在しないルーム名で新規作成
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#validLoginAndRoomNames
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#actualBootHttpFlowRendersHtmlAndTransfersHostAndDeletesRoom
+確認内容：roomName検索で新規作成、ホスト、②、先取3・連続禁止OFF。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-005｜存在するルーム名で参加
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#normalizedRoomAndFixedEntryTime
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#actualBootHttpFlowRendersHtmlAndTransfersHostAndDeletesRoom
+確認内容：同名既存Roomへの参加、入室順、追加Roomなし。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-006｜作成・参加が同一ボタンで行われる
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#actualBootHttpFlowRendersHtmlAndTransfersHostAndDeletesRoom
+確認内容：room.html/rooms.htmlを設計照合。作成・参加ともPOST /rooms/enterの単一導線。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-007｜ルーム名最小・最大文字数
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#validLoginAndRoomNames
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#invalidNamesHaveNoPartialUpdates
+確認内容：strip後のルーム名0/1/20/21、Unicodeコードポイント、保存名一致。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-008｜9人目の入室拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#ninthMemberRejectedWithoutChanges
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#fullRoomAndStaleLeaveErrorsRebuildNormalModel
+確認内容：9人目409 ROOM_FULL、①維持・登録なし。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-009｜同名ルーム二重作成防止
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#concurrentSameNameCreatesOnlyOneRoom
+確認内容：2スレッドで同名新規入室を20回反復しRoom・名前索引・所属一致。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-010｜ルーム名コピー
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/js/stage16-sync.test.cjs
+確認内容：コピー成功・失敗を追加検証。表示roomNameだけをClipboardへ渡し内部IDをコピーしない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-011｜ホスト退出時の移譲
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#leavePreservesLoginIdentityHandAndTimesAndTransfersInOrder
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#readyHostLeaveTransfersToEarliestAndLastLeaveDeletesRoom
+確認内容：②③ホストを最古参残存メンバーへ移譲。④は第12段階退出テストでも確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-012｜最後の参加者退出時のルーム削除
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#leavePreservesLoginIdentityHandAndTimesAndTransfersInOrder
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#lastMemberTimeoutDeletesRoomAndAllowsNameReuse
+確認内容：最後の退出でRoomと名前索引を削除、同名再作成可能。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-013｜オリジナル手未作成時のみ作成導線
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#successRedirectsFormsAndSavedName
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+確認内容：未作成Modelと実HTML作成導線。fragments/original-hand.htmlを設計照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-014｜作成済み時は編集導線
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#successRedirectsFormsAndSavedName
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+確認内容：作成後は手名・編集導線、作成導線非表示。テンプレート照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-015｜①でインライン作成
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+  src/test/js/stage16-sync.test.cjs
+確認内容：①同じ画面内で作成・開閉、専用画面なし、閉じても入力保持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-016｜①でインライン更新
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#createUpdateDeleteAndStableId
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+  src/test/js/stage16-sync.test.cjs
+確認内容：①更新、内部ID維持、フォーム現在値と保存後rooms返却。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-017｜②でインライン作成
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+  src/test/js/stage16-sync.test.cjs
+確認内容：②room内のインライン作成、POST成功後同じ画面へ返却。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-018｜②でインライン更新
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#createUpdateDeleteAndStableId
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors
+確認内容：②更新、既存IDと本人情報を維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-019｜オリジナル手削除
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#createUpdateDeleteAndStableId
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#successRedirectsFormsAndSavedName
+確認内容：①②削除と未作成再削除409、結果画面の削除はTC-112。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-020｜最低1つ負け制約
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#everyWinDrawOnlyCombinationRejected
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#loseInAnyOneFieldIsAllowed
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#noLoseAndMultipleErrorsShownWithoutChanges
+確認内容：負けなし全16組合せ拒否、どの1項目LOSEでも許可、既存データ維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-021｜③・④で編集拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#readyRejectsStaleSaveAndDeleteAndEnter
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#stalePlayingOperationsAreRejectedWithoutChanges
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#stateErrorsNeverMutateAndPlayingUsesCanonicalScreen
+確認内容：③④の作成・更新・削除は409、旧フォームも不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-022｜オリジナル手なしで準備拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#noHandAndWrongTargetsPreserveData
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#realHttpTwoPlayerFlowRulesReadyCancelStalePostsLeaveAndLogout
+確認内容：OriginalHandなし準備409 ORIGINAL_HAND_REQUIRED、②維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-023｜③とのユーザー名重複で準備拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：現在③のユーザー名との重複を拒否、②の同名は未準備なら許容。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-024｜③との手名重複で準備拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：現在③の手名との重複を拒否、現在Roomのみ比較。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-025｜ユーザー名・手名両方重複
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：両重複を独立検証、メッセージ両方・ユーザー名主コード。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-026｜②同士の同名は準備前なら許容
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：②同士では最初のready成立、その後の要求は最新③に対して拒否。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-027｜④との同名でも準備可能
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc027PlayingDuplicateNamesDoNotBlockSpectatorReady
+確認内容：監査で追加。④のユーザー名・手名・両方と重複する非参加者③を許可、現在Match参加者不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-028｜準備取消後に名前再利用可能
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#otherRoomsAndCancelledMembersDoNotConflict
+確認内容：準備取消で②、③重複対象から除外し名前再利用。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-029｜未更新のまま準備完了して警告なし
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#readyCancelAndRepeatedReadyWithUnchangedHand
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc075ViewingThenReadyHasNoWarning
+確認内容：未更新の同じOriginalHandで再ready成功。room.html・RoomServiceに更新警告なしを照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-030｜先取勝数変更
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#rulesChangeInWaitingAndReadyWithoutCancellingAnyone
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#invalidRulesPreserveBothRulesAndReady
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#invalidRulesRebuildFormAndRoomModel
+確認内容：1～99整数、0/100/空欄等拒否、フォーム再表示・不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-031｜同一オリジナル手連続禁止設定変更
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#rulesChangeInWaitingAndReadyWithoutCancellingAnyone
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#invalidBooleanAlsoPreservesAuthorizationPriority
+確認内容：ON/OFF保存、先取勝数と同時反映、boolean不正・権限順確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-032｜対戦開始時に③のみ参加
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#startsOnlyReadyInMemberOrderAndPreservesAllInitialValues
+確認内容：開始時③だけ入室順に④、全固定情報と第1Round、②不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-033｜②のホストによる対戦開始
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#startsOnlyReadyInMemberOrderAndPreservesAllInitialValues
+  src/test/java/com/example/janken/controller/StageEightWebTests.java#realHttpStartFlowAndParticipantAccess
+確認内容：②ホストによる開始、非参加ホスト②と観戦導線維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-034｜③が1人以下で対戦開始拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#finalValidationRejectsWithoutChangingSharedData
+  src/test/java/com/example/janken/controller/StageEightWebTests.java#startErrorsAtControllerBoundary
+確認内容：③1人以下なら409、対戦・Room・User不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-035｜通常手勝敗
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#normalPairs
+確認内容：グー・チョキ・パー全9組合せ。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-036｜オリジナル手対通常手
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#originalAgainstNormalBothDirections
+  src/test/java/com/example/janken/controller/StageNineWebTests.java#realHttpSelectsOtherOwnersSnapshotAndKeepsRelationsPrivate
+確認内容：固定手相性どおり通常手との両方向判定、他作成者の固定手利用。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-037｜同一オリジナル手同士
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#sameHandIdDraws
+確認内容：同一内部IDのOriginalHand同士は引き分け。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-038｜異なるオリジナル手全組合せ
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#differentOriginalNinePairsEvenWithSameName
+確認内容：vsOriginal全9組合せ、同名別IDの区別。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-039｜3人以上のラウンド判定
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#multiplayerAndPureCalculation
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#completesMultiplayerOnce
+確認内容：3人の勝ち・負け・引き分けを全相手で集計、純計算と更新分離。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-040｜複数人同時ラウンド勝利
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#completesMultiplayerOnce
+確認内容：同一Roundの複数勝者へ各1勝、履歴・判定・期限は1回。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-041｜勝者なしラウンド
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#completesMultiplayerOnce
+確認内容：全員同じ手／三すくみで勝者なし、0加算、5秒期限。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-042｜複数人同時優勝
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#finalWinnersIncludesAllAndTenSeconds
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#multipleWinnersAreCopied
+確認内容：先取同時到達者全員のpendingWinnerIds・保存winnerIds、10秒。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-043｜全員確定前の手非公開
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#realHttpSelfOnlyFixedHandAndIdentity
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#realHttpSpectatorHtmlJsonPrivacyAndPublishedRound
+確認内容：他参加者の確定前手・公開前相性をHTML/JSONへ含めず本人だけ返す。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-044｜設定OFFで同一オリジナル手連続使用
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc044_offAllowsOriginalAcrossCompletedRounds
+確認内容：OFFで同一OriginalHandを次Roundでも許可。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-045｜設定ONでも通常手連続使用可能
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc045_allowsRepeatedNormalAcrossCompletedRounds
+確認内容：ONでも通常3手の連続使用を許可。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-046｜設定ONで同一オリジナル手連続使用拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc046_rejectsSameOriginalAndPreservesAllState
+確認内容：ONの同一内部IDだけ400、手・score・履歴・期限等不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-047｜設定ONで別オリジナル手連続使用可能
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc047_allowsDifferentOriginal
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#sameNameDifferentIdsAllowed
+確認内容：別内部IDのOriginalHandを連続で許可、表示名に依存しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-048｜勝者なしラウンド後も同一オリジナル手禁止
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc107_noWinnerUpdatesPreviousAndNormalResetsRestriction
+確認内容：勝者なしでもpreviousHand更新、同じOriginalHandを拒否。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-049｜勝者あり10秒自動遷移
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#undecidedBoundaryPreservesHistoryScoreAndPreviousHand
+  src/test/java/com/example/janken/controller/StageThirteenWebTests.java#countdownZeroWaitsForSchedulerThenStatusReflectsSameMatch
+確認内容：勝者あり10秒の直前非遷移・ちょうど以降次Round・2秒poll反映。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-050｜勝者なし5秒自動遷移
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#undecidedBoundaryPreservesHistoryScoreAndPreviousHand
+  src/test/java/com/example/janken/controller/StageThirteenWebTests.java#countdownZeroWaitsForSchedulerThenStatusReflectsSameMatch
+確認内容：勝者なし5秒の直前非遷移・ちょうど以降次Round・カウント0だけで移動しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-051｜最終ラウンド結果10秒表示
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#tc051NormalBoundaryAndSingleSnapshotSave
+  src/test/java/com/example/janken/scheduler/MatchTransitionSchedulingTests.java#springRegistersFiveHundredMillisecondTask
+  src/test/js/stage13-sync.test.cjs
+確認内容：最終結果10秒前は④、期限到達でNORMAL1回。500ms登録、実HTTP通常起動も確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-052｜ラウンド履歴開閉
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/js/stage11-sync.test.cjs
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：履歴初期hidden、開閉ラベル・aria更新、履歴データ保持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-053｜履歴に累積勝数なし
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageElevenServiceTests.java#historyCopiesOnlyCompletedRoundsAndNoScoresOrAffinities
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：履歴コピー・HTMLに累積勝数や相性を入れない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-054｜履歴の勝者強調
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：複数勝者へ勝利文字表示、.round-winnerの背景・枠・太字をCSS設計照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-055｜履歴の勝者なし表示
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：勝者なし履歴に規定文言、確定履歴だけ表示。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-056｜②の観戦
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc056057084SafeCopiedModelAndReturn
+  src/test/js/stage15-sync.test.cjs
+確認内容：非参加②の観戦Model・同じ対象ID・履歴・戻り・選択UIなし。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-057｜③の観戦
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc056057084SafeCopiedModelAndReturn
+  src/test/js/stage15-sync.test.cjs
+確認内容：非参加③の観戦、③を維持、同じ対象IDで遷移。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-058｜観戦者の手選択拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc058DirectPostLeavesAllMatchValuesUnchanged
+確認内容：②③観戦者からNORMAL/ORIGINAL送信409、Match全項目不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-059｜作成者退出後も固定済み手利用可能
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#nextRoundStillRestrictsPreviousOriginalHandAndKeepsDepartedCreatorsHand
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingRemovesOnlyCurrentSelectionAndWaits
+確認内容：途中退出・timeout後も固定OriginalHand維持、残存者が利用可能。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-060｜退出後も過去ラウンド履歴保持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#selectingLeaveRemovesSubmittedSelectionAndRetainsRecord
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingRemovesOnlyCurrentSelectionAndWaits
+確認内容：過去履歴・獲得score・previousHandは残す、現在selectionだけ除外。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-061｜ラウンド途中退出で提出済み手除外
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#selectingLeaveRemovesSubmittedSelectionAndRetainsRecord
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingRemovesOnlyCurrentSelectionAndWaits
+確認内容：手選択中の提出済み手だけ除外、残存全員確定時の判定は1回。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-062｜退出後残り2人以上なら対戦継続
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#leaveCompletesRoundOnceWhenRemainingSelectionsReady
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066UnconfirmedTimeoutCompletesRemainingRoundExactlyOnce
+確認内容：残存2人以上で継続、未確定者待ち／全員確定で直ちに判定。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-063｜最終勝者未確定で退出後残り1人以下なら勝者なし中止
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc097InsufficientPlayersAbortImmediately
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingOneRemainingAbortsWithoutForfeit
+確認内容：最終未確定・残存1人以下で即時ABORTED、空勝者、不戦勝なし。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-064｜30秒未満では切断しない
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc064DeadlineBoundary
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#realHttpPollingTimeoutKeepsCookieIdentityAndHand
+確認内容：②③④で29.999秒/30秒-1ns/30秒/30秒+1ns。期限前非切断、ちょうど切断。
+備考：固定Clockによる期限・状態・保存回数確認。実時間のミリ秒完全一致を合否条件にしていない。
+
+TC-065｜②・③の30秒切断
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc065RoomTimeoutTransfersOldestAndKeepsLoginAndHand
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#lastMemberTimeoutDeletesRoomAndAllowsNameReuse
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#readyTimeoutReleasesNamesAndCannotBecomeMatchParticipant
+確認内容：②③を①、所属解除、ログイン・手維持、ホスト・名前索引・準備対象除外。
+備考：固定Clockによる期限・状態・保存回数確認。実時間のミリ秒完全一致を合否条件にしていない。
+
+TC-066｜④の30秒切断
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingRemovesOnlyCurrentSelectionAndWaits
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066UnconfirmedTimeoutCompletesRemainingRoundExactlyOnce
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066SelectingOneRemainingAbortsWithoutForfeit
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066UndecidedResultPreservesAllConfirmedData
+確認内容：④の提出済み／未確定、残存2人以上／1人以下、未決着結果の全条件。
+備考：固定Clockによる期限・状態・保存回数確認。実時間のミリ秒完全一致を合否条件にしていない。
+
+TC-067｜最終勝者確定後10秒中の切断で結果不変
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc067NormalProtectedIncludingDeletedRoomAndSameNameReplacement
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#monitorVsTransitionNormalOnceInBothOrders
+確認内容：勝者本人・他参加者・全員timeout。NORMAL・勝者・score・history・期限保護、Room削除後NORMAL1件。
+備考：固定Clockによる期限・状態・保存回数確認。実時間のミリ秒完全一致を合否条件にしていない。
+
+TC-068｜通常終了時相性公開
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#resultModelAllParticipantsHistoryAffinitiesAndMultipleWinners
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#realHttpFlowHtmlAndStatus
+確認内容：NORMALの固定相性・全参加者最終scoreを結果画面で公開。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-069｜中止時相性公開
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#realHttpFlowHtmlAndStatus
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc095SnapshotAloneSurvivesAllCurrentDomainChanges
+確認内容：ABORTEDも相性公開、勝者なしと履歴・score保持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-070｜相性表開閉
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/js/stage12-sync.test.cjs
+確認内容：相性表の初期非表示・開閉文言・aria・通信なし、対象ID不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-071｜相性表形式
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#resultModelAllParticipantsHistoryAffinitiesAndMultipleWinners
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc080ResponsiveCssAndWinnerLabelsAreServed
+確認内容：固定相性全4列の表。table-scroll/min-widthと全列表示を設計照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-072｜途中退出者の手も相性公開
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc095SnapshotAloneSurvivesAllCurrentDomainChanges
+確認内容：途中退出者の手もSnapshot全OriginalHandAffinitiesに残して公開。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-073｜対戦結果からオリジナル手編集
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc073074076CurrentValuesAreSeparateAndReadyHasNoEditor
+  src/test/js/stage14-sync.test.cjs
+確認内容：結果②の本人編集、現在値フォーム、同じ結果IDへ返却。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-074｜編集後も終了済み相性表不変
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc073074076CurrentValuesAreSeparateAndReadyHasNoEditor
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc112M1SurvivesM2SaveErrorDeleteRecreateAndNextSnapshot
+確認内容：現在手編集・削除・再作成でも過去Snapshot相性不変、次対戦へ新設定。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-075｜相性閲覧後に未更新で準備して警告なし
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc075ViewingThenReadyHasNoWarning
+確認内容：相性閲覧・戻り・未更新ready成立、警告なしをテンプレート照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-076｜対戦結果で③には編集導線なし
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc073074076CurrentValuesAreSeparateAndReadyHasNoEditor
+  src/test/js/stage14-sync.test.cjs
+確認内容：結果③のcanEditOriginalHand=false、送信も409、JS編集非表示・無効。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-077｜同一セッション再読み込み
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#getAccessControlForAllImplementedScreens
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#m1RemainsTargetAfterM2EndsAndReturnDoesNotAffectOtherResultTabs
+確認内容：同じセッション・対象IDの再GETで本人情報・結果維持、Cookieが正。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-078｜状態不一致URL
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#getAccessControlForAllImplementedScreens
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#directGetStateMatrix
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#playingPrioritizesCurrentMatchForGetAndOldReturn
+確認内容：状態不一致URLを現在の正規画面へ誘導。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-079｜他ルーム情報への直接アクセス拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#invalidAndOtherRoomTargetsNeverLeak
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#resultGetDoesNotDiscloseInvalidOrUnauthorizedTarget
+確認内容：他Roomの進行・結果・不存在情報を公開しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-080｜768px未満の表示
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc080ResponsiveCssAndWinnerLabelsAreServed
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：PASSは既存自動テスト＋設計照合。768px CSS、横スクロール・全列・勝利文字。視覚ブラウザー起動不能のため実画面の目視確認なし。
+備考：視覚ブラウザー起動不能。CSSの768px条件・横スクロール・表の列・勝利文字を自動確認し画面設計と照合。目視確認は環境制約。
+
+TC-081｜ルール変更後も③を維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#rulesChangeInWaitingAndReadyWithoutCancellingAnyone
+確認内容：ルール変更後も本人・他③を維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-082｜非ホストによるルール変更拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#rulesAuthorizationAndStatePrecedeValueValidation
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#authorizationPrecedesInvalidIntegerAtControllerBoundary
+確認内容：非ホスト403が入力不正より先、ルール不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-083｜対戦中のルール変更拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#stalePlayingOperationsAreRejectedWithoutChanges
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#rulesAuthorizationAndStatePrecedeValueValidation
+確認内容：進行中のホストでもルール変更409、固定ルール不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-084｜対戦中ルームへの新規参加と②での観戦
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc056057084SafeCopiedModelAndReturn
+確認内容：対戦中Roomへの新規②入室・観戦、現在Match参加者に追加しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-085｜対戦終了後の②・③観戦者の状態維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc085NormalAndAbortedKeepBothSpectatorStatesAndSameResult
+確認内容：NORMAL/ABORTEDとも非参加②③は各状態を維持し同じ結果へ。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-086｜同一ユーザー名での同時準備完了
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#simultaneousDuplicatesOnlyOneSucceeds
+確認内容：同名ユーザーの同時readyは1件だけ成立、最新③確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-087｜同一オリジナル手名での同時準備完了
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#simultaneousDuplicatesOnlyOneSucceeds
+確認内容：同名手の同時readyは1件だけ成立、両重複も確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-088｜同一ラウンドの二重手確定拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#duplicateAlways409AndNeverOverwrites
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#concurrentOperationsFinalizeOnce
+  src/test/java/com/example/janken/controller/StageNineWebTests.java#realHttpSubmitDuplicateAndFinalState
+確認内容：同一Round手確定二重送信を409、上書きなし、判定1回。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-089｜対戦結果からルームへ戻っても状態不変
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#sameRoomNonParticipantMayViewAndReturnWithoutStateChange
+  src/test/js/stage12-sync.test.cjs
+確認内容：②③結果から戻りはタブだけ移動、準備状態・他タブ対象不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-090｜古い結果閲覧中の②は次対戦開始後も画面維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#resultIdStaysM1WhenM2StartsAndFinishesAndNextPlayingWins
+  src/test/js/stage12-sync.test.cjs
+確認内容：②のM1閲覧はM2開始・終了・latest更新後もM1維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-091｜古い結果閲覧者が次対戦の④になった場合の遷移
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#playingPrioritizesCurrentMatchForGetAndOldReturn
+  src/test/js/stage12-sync.test.cjs
+  src/test/js/stage14-sync.test.cjs
+確認内容：本人④化では古い結果より新対戦SELECTING/ROUND_RESULTを優先。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-092｜オリジナル手名の前後空白除去と文字数判定
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#nameValidationOnCreateAndUpdate
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#successRedirectsFormsAndSavedName
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：strip後1/20コードポイント許可、21拒否、保存・表示・準備重複は除去後の値。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-093｜オリジナル手名の空白のみ入力拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#nameValidationOnCreateAndUpdate
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc113SaveInputErrorsPreserveAllValuesAndPast
+確認内容：null/空/スペース/タブ/全角空白拒否、不正更新でID・名前・相性維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-094｜終了済み対戦結果の閲覧権限
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#resultGetDoesNotDiscloseInvalidOrUnauthorizedTarget
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#sameNameRecreatedRoomDoesNotGrantOldResultAccess
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#sameRoomNonParticipantMayViewAndReturnWithoutStateChange
+確認内容：②③非参加者も同じ内部Roomなら可、①・他Room・同名再作成等不可。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-095｜結果スナップショット単独での参加者名・最終勝数再現
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc095SnapshotAloneSurvivesAllCurrentDomainChanges
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#snapshotAloneResolvesPageAndStatusAfterOriginalMatchDeleted
+確認内容：GameMatch・過去GameUser削除後、Snapshotだけで全名前/score/勝者/履歴/相性再現。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-096｜未決着ラウンドの結果表示中に退出・残り2人以上
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc096UndecidedRoundResultLeaveDoesNotRecompute
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066UndecidedResultPreservesAllConfirmedData
+確認内容：未決着結果中・残存2人以上、確定selection/結果/score/previousHand/期限不変、次Roundから除外。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-097｜未決着ラウンドの結果表示中に退出・残り1人以下
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc097InsufficientPlayersAbortImmediately
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc066UndecidedResultPreservesAllConfirmedData
+確認内容：未決着結果中・残存1人以下即時ABORTED、確定履歴・加算score保持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-098｜最終勝者確定後の全員退出と同名ルーム再作成
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#tc098DeletedRoomStillFinishesAndSameNameRoomIsUntouched
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc067NormalProtectedIncludingDeletedRoomAndSameNameReplacement
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#sameNameRecreatedRoomDoesNotGrantOldResultAccess
+確認内容：旧Room全員退出後もNORMAL保存、新内部Roomの対戦・latest・ルール不変、結果閲覧拒否。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-099｜古いラウンドの手確定要求を拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#targetAndStateBeforeHandValidation
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#oldRoundPostIsRejectedBeforeOrAfterScheduler
+確認内容：旧Round POST拒否、現在Roundの空selection維持、Scheduler両順確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-100｜古い対戦の手確定要求を拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#targetAndStateBeforeHandValidation
+  src/test/java/com/example/janken/controller/StageNineWebTests.java#rawInputErrorsAndStaleTargetsThroughHttp
+確認内容：旧matchIdの手を現在対戦へ流用せず409、同じRound番号でもID確認。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-101｜結果初表示が遅れても終了した対象対戦を維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#m1RemainsTargetAfterM2EndsAndReturnDoesNotAffectOtherResultTabs
+  src/test/js/stage12-sync.test.cjs
+確認内容：M2終了後に遅延したM1結果表示でもM1、無指定のみ最新IDへの一度の302。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-102｜別タブの戻り・観戦操作後も元タブの結果を維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#targetIdsAndSessionStayIndependentAcrossOldResultAndNewSpectating
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc112M1SurvivesM2SaveErrorDeleteRecreateAndNextSnapshot
+  src/test/js/stage15-sync.test.cjs
+確認内容：他タブ戻り・観戦後も元結果URL/フォームIDを維持、共有閲覧先を保存しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-103｜同一ユーザーの別タブで異なる終了済み結果を表示
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#m1RemainsTargetAfterM2EndsAndReturnDoesNotAffectOtherResultTabs
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc112M1SurvivesM2SaveErrorDeleteRecreateAndNextSnapshot
+確認内容：同一ユーザーM1/M2結果の各GET・フォーム返却先を個別保持、現在手のみ共有。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-104｜7人のルームへの2ユーザー同時入室
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#concurrentEighthSlotOnlyOneSucceeds
+確認内容：7人Roomへの同時入室を20回反復、1件成功・1件ROOM_FULL、所属8人。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-105｜同一ユーザーの別ルームへの同時入室
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#sameUserConcurrentDifferentRoomsOnlyOneSucceeds
+確認内容：同一セッション別Room同時入室を20回反復、1件だけ所属・余分な空Roomなし。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-106｜最後の退出と同名ルームへの入室の競合
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#lastLeaveVersusSameNameEntryPreservesIndex
+確認内容：最後の退出vs同名入室を20回反復、どちらが先でも索引・Room・所属一致。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-107｜直前手の更新と対戦ごとの初期化
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc107_noWinnerUpdatesPreviousAndNormalResetsRestriction
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc107_newMatchInitializesPreviousEvenAfterOriginalLastRound
+確認内容：勝者なしでも直前手更新、通常手を挟むと再使用可、新対戦previousHand=null。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-108｜判定・勝数加算・履歴保存は1ラウンド1回
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#concurrentOperationsFinalizeOnce
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#concurrentOperationsRespectBothLockOrders
+  src/test/java/com/example/janken/service/RoundJudgeServiceTests.java#multiplayerAndPureCalculation
+確認内容：判定純計算、最後の手/leave/complete競合でもRound結果・加算・履歴・期限1回。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-109｜状態JSONの項目・null・対象権限
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#roomNoneJsonHasExactContractAndNulls
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#realHttpSelfOnlyFixedHandAndIdentity
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#endedStatusSeparatesCurrentAndDisplayAndProtectsOtherRoom
+確認内容：API全項目・null、current/display分離、JSON内部ID・型・権限、正常だけlastSeen更新。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-110｜画面GETの直接アクセス遷移表
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#directGetStateMatrix
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#omittedIdResolvesCurrentButNoMatchReturnsRoom
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#resultGetDoesNotDiscloseInvalidOrUnauthorizedTarget
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc127RealHttpOldCookieRejectsEveryProtectedGetAndPost
+確認内容：①～④全画面・対象省略/不正/不存在/他Room/終了、正規画面と非公開を設計表照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-111｜ラウンド結果の累積勝数と履歴の分離
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageElevenServiceTests.java#resultModelCopiesSeparateScoresAndFinalPending
+  src/test/java/com/example/janken/service/StageElevenServiceTests.java#historyCopiesOnlyCompletedRoundsAndNoScoresOrAffinities
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#historyHtmlMultipleWinnersNoScoresAndNoWinner
+確認内容：results行と累積scoresを別コピー、履歴にscoreなし、確定後退出行保持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-112｜削除後の返却先と結果ID維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc112M1SurvivesM2SaveErrorDeleteRecreateAndNextSnapshot
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#deleteBadRequiredIds400
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#invalidTargetsNeverChangeHand
+確認内容：全返却先削除、結果ID維持、不足/形式400・不一致409、スナップショット不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-113｜POSTの入力エラー・状態エラー再表示
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#loginAndEnterValidationAndStatePriority
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#invalidRulesRebuildFormAndRoomModel
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#noLoseAndMultipleErrorsShownWithoutChanges
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc113SaveInputErrorsPreserveAllValuesAndPast
+  src/test/java/com/example/janken/controller/StageNineWebTests.java#rawInputErrorsAndStaleTargetsThroughHttp
+確認内容：全フォーム400/401/403/409のcode・messages・fieldErrors・form・通常Model、入力保持・正規画面再表示。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-114｜ユーザー名・手名の両重複エラー
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#waitingDuplicatesAllowedButReadyDuplicatesRejected
+確認内容：ユーザー名・手名両エラーを規定順に返しREADY_USERNAME_CONFLICT優先、②維持。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-115｜観戦から戻ったルームで強制再観戦しない
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageFifteenWebTests.java#tc056057084SafeCopiedModelAndReturn
+  src/test/js/stage15-sync.test.cjs
+確認内容：観戦から戻った②③は開始/次Round/終了でもRoom維持、観戦継続タブは同じIDで結果へ。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-116｜旧ルーム画面から別ルームを操作しない
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#stalePlayingOperationsAreRejectedWithoutChanges
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#oldRoomCannotSaveOrDeleteAfterLeaveAndReentry
+  src/test/java/com/example/janken/controller/StageTwelveWebTests.java#invalidReturn409DoesNotMutateUserOrResult
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#staleAndMalformedLeaveNeverChangeCurrentRoom
+確認内容：旧roomIdの準備/取消/開始/ルール/leave/手CRUD/結果戻りは現在所属を変更しない。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-117｜入室時の通信監視基準初期化
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc117LongRoomNoneWaitThenEntryAndStatusResetDeadline
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#roomNoneNeverExpires
+確認内容：①長時間待機非切断、入室時両時刻再設定、入室基準30秒未満維持、その後status+30秒。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-118｜通常手と完全一致するオリジナル手名を作成・更新で拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#forbiddenNamesPreserveInputsSavedDisplayAndNormalModel
+  src/test/java/com/example/janken/controller/StageFourteenWebTests.java#tc113SaveInputErrorsPreserveAllValuesAndPast
+確認内容：3禁止名の作成/更新、①②結果②で400・規定文言、既存手・過去相性不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-119｜前後空白除去後のオリジナル手禁止名を拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/OriginalHandWebTests.java#forbiddenNamesPreserveInputsSavedDisplayAndNormalModel
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#nameValidationOnCreateAndUpdate
+確認内容：strip後3禁止名完全一致、半角/タブ/全角空白でも拒否。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-120｜禁止名を含む別のオリジナル手名は許可
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#nameValidationOnCreateAndUpdate
+  src/test/java/com/example/janken/service/OriginalHandServiceTests.java#forbiddenRuleDoesNotApplyToUsernameOrRoomName
+確認内容：部分一致は許可、ユーザー名・Room名には禁止を適用しない、他検証継続。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-121｜手確定の状態・未確定確認を入力値検証より優先
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#duplicateAlways409AndNeverOverwrites
+  src/test/java/com/example/janken/service/StageNineServiceTests.java#targetAndStateBeforeHandValidation
+  src/test/java/com/example/janken/controller/StageNineWebTests.java#rawInputErrorsAndStaleTargetsThroughHttp
+  src/test/java/com/example/janken/controller/StageTenWebTests.java#realHttpErrorPriority
+確認内容：未確定値不正400、確定済み/旧対象/状態不一致409を入力検証より優先、不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-122｜①からの正常ログアウト
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#logoutNoneAndWaitingNonHostHostAndLastMember
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc127RealHttpOldCookieRejectsEveryProtectedGetAndPost
+確認内容：①手有/無のlogoutセッション終了・UserStore削除、他ユーザー不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-123｜②からのログアウトとルーム退出・ホスト移譲
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#logoutNoneAndWaitingNonHostHostAndLastMember
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#actualBootLogoutHostAndLastMemberWithOldCookies
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#waitingHostCanLeaveAfterStartWithoutChangingParticipants
+確認内容：②非ホスト/ホスト/最後、非参加観戦者logout、ホスト移譲・索引削除・Match不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-124｜③からのログアウトと準備対象の除外
+判定：PASS
+確認方法：既存自動テスト＋設計照合で確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageSixServiceTests.java#readyLogoutTransfersHostAndDeletesLastRoomAndUser
+  src/test/java/com/example/janken/controller/StageSixWebTests.java#realHttpReadyHostLogoutTransfersHostAndLastReadyLeaves
+  src/test/java/com/example/janken/service/StageEightServiceTests.java#waitingHostCanLeaveAfterStartWithoutChangingParticipants
+確認内容：③logoutで準備対象除外・User削除・移譲、RoomService.ready/startの最新一覧に含めないことを設計照合。
+備考：テンプレート／CSS／Serviceと6設計書の該当仕様も照合。視覚ブラウザーの実画面確認なし。
+
+TC-125｜最終勝者未確定の④からのログアウト
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc125LogoutDepartureMatrix
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#manualLeavePreservesIdentityHandAndLoginAndLogoutRemovesOnlyAfterMatchLeave
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#concurrentOperationsRespectBothLockOrders
+確認内容：未確定④logoutの提出済/未確定/残存全員確定/人数不足/結果勝者ありなしを追加検証、結果1回。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-126｜最終勝者確定後の④からのログアウト
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/service/StageThirteenServiceTests.java#tc098DeletedRoomStillFinishesAndSameNameRoomIsUntouched
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#tc098NormalProtectedAfterEveryoneLeavesAndSameNameRoomRecreated
+確認内容：勝者logout・全員logout後も10秒NORMAL、GameUser/Roomなし保存、同名新Room保護。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-127｜ログアウト後の画面・POST・状態確認へのアクセス拒否
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc127RealHttpOldCookieRejectsEveryProtectedGetAndPost
+  src/test/js/stage11-sync.test.cjs
+  src/test/js/stage12-sync.test.cjs
+確認内容：①～④logout前Cookieを文字列保持し全保護GET302、全11状態変更POST401、status401 JSON、別セッション200。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-128｜入室の①・未所属確認をルーム名検証より優先
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc128ControllerPriorityForEveryState
+  src/test/java/com/example/janken/controller/StageFourWebTests.java#loginAndEnterValidationAndStatePriority
+  src/test/java/com/example/janken/service/StageFourServiceTests.java#statePrecedesInput
+確認内容：Controller経由で全状態、未ログイン401、①不正400、②③④不正でも409、①有効成功、拒否は不変。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-129｜ルーム退出ボタン・ログインとオリジナル手の維持
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc129ManualLeaveMatchesTimeoutIdentityAndStatus
+  src/test/java/com/example/janken/service/StageTwelveServiceTests.java#selectingLeaveRemovesSubmittedSelectionAndRetainsRecord
+  src/test/java/com/example/janken/service/StageSixteenServiceTests.java#tc065RoomTimeoutTransfersOldestAndKeepsLoginAndHand
+確認内容：手動退出の全画面/状態と手未作成、ログイン・ID・名前・手維持、status①・再入室・二重409、timeoutと比較。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+TC-130｜別タブで確定した本人の手を状態確認で反映
+判定：PASS
+確認方法：自動テストで確認
+対応テスト／確認：
+  src/test/java/com/example/janken/controller/StageElevenWebTests.java#realHttpSelfOnlyFixedHandAndIdentity
+  src/test/java/com/example/janken/controller/StageSixteenWebTests.java#tc130SelfConfirmationAndMonitorCoexist
+  src/test/js/stage11-sync.test.cjs
+  src/test/java/com/example/janken/service/StageTenServiceTests.java#tc046_rejectsSameOriginalAndPreservesAllState
+確認内容：別タブ本人NORMAL/ORIGINAL同期、true後遅延false無視、他人手非公開、次Round/制限/アクセス優先、2秒pollと30秒monitor共存。
+備考：対応テストを最終全件実行に含めて成功確認。該当する拒否要求では状態不変も検証。
+
+集計：130件PASS、0件FAIL。第16段階完了。
