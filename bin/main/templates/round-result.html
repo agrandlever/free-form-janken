@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ラウンド結果 | 簡易自由律じゃんけん</title><link rel="icon" type="image/png" th:href="@{/favicon.png}"><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/status-polling.js}"></script><script defer th:src="@{/js/round-result.js}"></script></head>
 <body><header th:replace="~{rooms :: header}"></header>
 <main class="container app-main shadow-sm" data-page="round-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-round-number=${roundNumber},data-match-finished=${matchFinished}">
 <section th:replace="~{login :: errors}"></section>
