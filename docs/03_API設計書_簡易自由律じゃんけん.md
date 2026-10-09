@@ -10,6 +10,8 @@
 
 ユーザー名重複を許可するため、HTTPセッション等によりユーザーを内部識別する。
 
+実装ではHTTPセッション属性`gameUserId`にUUIDを保持し、`SessionUserAccess`がUserStoreから本人を取得する。`server.servlet.session.tracking-modes=cookie`によりCookieだけでセッションを識別し、URLにセッションIDを付加しない。ログアウト等で無効化されたセッションは未ログインとして扱う。
+
 ### 1.2 レスポンス形式
 
 | 用途 | 形式 |
@@ -59,7 +61,15 @@ GETのModelと状態JSONには、確定前の他人の選択手や公開前の�
 
 GET / の未ログインModelはloginForm。ログイン済みなら29節の正規画面へ誘導する。
 
-GET /roomsは①のみ表示し、userState・currentOriginalHand・roomEnterForm・originalHandForm・originalHandDeleteFormを渡す。オリジナル手フォームはreturnPage=ROOMSとし、roomId・resultMatchIdを空にする。
+GET /roomsは①のみ表示し、username・userState・roomEnterFormと、次のオリジナル手編集用Modelを渡す。フォームはreturnPage=ROOMSとし、roomId・resultMatchIdを空にする。
+
+- `canEditOriginalHand`：編集可能か。①ではtrue。
+- `hasOriginalHand`：現在のオリジナル手が作成済みか。
+- `originalHandName`：現在の手名。未作成なら空文字。
+- `originalHandForm`・`originalHandDeleteForm`：本人の現在設定をコピーした保存用・削除用フォーム。
+- `originalHandFormOpen`：フォームの初期展開状態。通常GETはfalse、許可された入力エラーの再表示はtrue。
+
+`/rooms`と`/room`では`currentOriginalHand`というModel名を使用せず、上記の表示値とフォームを利用する。ModelはHTMLへ渡す画面用データであり、状態JSONの項目とは区別する。
 
 各画面の送信用内部IDはサーバーが検証済みModelからhidden項目等へ設定し、利用者向けの表示・入力にしない。
 
@@ -212,6 +222,7 @@ ROOM_FULL
 主なModel：
 
 - `roomId`（制御用内部ID）
+- `selfUserId`（本人の内部ID。ホスト判定用の制御データ）
 - `currentMatchId`（進行中対戦がなければnull）
 - `roomName`
 - `members`
@@ -222,12 +233,14 @@ ROOM_FULL
 - `isHost`
 - `userState`
 - `matchRunning`
-- `currentOriginalHand`
+- `canEditOriginalHand`・`hasOriginalHand`・`originalHandName`・`originalHandFormOpen`（1.5節）
 - `roomActionForm`（roomId）
 - `roomRuleForm`（roomIdと現在ルール）
 - `originalHandForm`・`originalHandDeleteForm`（returnPage=ROOM、roomId）
 
 ②・③だけを表示対象とし、他状態は29節へ誘導する。進行中対戦があっても②・③を自動的に観戦へ移動しない。
+
+membersは入室順のusername・host・ready・playingを持つ表示用コピー。readyMembers・playingMembersはその状態で絞り込んだ一覧とする。②はcanEditOriginalHand=true、③はfalseで、編集フォームの操作を許可しない。初期③の画面に編集部分がない場合、②への変化後にJavaScriptが既存のGET /roomから編集部分を取得する。新しいエンドポイントは設けない。
 
 ## 8. `POST /room/leave`
 
@@ -421,20 +434,28 @@ MATCH_RESULTでは、成功後も入力エラー時もフォームが持つresul
 - `matchParticipant`
 - `roundNumber`
 - `targetWins`
-- `scores`
-- `availableHands`
-- `selectedHand`
-- `waitingForOthers`
-- `previousHand`
-- `preventConsecutiveSameOriginalHand`
+- `participants`：開始時の全参加者のusername・現在のscore。途中退出者も含む。
 - `roundHistory`
 - `userState`
-- `handSelectionForm`（matchId・roundNumber・typeと選択値）
-- `roomActionForm`（roomId、④の「ルームを退出」用）
+
+参加者④の手選択画面に追加するModel：
+
+- `score`：本人の現在の累積勝数。
+- `preventConsecutiveSameOriginalHand`：対戦開始時の連続使用禁止設定。
+- `originalHandNames`：固定済みオリジナル手の名前一覧。
+- `originalHandOptions`：各手のoriginalHandId・name・consecutiveUseRestricted（本人の直前手に基づく連続使用制限）を持つコピー。
+- `hasConsecutiveUseRestriction`：制限されているオリジナル手があるか。
+- `selfHandConfirmed`：本人の手が確定済みならtrue、未確定ならfalse。
+- `selfSelectedHandName`：本人の確定済み手の名前。未確定ならnull。
+- `roomActionForm`：roomId。④の「ルームを退出」用。
+
+通常手はHTMLにROCK・SCISSORS・PAPERの3択を配置する。各手を個別のPOSTフォームとし、検証済みModelからmatchId・roundNumberをhiddenへ設定し、type・normalHandまたはoriginalHandIdを送信する。`handSelectionForm`というModelオブジェクトは使用しない。
 
 観戦者には手選択UIを提供しない。
 
-`selectedHand` は本人の選択だけを渡し、観戦者ではnullとする。`availableHands` には相性を含めない。確定前の他人の手はHTML・JSON・制御用データにも含めない。
+本人の確定表示にはselfHandConfirmed・selfSelectedHandNameを使う。観戦者では両方nullとし、selectedHandもnullを設定するが手選択UIでは使用しない。参加者向けの手選択肢・本人score・連続使用禁止設定・退出用フォームは観戦者のModelへ渡さない。
+
+手選択画面では`scores`・`availableHands`・`waitingForOthers`・`previousHand`というModelを設けない。待機表示はselfHandConfirmed、連続使用制限はoriginalHandOptionsから生成する。`scores`はラウンド結果画面のModelとして17節で扱う。手選択肢には相性を含めず、確定前の他人の手はHTML・JSON・制御用データにも含めない。
 
 本人の観戦操作で進行中対戦を表示しても、他タブの結果の対象IDと②・③の状態は変更しない。
 
@@ -572,6 +593,8 @@ scoresはMatchParticipantから共通ロック内で表示用にコピーする�
 - `roundNumber`
 - `results`
 
+画面表示用コピーでは`hasRoundWinner`も付け、勝者なしの表示に使用する。
+
 各 `results`：
 
 - `userId`
@@ -647,8 +670,11 @@ scoresはMatchParticipantから共通ロック内で表示用にコピーする�
 - `originalHandAffinities`
 - `userState`
 - `currentOriginalHand`
+- `canEditOriginalHand`・`originalHandFormOpen`（通常GETは②で編集可能、フォームは閉じた状態）
 - `matchResultReturnForm`（roomId・matchId）
 - `originalHandForm`・`originalHandDeleteForm`（returnPage=MATCH_RESULT、roomId・resultMatchId=表示中のmatchId）
+
+②では1.5節の編集用Modelも渡し、フォームのresultMatchIdを表示対象へ固定する。③ではcanEditOriginalHand=false・originalHandFormOpen=falseとし、編集フォームと編集部分を生成しない。currentOriginalHandは現在の手のhandId・handName・相性4項目を持つコピーで、未作成ならnull。
 
 結果データはMatchResultSnapshotだけから取得する。現在のGameMatchや過去参加者のGameUserで名前を復元しない。
 
@@ -693,6 +719,8 @@ scoresはMatchParticipantから共通ロック内で表示用にコピーする�
 更新後も終了済み対戦スナップショットは変更しない。
 
 ③の場合は編集不可。
+
+編集導線は初回表示・再読み込み時の②に対して生成する。状態確認で②→③になった場合は非表示・無効化し、③→②へ戻っても自動復帰しない。同じmatchIdのGET /match-resultを再読み込みして最新フォームを取得する。初回③だった場合も同様。再読み込み時は未保存の入力値を引き継がず、保存済み設定を表示し、対象結果IDと過去相性を維持する。
 
 ## 25. `POST /match-result/return`
 

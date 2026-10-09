@@ -1,0 +1,120 @@
+簡易自由律じゃんけん：実装と設計書の照合結果
+確認日：2026-10-09（日本時間）
+
+結論
+設計書へ反映すべき点がある。主な差分は画面の見た目、実際の構成、共通処理の具体化。
+画面用データの名称と結果画面の編集復帰には、設計と実装の不一致もある。
+本確認では設計書とアプリケーションのソースを変更していない。
+
+確認方法・範囲
+docsの要件定義・機能仕様・API設計・画面設計・テスト仕様・実装設計と、
+src/mainの関連Java、HTML、CSS、JavaScript、設定、build.gradle、Dockerfileを照合。
+既存の完了報告は補助資料として参照。binの生成物は実装の正本として扱わない。
+ソース上の比較であり、今回テストの再実行とブラウザーでの目視確認は行っていない。
+以下は確認できた具体的な差分であり、全動作の一致を保証するものではない。
+
+【設計書へ反映する項目】
+
+1. Bootstrapの導入と読み込み方針
+反映先：01 要件定義書23節、04 画面設計書1節、06 実装設計書1.1節・3節。
+現状：ローカル配置のBootstrap 5.3.8のCSSを、全6画面で独自style.cssより先に読み込む。
+ボタン、フォーム、表、エラー表示、余白などにBootstrapのクラスを使用している。
+追記案：採用バージョン、配置場所、読み込み順、独自CSSが担う範囲を明記する。
+BootstrapのJavaScriptを使用するという記載は加えない（現在の開閉は独自JS）。
+根拠：src/main/resources/static/vendor/bootstrap/bootstrap.min.css 冒頭、各templatesのhead、style.css。
+
+2. ロゴ・faviconとスマートフォン表示
+反映先：04 画面設計書1節・3節・4節、06 実装設計書3節。
+現状：ログインは/images/title.png、ログイン後の共通ヘッダーは/images/header.png。
+全6画面が/favicon.pngを指定。ロゴの代替テキストは「簡易自由律じゃんけん」。
+ログイン画像は幅min(100%, 360px, 40vh)、ヘッダー画像は通常216px、小画面180px。
+独自CSSの小画面条件は575.98px以下。ヘッダーを2段、手選択を3列から2列へ変更する。
+相性表は最小幅580pxを確保し、狭い画面では横スクロールする。
+画面設計書の「768px未満では必要に応じて縦並び」は、対象ごとの条件を明記して整理する。
+単純にすべての768pxを575.98pxへ置換する意味ではない。
+根拠：templates/login.html、templates/rooms.html、templates/match-result.html、static/css/style.css。
+
+3. 実際のファイル構成とJavaScriptの責務
+反映先：06 実装設計書2節・3節・28節。
+現状：設計書にあるrooms.jsは存在しない。フォーム開閉はoriginal-hand.jsへ共通化され、
+状態確認・画面遷移はstatus-polling.jsが担当する。
+インライン編集部分はtemplates/fragments/original-hand.htmlに共通化されている。
+パッケージ図には、config/TimeConfiguration、service/ScreenService、SessionUserAccess、
+NameInput、GameOperationException、controller/ScreenRenderer、HtmlErrorHandlerが未記載。
+追記案：実際の構成へ更新し、補助クラスと共通テンプレートの責務を説明する。
+「オリジナル手専用画面なし」という方針は維持できる。共通HTML部品は専用画面ではない。
+根拠：src/mainのファイル一覧、各Javaクラス、original-hand.js、status-polling.js。
+
+4. 共通設定とテスト時の定期処理制御
+反映先：03 API設計書1.1節、06 実装設計書1.3節・23節・24節、05 テスト仕様書2.2節。
+現状：セッション属性gameUserIdでUUIDを保持し、Cookieだけでセッションを識別する。
+時刻はTimeConfigurationのClock.systemUTC()を共通利用する。
+定期処理はjanken.match-transition.enabledとjanken.disconnect-monitor.enabledで制御する。
+どちらも設定省略時は有効。Gradleのtestでは両方falseにし、時間を制御するテストとの競合を防ぐ。
+追記案：設定キー、既定値、通常起動とテスト実行時の違い、Clockの提供元を明記する。
+時間制御可能という設計方針そのものは既に記載済み。
+根拠：application.properties、TimeConfiguration.java、両Scheduler、build.gradle。
+
+5. ブラウザーの状態確認の具体的な動作
+反映先：06 実装設計書28節、必要に応じて05 テスト仕様書。
+現状：DOMContentLoadedで初回確認し、通常は開始時刻から約2秒ごとに確認する。
+前回通信が終わるまで次の通信を開始しない。通信に2秒以上かかる場合は次回間隔を短縮する。
+cache:no-storeを指定し、一時的な通信失敗では状態を推測せず確認を続ける。
+401でログインへ移動し、pagehideで確認を停止する。
+画面への状態通知にはjanken:statusという独自イベントを使用する。
+ルームで初期READYの画面がROOM_WAITINGへ変わると、GET /roomで編集部分を取得する。
+追記案：「2秒間隔」だけでは分からない通信失敗時・ページ離脱時・部分取得の責務を記載する。
+根拠：static/js/status-polling.js、room.js。
+
+【設計と実装をそろえる必要がある項目】
+
+6. API設計書の画面用データ名
+優先度：高。反映先：03 API設計書1.5節・7節・15節。
+Modelとは、サーバーがHTMLテンプレートへ渡す画面用データのこと。
+15節にはscores、availableHands、selectedHand、waitingForOthers、previousHand、
+handSelectionFormがあるが、実装の参加者向けplay画面ではこれらの名前を設定していない。
+実際にはscore、participants、originalHandOptions、hasConsecutiveUseRestriction、
+selfHandConfirmed、selfSelectedHandNameなどを使用し、通常手はHTML内の3択で作る。
+/roomsと/roomもcurrentOriginalHandではなく、hasOriginalHand、originalHandName、
+originalHandFormなどを使う（結果画面にはcurrentOriginalHandがある）。
+対応案：現行の表示用コピーを採用するなら、画面ごとの実際の項目名・構造・条件を設計へ反映。
+設計書の名前を固定契約とするなら実装側を合わせる。単なる項目追加として処理しない。
+本人の確定手を表示するために、他人の非公開データを追加する必要はない。
+根拠：ScreenService.java current()・playScreen()・originalHandModel()、templates/play.html。
+
+7. 対戦結果画面の編集操作が②へ戻っても復帰しない
+優先度：高。反映先：04 画面設計書18節、06 実装設計書28節、05 テスト仕様書。
+②＝ルーム待機、③＝準備完了。
+現状：結果画面の編集部分は、別タブで②→③になった際に非表示・無効化される。
+その後、別タブで準備を取り消して③→②に戻しても、match-result.jsは編集部分を復帰させない。
+初期表示が③の場合も編集部分がHTMLにないため、そのままでは編集導線を生成しない。
+再読み込みすれば、その時点の②に対応するフォームを取得できる。
+設計は②で編集可能、userStateに応じて利用可否を反映するとしているが、再表示必須の条件は未記載。
+対応案：ルーム画面と同様に②へ戻った時点で同じmatchIdの編集部分を取得・復帰させるか、
+再読み込みを必要とする仕様と導線を設計に明記する。利用者の動作に関わるため先に方針を確定する。
+どちらを採用しても、過去結果の対象matchIdと編集入力の保持条件をテストに追加する。
+根拠：static/js/match-result.js、templates/match-result.html、対照としてstatic/js/room.js。
+
+【付随して見つかった設定の不一致】
+
+8. Dockerの待受ポート
+DockerfileはEXPOSE 10000とし、「application.propertiesのPORT設定に従う」とコメントしているが、
+現在のapplication.propertiesにserver.portの設定はない。
+EXPOSEだけではSpring Bootの待受ポートを10000へ変更できない。
+このリポジトリの設定だけでは、実際の待受ポートは通常の既定値8080となる。
+外部のSERVER_PORT、起動引数などが設定されているかは今回確認できない。
+対応案：想定する起動環境・ポートの指定方法を確認し、Dockerfileのコメント、実際の設定、
+必要なら実装設計書の起動・配置手順をそろえる。
+根拠：Dockerfile、src/main/resources/application.properties。
+
+【今回の比較で設計書への新規追加が不要と判断した主な仕様】
+Unicodeコードポイントでの名前長判定、通常手と完全一致するオリジナル手名の禁止、
+別タブの本人手確定表示、タブごとの結果matchId固定、共通ロックでの更新、
+5秒／10秒の結果期限、30秒の切断期限、最終勝者確定後の全員退出時の結果保持は既に記載済み。
+これらの追加記載よりも、上記の構成・画面用データ・編集復帰条件の整合を優先する。
+
+推奨する反映順
+1. 画面用データ名と結果画面の編集復帰の方針を整理する。
+2. 04 画面設計書と06 実装設計書へ構成・見た目・共通処理を反映する。
+3. 03 API設計書と05 テスト仕様書を、決めた方針に合わせる。
+4. Dockerを使用する場合は待受ポートの設定を確認する。
