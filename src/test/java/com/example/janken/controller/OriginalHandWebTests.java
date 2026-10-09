@@ -193,6 +193,26 @@ class OriginalHandWebTests {
         var m=java.util.regex.Pattern.compile("<div id=\"original-hand-panel\"([^>]*)>").matcher(html);
         assertTrue(m.find(),html); assertFalse(m.group(1).contains("hidden"),html);
     }
+    void relationRadios(String html, Map<String,String> selected) {
+        // 実際に描画されたHTMLで、選択肢とラベルの対応・選択状態を確認する。
+        for(String field:List.of("vsRock","vsScissors","vsPaper","vsOriginal")) {
+            var inputs=java.util.regex.Pattern.compile("<input\\b[^>]*name=\""+field+"\"[^>]*>").matcher(html);
+            int count=0, checked=0;
+            while(inputs.find()) {
+                String input=inputs.group(); count++;
+                assertTrue(input.contains("type=\"radio\""),input);
+                var value=java.util.regex.Pattern.compile("value=\"(WIN|LOSE|DRAW)\"").matcher(input);
+                assertTrue(value.find(),input);
+                assertTrue(input.contains("id=\""+field+"-"+value.group(1)+"\""),input);
+                assertTrue(html.contains("for=\""+field+"-"+value.group(1)+"\""),html);
+                boolean isChecked=input.contains("checked=\"checked\"");
+                assertEquals(value.group(1).equals(selected.get(field)),isChecked,input);
+                if(isChecked) checked++;
+            }
+            assertEquals(3,count,field);
+            assertEquals(selected.containsKey(field)?1:0,checked,field);
+        }
+    }
     @Test void actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors() throws Exception {
         HttpClient a=browser(); redirect(http(a,"/login","username=User"),"/rooms");
         for(boolean inRoom:List.of(false,true)) {
@@ -200,16 +220,24 @@ class OriginalHandWebTests {
             if(inRoom) {redirect(http(a,"/rooms/enter","roomName=Room"),"/room");id=hiddenRoom(http(a,path,null).body());}
             String initial=http(a,path,null).body(); assertTrue(initial.contains("オリジナル手が作成されていません"));
             assertTrue(initial.contains("オリジナル手を作成")); assertFalse(initial.contains("オリジナル手を編集"));
+            relationRadios(initial,Map.of());
             redirect(http(a,"/original-hand/save",body("　初期<手>\t ",page,id)),path);
             String created=http(a,path,null).body(); assertTrue(created.contains("初期&lt;手&gt;")); assertTrue(created.contains("オリジナル手を編集"));
             assertFalse(created.contains("オリジナル手を作成")); assertTrue(created.contains("オリジナル手を削除"));
+            var selected=Map.of("vsRock","WIN","vsScissors","LOSE","vsPaper","DRAW","vsOriginal","DRAW");
+            relationRadios(created,selected);
             redirect(http(a,"/original-hand/save",body(" 更新名 ",page,id)),path);
             String updated=http(a,path,null).body(); assertTrue(updated.contains("更新名"));
             var invalid=http(a,"/original-hand/save",body(" グー ",page,id)); assertEquals(400,invalid.statusCode()); panelOpen(invalid.body());
             assertTrue(invalid.body().contains("value=\" グー \"")); assertTrue(invalid.body().contains("更新名"));
             assertTrue(invalid.body().contains(OriginalHandService.FORBIDDEN_NAME_MESSAGE));
+            relationRadios(invalid.body(),selected);
             var relation=http(a,"/original-hand/save",body("編集中",page,id).replace("vsRock=WIN","vsRock=BAD"));
-            assertEquals(400,relation.statusCode()); panelOpen(relation.body()); assertTrue(relation.body().contains("value=\"BAD\" selected=\"selected\""),relation.body());
+            assertEquals(400,relation.statusCode()); panelOpen(relation.body()); assertTrue(relation.body().contains("無効な選択値：BAD"),relation.body());
+            relationRadios(relation.body(),Map.of("vsScissors","LOSE","vsPaper","DRAW","vsOriginal","DRAW"));
+            var missing=http(a,"/original-hand/save",body("編集中",page,id).replace("&vsRock=WIN",""));
+            assertEquals(400,missing.statusCode()); panelOpen(missing.body());
+            relationRadios(missing.body(),Map.of("vsScissors","LOSE","vsPaper","DRAW","vsOriginal","DRAW"));
             assertTrue(http(a,path,null).body().contains("更新名"));
             if(inRoom) {
                 assertTrue(updated.contains("ルーム名をコピー")); assertTrue(updated.contains("/js/room.js"));
