@@ -1,3 +1,4 @@
-﻿{
-  "java.import.gradle.enabled": true
+{
+  "java.import.gradle.enabled": true,
+  "java.compile.nullAnalysis.mode": "disabled"
 }
