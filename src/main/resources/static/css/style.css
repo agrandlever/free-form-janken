@@ -4,9 +4,10 @@ body { min-height: 100vh; }
 .app-header { background: #fff; padding: 1rem 0; }
 .app-header-inner { max-width: 960px; gap: 1rem; }
 .navbar-brand { color: #224d9b; font-size: 1.1rem; white-space: normal; }
-/* 縦横比を保ち、狭い画面でもヘッダー画像がはみ出さないようにする。 */
-.app-brand { max-width: 100%; padding: 0; margin-right: 0; }
-.app-header-image { display: block; width: 216px; max-width: 100%; height: auto; }
+/* 横並びを保ちつつ、狭い画面ではロゴを縮めてはみ出しを防ぐ。 */
+.app-brand { display: flex; align-items: center; gap: .75rem; width: 320px; max-width: 100%; padding: 0; margin-right: 0; }
+.app-header-icon { display: block; width: 64px; height: auto; flex-shrink: 0; }
+.app-header-logo { display: block; width: 240px; max-width: calc(100% - 76px); height: auto; }
 .app-user-controls { min-width: 0; max-width: 100%; }
 .app-user-controls .user-name { white-space: normal; }
 .user-name { font-size: .9rem; max-width: 100%; overflow-wrap: anywhere; }
@@ -50,16 +51,18 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .affinity-table { min-width: 580px; }
 .login-page { display: grid; place-items: center; padding: 1.25rem; background: radial-gradient(ellipse at top, #e5edff, #f3f6fc 70%); }
 .login-card { max-width: 520px; margin: 2rem auto; }
-.login-title { margin: 0 0 1.25rem; }
-/* 幅と画面の高さの両方で上限を設け、入力フォームの場所も確保する。 */
-.login-title-image { display: block; width: min(100%, 360px, 40vh); height: auto; margin: 0 auto; }
+.login-title { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin: 0 0 1.25rem; }
+/* アイコンの高さに上限を設け、下のロゴと入力フォームの場所も確保する。 */
+.login-icon { display: block; width: min(100%, 260px, 30vh); height: auto; }
+.login-logo { display: block; width: 360px; max-width: 100%; height: auto; }
 @media (max-width: 575.98px) {
     .app-main { width: calc(100% - 1.5rem); margin: 1rem auto; border-radius: 1rem; }
     .login-card { width: 100%; }
     /* ロゴと操作欄を別の段に置き、長いユーザー名は操作欄内で折り返す。 */
     .app-header-inner { flex-direction: column; align-items: stretch; }
     .app-brand { align-self: flex-start; }
-    .app-header-image { width: 180px; }
+    .app-header-icon { width: 48px; }
+    .app-header-logo { max-width: calc(100% - 60px); }
     .app-user-controls { width: 100%; justify-content: flex-end; }
     .hand-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .hand-options .btn { font-size: 1rem; }

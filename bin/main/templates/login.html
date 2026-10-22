@@ -2,8 +2,11 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>簡易自由律じゃんけん</title><link rel="icon" type="image/png" th:href="@{/favicon.png}"><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"></head>
 <body class="login-page"><main class="container app-main shadow-sm login-card">
-<!-- 画像内にタイトルがあるため、見出しには画像と読み上げ用の代替テキストを置く。 -->
-<h1 class="login-title"><img class="login-title-image" th:src="@{/images/title.png}" alt="簡易自由律じゃんけん" width="1254" height="1254"></h1>
+<!-- タイトルはロゴの代替テキストで読み上げ、装飾のアイコンは読み上げを省く。 -->
+<h1 class="login-title">
+<img class="login-icon" th:src="@{/images/icon.png}" alt="" width="1312" height="1199">
+<img class="login-logo" th:src="@{/images/logo.png}" alt="簡易自由律じゃんけん" width="381" height="37">
+</h1>
 <p class="text-primary fw-semibold mb-2">自分だけの手で、いざ勝負。</p>
 <p class="text-body-secondary mb-4">名前を決めて、みんなでじゃんけんを楽しもう。</p>
 <section th:fragment="errors" th:if="${errorCode != null}" role="alert" class="errors alert alert-danger">
