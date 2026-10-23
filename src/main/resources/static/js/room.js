@@ -165,8 +165,21 @@
         else watch.removeAttribute('href');
         const isHost = room.hostUserId === page.dataset.selfUserId;
         const start = document.getElementById('start-action');
-        const canStart = isHost && !running && room.members.filter(m => m.userState === 'READY').length >= 2;
-        start.replaceChildren(...(canStart ? [actionForm('/room/start', '対戦開始', room.id)] : []));
+        const canStart = isHost && status.roomState === 'WAITING'
+                && room.members.filter(m => m.userState === 'READY').length >= 2;
+        let startForm = start.querySelector('form');
+        // ホスト移譲で新ホストになった画面にもフォームを作り、無効時も表示を維持する。
+        if (isHost && !startForm) {
+            startForm = actionForm('/room/start', '対戦開始', room.id);
+            start.replaceChildren(startForm);
+        } else if (!isHost && startForm) {
+            start.replaceChildren();
+            startForm = null;
+        }
+        if (startForm) {
+            startForm.querySelector('input[name="roomId"]').value = room.id;
+            startForm.querySelector('button').disabled = !canStart;
+        }
         document.getElementById('display-target-wins').textContent = room.targetWins;
         document.getElementById('display-prevent-consecutive').textContent = room.preventConsecutiveSameOriginalHand ? '不可' : '可能';
         const canEditRules = isHost && !running;

@@ -243,6 +243,8 @@ ROOM_FULL
 
 membersは入室順のusername・host・ready・playingを持つ表示用コピー。readyMembers・playingMembersはその状態で絞り込んだ一覧とする。②はcanEditOriginalHand=true、③はfalseで、編集フォームの操作を許可しない。③でも本人の保存済み手名・相性要約は表示する。
 
+「対戦開始」の初期表示は既存Modelだけで制御する。表示条件はisHost=true、有効条件はisHost=trueかつreadyMembersが2人以上かつmatchRunning=falseとする。ホストには条件不成立でもボタンを表示し、disabled属性で無効化する。本人が②であることは無効化の理由にしない。新しいModel項目は追加しない。
+
 ルーム画面の②では正常な状態確認を契機に、既存のGET /roomのHTMLから本人の保存済み設定と導線を確認する。編集部分がない場合は取得した部分を挿入する。既存部分がある場合は要約・作成／編集文言・削除導線を更新し、フォームの入力値と開閉状態は保持する。閉じているフォームも上書きしない。現在の状態と所属に加え、取得HTMLのroomId・userStateが表示対象と一致する場合だけ適用する。取得失敗は次回状態確認で再試行し、HTML取得同士を重ねない。GET /api/statusのJSON項目や新しいエンドポイントは追加しない。
 
 ## 8. `POST /room/leave`
@@ -352,6 +354,8 @@ READY_HAND_NAME_CONFLICT
 ホストが②なら②のままで `302 → /room`。ホストが参加者④になった場合は `302 → /play?matchId=開始した対戦ID`。
 
 非ホストは403、進行中対戦あり・③が1人以下・状態不一致は409で拒否する。拒否時は対戦・ルーム・ユーザー状態を変更せず、ルーム画面または現在の正規画面にエラーを表示する。
+
+ボタンの表示・無効化は画面側の制御であり、このAPIの権限・状態・人数検証を省略しない。無効化を解除した直接要求や、状態確認後に条件が変わった要求にも、サーバー上の最新状態で既存の検証を行う。入力・応答・エラー仕様は変更しない。
 
 ## 13. `POST /original-hand/save`
 
@@ -769,6 +773,10 @@ roomの構造：
 - id・name・hostUserId。
 - targetWins・preventConsecutiveSameOriginalHand。
 - members：入室順のuserId・username・userState・isHost。
+
+ルーム画面の「対戦開始」は既存JSONとGET /roomのselfUserIdで更新できる。表示条件はroom.hostUserIdとselfUserIdの一致、有効条件はホストかつroom.members内のuserState=READYが2人以上かつroomState=WAITINGとする。ホストには条件不成立でもdisabled属性付きで表示し、非ホストには表示しない。本人のuserState=READYは必須としない。初期ModelのisHost・readyMembers・matchRunningと同じ意味で判定し、新しいJSON項目やAPIは追加しない。
+
+2秒間隔の正常な状態確認で、準備完了・準備取消・退出等による人数変化、対戦開始・終了、ホスト移譲を反映する。表示中と現在所属のroomIdが一致する②・③に適用し、④等への画面遷移は26.1節を優先する。
 
 JSONの内部IDはUUID文字列、ラウンド番号・勝数は整数、時刻はUTCのISO日時文字列として扱う。各null条件は上表に従う。
 

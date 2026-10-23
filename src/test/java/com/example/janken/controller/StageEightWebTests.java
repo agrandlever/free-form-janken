@@ -88,7 +88,9 @@ class StageEightWebTests {
             redirect(http(pair.getKey(),"/rooms/enter","roomName=R"),"/room");
         }
         String id=hiddenRoom(http(host,"/room",null).body());
-        assertFalse(http(host,"/room",null).body().contains("action=\"/room/start\""));
+        String initialRoom=http(host,"/room",null).body();
+        assertTrue(initialRoom.contains("action=\"/room/start\""));
+        assertTrue(startButton(initialRoom).contains("disabled"));
         createAndReady(a,id,"HA"); createAndReady(b,id,"HB");
         if(hostReady) { createAndReady(host,id,"HH"); }
         assertTrue(http(host,"/room",null).body().contains("action=\"/room/start\""));
@@ -122,7 +124,8 @@ class StageEightWebTests {
         }
         if(!hostReady) {
             String html=http(host,"/room",null).body(); assertTrue(html.contains("現在対戦中です"));
-            assertTrue(html.contains("現在対戦中")); assertFalse(html.contains("/room/start")); assertTrue(html.contains("対戦を見る"));
+            assertTrue(html.contains("現在対戦中")); assertTrue(html.contains("/room/start"));
+            assertTrue(startButton(html).contains("disabled")); assertTrue(html.contains("対戦を見る"));
             assertEquals(200,http(host,play,null).statusCode());
             // 第15段階：開始後の②・③は同じ対戦を観戦できる。
             createAndReady(host,id,"HH"); assertEquals(200,http(host,play,null).statusCode());
@@ -137,6 +140,31 @@ class StageEightWebTests {
         }
         synchronized(lock) { assertEquals(1,matches.findAll().size()); assertEquals(matchId,matches.findAll().getFirst().getId().toString()); }
         assertEquals(400,http(a,"/play","matchId="+matchId).statusCode());
+    }
+    String startButton(String html) {
+        var form=java.util.regex.Pattern.compile("(?s)<form[^>]*action=\"/room/start\"[^>]*>(.*?)</form>").matcher(html);
+        assertTrue(form.find(), html); return form.group(1).substring(form.group(1).indexOf("<button"));
+    }
+    void createReady(MockHttpSession member, String roomId, String name) throws Exception {
+        mvc.perform(post("/original-hand/save").session(member).param("returnPage","ROOM").param("roomId",roomId).param("name",name).param("vsRock","LOSE").param("vsScissors","WIN").param("vsPaper","DRAW").param("vsOriginal","LOSE"));
+        mvc.perform(post("/room/ready").session(member).param("roomId",roomId)).andExpect(status().isFound());
+    }
+    @Test void startButtonIsHostOnlyAndDisabledUntilTwoUsersAreReady() throws Exception {
+        var host=browser(); var other=browser(); var third=browser();
+        for(var pair:List.of(Map.entry(host,"Host"),Map.entry(other,"Other"),Map.entry(third,"Third"))) {
+            redirect(http(pair.getKey(),"/login","username="+pair.getValue()),"/rooms");
+            redirect(http(pair.getKey(),"/rooms/enter","roomName=ButtonRoom"),"/room");
+        }
+        String roomId=hiddenRoom(http(host,"/room",null).body());
+        String html=http(host,"/room",null).body();
+        assertTrue(html.contains("action=\"/room/start\"")); assertTrue(startButton(html).contains("disabled"));
+        assertFalse(http(other,"/room",null).body().contains("action=\"/room/start\""));
+        createAndReady(other,roomId,"OtherHand");
+        html=http(host,"/room",null).body();
+        assertTrue(html.contains("action=\"/room/start\"")); assertTrue(startButton(html).contains("disabled"));
+        createAndReady(third,roomId,"ThirdHand");
+        html=http(host,"/room",null).body();
+        assertTrue(html.contains("action=\"/room/start\"")); assertFalse(startButton(html).contains("disabled"));
     }
     @Test void getPlayRedirectsAnonymousAndNonParticipants() throws Exception {
         var client=browser(); redirect(http(client,"/play",null),"/");

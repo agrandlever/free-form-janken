@@ -150,7 +150,7 @@ class StageFourWebTests {
         redirect(http(a,"/rooms/enter","roomName="+encoded),"/room");
         String hostHtml=http(a,"/room",null).body(); String id=hiddenRoom(hostHtml);
         assertTrue(hostHtml.contains("共有&lt;部屋&gt;")); assertTrue(hostHtml.contains("（ホスト）"));
-        assertEquals(5,hostHtml.split(id,-1).length-1); // hidden4個と状態同期用data-room-id。利用者向け表示にはしない。
+        assertEquals(6,hostHtml.split(id,-1).length-1); // hidden5個と状態同期用data-room-id。利用者向け表示にはしない。
         assertTrue(hostHtml.contains("data-room-id=\""+id+"\""));
         assertFalse(hostHtml.contains("/api/status")); assertTrue(hostHtml.contains("準備完了"));
         redirect(http(b,"/login","username=Member"),"/rooms");

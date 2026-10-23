@@ -24,8 +24,8 @@
 <form class="app-form" id="ready-action" th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button class="btn btn-outline-secondary" type="submit">準備取消</button>
 </form>
-<div id="start-action"><form class="app-form" th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
-<input type="hidden" name="roomId" th:value="${roomId}"><button class="btn btn-primary" type="submit">対戦開始</button>
+<div id="start-action"><form class="app-form" th:if="${isHost}" method="post" th:action="@{/room/start}">
+<input type="hidden" name="roomId" th:value="${roomId}"><button class="btn btn-primary" type="submit" th:disabled="${matchRunning or readyMembers.size() < 2}">対戦開始</button>
 </form></div>
 </div>
 <p id="ready-waiting-message" role="status" th:text="${userState.name() != 'READY' ? '' : (matchRunning ? '現在の対戦が終わるのを待っています。' : (readyMembers.size() &lt; 2 ? '相手の準備完了を待っています。' : (isHost ? '対戦を開始できます。' : 'ホストの対戦開始を待っています。')))}"></p>
