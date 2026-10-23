@@ -4,7 +4,7 @@
 <body>
 <header th:fragment="header" class="navbar app-header border-bottom"><div class="container app-header-inner"><strong class="navbar-brand app-brand mb-0"><img class="app-header-icon" th:src="@{/images/icon.png}" alt="" width="1312" height="1199"><img class="app-header-logo" th:src="@{/images/logo.png}" alt="簡易自由律じゃんけん" width="381" height="37"></strong><div class="app-user-controls d-flex align-items-center gap-3 flex-wrap"><span class="badge text-bg-light user-name" th:text="${username}"></span><form class="m-0" method="post" th:action="@{/logout}"><button class="btn btn-outline-secondary btn-sm" type="submit">ログアウト</button></form></div></div></header>
 <main class="container app-main shadow-sm" data-page="rooms"><h1 class="h2 fw-bold page-title">ルーム作成・参加</h1><p>友達と同じルーム名を入力すると、同じルームに参加できます。まだない名前なら、新しいルームを作成します。</p>
-<p class="text-body-secondary">オリジナル手は入室後にも作れます。まずはルームへ入りましょう。</p>
+<p class="text-body-secondary">手は入室後に作れます。対戦までに1つ作成してください。</p>
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <form class="app-form room-enter-form" method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">
 <label class="form-label" for="roomName">ルーム名（前後の空白を除いて1～20文字）</label>

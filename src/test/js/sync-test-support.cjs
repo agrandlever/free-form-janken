@@ -26,6 +26,9 @@ class Element {
     removeAttribute(key) { delete this.attributes[key]; }
     addEventListener(name, fn) { (this.listeners[name] ??= []).push(fn); }
     emit(name, data) { for (const fn of this.listeners[name] ?? []) fn(data); }
+    click() { this.emit('click'); }
+    focus() { this.focused = true; }
+    scrollIntoView(options) { this.scrollOptions = options; }
     querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
     querySelectorAll(selector) {
         if (this.buttons && selector.includes('button')) return this.buttons;
@@ -56,7 +59,7 @@ function environment(kind, confirmed = false) {
     for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
         'watch-match','rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
         'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities',
-        'room-status','self-ready-status']) {
+        'room-status','self-ready-status','create-original-hand','ready-waiting-message','original-hand-status']) {
         ids[id] = document.createElement('div'); ids[id].id = id;
     }
     ids['round-history'].hidden = true;
@@ -66,25 +69,38 @@ function environment(kind, confirmed = false) {
     const controls = [new Element('input'),new Element('select'),new Element('button')];
     ids['original-hand-panel'].append(...controls);
     const moves = [], timeouts = [], intervals = [], fetches = [], pending = [];
+    let parsedHtml;
     const context = vm.createContext({
         document, performance: { now: () => now },
+        DOMParser: class { parseFromString() { return parsedHtml; } },
         window: { location: { assign: url => moves.push(url) }, addEventListener: (name, fn) => { (listeners[name] ??= []).push(fn); } },
         navigator: { clipboard: { writeText: async () => {} } },
         CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
         setTimeout: (fn, delay) => { timeouts.push({ fn, delay }); return timeouts.length; },
         setInterval: (fn, delay) => { intervals.push({ fn, delay }); return intervals.length; },
         clearInterval: () => {},
-        fetch: (url, options) => { fetches.push({ url, options }); return new Promise(resolve => pending.push(resolve)); },
+        fetch: (url, options) => {
+            fetches.push({ url, options });
+            return new Promise(resolve => { resolve.url = url; pending.push(resolve); });
+        },
         Date, Number, Math, console
     });
     function load(file) { vm.runInContext(fs.readFileSync(path.join(__dirname,'../../main/resources/static/js',file),'utf8'),context); }
     const emit = status => document.dispatchEvent({ type: 'janken:status', detail: status });
     const start = () => document.dispatchEvent({ type: 'DOMContentLoaded' });
     const reply = async (data, code = 200) => {
-        pending.shift()({ status: code, ok: code === 200, json: async () => data });
+        // 状態APIとルームHTMLが並行するため、応答先をURLで区別する。
+        const index = pending.findIndex(resolve => resolve.url.startsWith('/api/status'));
+        pending.splice(index < 0 ? 0 : index, 1)[0]({ status: code, ok: code === 200, json: async () => data });
         for (let i=0;i<8;i++) await Promise.resolve();
     };
-    return {page, ids, controls, moves, timeouts, intervals, fetches, pending, load, emit, start, reply,
+    const replyHtml = async (parsed, code = 200) => {
+        parsedHtml = parsed;
+        const index = pending.findIndex(resolve => resolve.url === '/room');
+        pending.splice(index, 1)[0]({ ok: code === 200, text: async () => '' });
+        for (let i=0;i<8;i++) await Promise.resolve();
+    };
+    return {page, ids, controls, moves, timeouts, intervals, fetches, pending, load, emit, start, reply, replyHtml,
         setTime: value => { now=value; }};
 }
 function selecting(extra = {}) {

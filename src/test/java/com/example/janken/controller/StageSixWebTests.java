@@ -185,4 +185,39 @@ class StageSixWebTests {
         synchronized (lock) { var r = rooms.findById(UUID.fromString(id)).orElseThrow(); assertEquals(3, r.getTargetWins()); assertFalse(r.isPreventConsecutiveSameOriginalHand()); }
         redirect(http(a, "/logout", ""), "/");
     }
+    String openingTag(String html, String id) {
+        var tag = java.util.regex.Pattern.compile("<[^>]*\\bid=\"" + id + "\"[^>]*>").matcher(html);
+        assertTrue(tag.find(), id); return tag.group();
+    }
+    @Test void roomUiUsesExistingHandStateAndDisclosesRuleValidationErrors() throws Exception {
+        var a = browser(); redirect(http(a, "/login", "username=Host"), "/rooms");
+        redirect(http(a, "/rooms/enter", "roomName=UI"), "/room");
+        String html = http(a, "/room", null).body(); String id = hiddenRoom(html);
+        assertFalse(openingTag(html, "create-original-hand").contains("hidden"));
+        assertTrue(openingTag(html, "ready-action").contains("hidden"));
+        assertFalse(openingTag(html, "rule-editor").contains("open="));
+        assertTrue(html.contains("対戦前に、自分の手を1つ作りましょう。"));
+        assertTrue(html.contains("この手を保存"));
+        assertTrue(html.contains("相性の決まり方"));
+        assertTrue(html.contains("id=\"display-prevent-consecutive\">可能</span>"));
+        redirect(http(a, "/original-hand/save", saveBody(id, "にじ")), "/room");
+        html = http(a, "/room", null).body();
+        assertTrue(openingTag(html, "create-original-hand").contains("hidden"));
+        assertFalse(openingTag(html, "ready-action").contains("hidden"));
+        assertTrue(html.contains("手を確認したら、準備完了を押しましょう。"));
+        var invalid = http(a, "/room/rules", "roomId=" + id + "&targetWins=abc");
+        assertEquals(400, invalid.statusCode());
+        assertTrue(openingTag(invalid.body(), "rule-editor").contains("open="));
+        assertTrue(invalid.body().contains("value=\"abc\""));
+        redirect(http(a, "/room/ready", "roomId=" + id), "/room");
+        html = http(a, "/room", null).body();
+        assertTrue(html.contains("相手の準備完了を待っています。"));
+        assertTrue(openingTag(html, "create-original-hand").contains("hidden"));
+        redirect(http(a, "/room/ready/cancel", "roomId=" + id), "/room");
+        redirect(http(a, "/original-hand/delete", "returnPage=ROOM&roomId=" + id), "/room");
+        html = http(a, "/room", null).body();
+        assertFalse(openingTag(html, "create-original-hand").contains("hidden"));
+        assertTrue(openingTag(html, "ready-action").contains("hidden"));
+        redirect(http(a, "/logout", ""), "/");
+    }
 }

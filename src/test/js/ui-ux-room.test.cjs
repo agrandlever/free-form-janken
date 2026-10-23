@@ -14,7 +14,7 @@ test('準備人数・本人の案内を状態同期し、ホスト移譲後も�
     e.emit(status);
     assert.equal(e.ids['room-status'].textContent, '参加者 2人・準備完了 1人');
     assert.match(e.ids['room-members'].textContent, /自分（ホスト）（準備前）/);
-    assert.match(e.ids['self-ready-status'].textContent, /あなたは準備前です/);
+    assert.match(e.ids['self-ready-status'].textContent, /自分の手を1つ作りましょう/);
     assert.equal(e.ids['start-action'].textContent, '');
     e.emit({ ...status, userState: 'READY', room: { ...status.room,
         members: status.room.members.map(m => ({ ...m, userState: 'READY' })) } });
@@ -27,4 +27,114 @@ test('準備人数・本人の案内を状態同期し、ホスト移譲後も�
     // 別ルームからの遅延応答で、表示中の人数を上書きしない。
     e.emit({ ...status, currentRoomId: 'OTHER', room: { ...status.room, members: [] } });
     assert.equal(e.ids['room-status'].textContent, '参加者 2人・準備完了 1人');
+});
+
+function roomStatus(extra = {}) {
+    return { userState: 'ROOM_WAITING', currentRoomId: 'R', roomState: 'WAITING', room: {
+        id: 'R', name: 'テスト', hostUserId: 'A', targetWins: 3, preventConsecutiveSameOriginalHand: false,
+        members: [{ username: '自分', userState: 'ROOM_WAITING', isHost: true }]
+    }, ...extra };
+}
+function renderedRoom(created, roomId = 'R') {
+    const server = environment('room');
+    server.page.dataset.roomId = roomId;
+    server.ids['create-original-hand'].hidden = created;
+    server.ids['open-original-hand'].textContent = created ? 'オリジナル手を編集' : 'オリジナル手を作成';
+    server.ids['original-hand-status'].textContent = created ? 'オリジナル手：にじ' : 'オリジナル手が作成されていません';
+    return {
+        querySelector: selector => selector.startsWith('main') ? server.page
+            : { querySelector: () => server.ids['original-hand-panel'] },
+        getElementById: id => server.ids[id]
+    };
+}
+
+test('別タブでの作成・削除を既存HTMLから同期し、編集中の入力と開閉状態を保持する', async () => {
+    const e = environment('room'); e.load('room.js');
+    e.controls[0].value = '未保存の入力'; e.ids['original-hand-panel'].hidden = false;
+    e.emit(roomStatus());
+    assert.equal(e.ids['ready-action'].hidden, true);
+    assert.equal(e.ids['create-original-hand'].hidden, false);
+    await e.replyHtml(renderedRoom(true));
+    assert.equal(e.ids['ready-action'].hidden, false);
+    assert.equal(e.ids['create-original-hand'].hidden, true);
+    assert.equal(e.ids['self-ready-status'].textContent, '手を確認したら、準備完了を押しましょう。');
+    assert.equal(e.ids['original-hand-status'].textContent, 'オリジナル手：にじ');
+    assert.equal(e.controls[0].value, '未保存の入力');
+    assert.equal(e.ids['original-hand-panel'].hidden, false);
+    e.emit(roomStatus()); await e.replyHtml(renderedRoom(false));
+    assert.equal(e.ids['ready-action'].hidden, true);
+    assert.equal(e.ids['create-original-hand'].hidden, false);
+    assert.equal(e.controls[0].value, '未保存の入力');
+});
+
+test('HTML取得が重ならず、READY化・別ルームの応答で主操作を戻さない', async () => {
+    const e = environment('room'); e.load('room.js');
+    e.emit(roomStatus()); e.emit(roomStatus());
+    assert.equal(e.fetches.length, 1);
+    e.emit(roomStatus({ userState: 'READY' }));
+    await e.replyHtml(renderedRoom(false));
+    assert.equal(e.ids['ready-action'].hidden, false);
+    assert.equal(e.ids['ready-action'].textContent, '準備取消');
+    assert.equal(e.ids['create-original-hand'].hidden, true);
+    e.emit(roomStatus()); await e.replyHtml(renderedRoom(false, 'OTHER'));
+    assert.equal(e.ids['create-original-hand'].hidden, true);
+    e.emit(roomStatus()); await e.replyHtml(null, 500);
+    assert.equal(e.ids['create-original-hand'].hidden, true);
+});
+
+test('READYの待機案内は人数・ホスト・対戦中の既存状態に従う', () => {
+    const e = environment('room'); e.load('room.js');
+    const status = roomStatus({ userState: 'READY' });
+    e.emit(status);
+    assert.equal(e.ids['ready-waiting-message'].textContent, '相手の準備完了を待っています。');
+    const room = { ...status.room, members: [{ userState: 'READY' }, { userState: 'READY' }] };
+    e.emit({ ...status, room });
+    assert.equal(e.ids['ready-waiting-message'].textContent, '対戦を開始できます。');
+    e.emit({ ...status, room: { ...room, hostUserId: 'B' } });
+    assert.equal(e.ids['ready-waiting-message'].textContent, 'ホストの対戦開始を待っています。');
+    e.emit({ ...status, roomState: 'PLAYING' });
+    assert.equal(e.ids['ready-waiting-message'].textContent, '現在の対戦が終わるのを待っています。');
+});
+
+test('ルールの開閉は入力を保持し、権限喪失で閉じて送信を無効化する', () => {
+    const e = environment('room'); e.load('room.js');
+    const status = roomStatus(); e.emit(status);
+    const editor = e.ids['rule-editor']; editor.open = true;
+    const wins = editor.querySelector('[name="targetWins"]');
+    wins.value = '入力中'; editor.emit('input'); editor.open = false; editor.open = true;
+    e.emit({ ...status, room: { ...status.room, targetWins: 7, preventConsecutiveSameOriginalHand: true } });
+    assert.equal(wins.value, '入力中'); assert.equal(editor.open, true);
+    assert.equal(e.ids['display-target-wins'].textContent, '7');
+    assert.equal(e.ids['display-prevent-consecutive'].textContent, '不可');
+    e.emit({ ...status, room: { ...status.room, hostUserId: 'B' } });
+    assert.equal(editor.open, false); assert.equal(editor.hidden, true);
+    assert.ok(editor.querySelectorAll('input,button').every(c => c.disabled));
+});
+
+test('上部の手作成導線は共通フォームを展開し名前にフォーカス・スクロールする', () => {
+    const e = environment('room');
+    for (const id of ['close-original-hand', 'original-hand-name']) e.ids[id] = e.ids['room-status'].owner.createElement('input');
+    e.ids['original-hand-panel'].hidden = true;
+    e.load('original-hand.js'); e.load('original-hand.js');
+    e.ids['create-original-hand'].click();
+    assert.equal(e.ids['original-hand-panel'].hidden, false);
+    assert.equal(e.ids['original-hand-name'].focused, true);
+    assert.equal(e.ids['original-hand-name'].scrollOptions.block, 'center');
+    assert.equal(e.ids['original-hand-name'].scrollOptions.behavior, 'instant');
+    assert.equal(e.ids['create-original-hand'].attributes['aria-expanded'], 'true');
+    assert.equal(e.ids['create-original-hand'].listeners.click.length, 1);
+    e.ids['close-original-hand'].click();
+    assert.equal(e.ids['create-original-hand'].attributes['aria-expanded'], 'false');
+});
+
+test('ルールのエラー再表示は最初の定期更新でも入力を上書きしない', () => {
+    const e = environment('room');
+    const editor = e.ids['rule-editor'];
+    const query = editor.querySelector.bind(editor);
+    editor.querySelector = selector => selector === '[id$="errors"] li' ? {} : query(selector);
+    e.load('room.js'); e.emit(roomStatus());
+    const wins = editor.querySelector('[name="targetWins"]'); wins.value = 'abc';
+    e.emit(roomStatus());
+    assert.equal(wins.value, 'abc');
+    assert.equal(e.ids['display-target-wins'].textContent, '3');
 });
