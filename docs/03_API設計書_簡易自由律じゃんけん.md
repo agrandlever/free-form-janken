@@ -53,7 +53,7 @@ formは再表示する対象フォームの値を表す共通名であり、各�
 
 `GET /api/status` のエラーはHTMLや302ではなくJSONとする。未ログインは401、形式不正は400で、`code`・`message`・`errors`（項目とメッセージの配列）を返す。
 
-GETのModelと状態JSONには、確定前の他人の選択手や公開前の他人のオリジナル手相性を含めない。本人の現在オリジナル手設定は、許可された作成・編集フォームのModelへ本人用として渡す。オリジナル手の選択肢は内部ID・名前・選択可能かを表す値だけを渡す。
+GETのModelと状態JSONには、確定前の他人の選択手や公開前の他人のオリジナル手相性を含めない。本人の現在オリジナル手設定は、本人用の保存済み要約と許可された作成・編集フォームのModelへ渡す。③のルーム画面でも本人要約は閲覧できるが編集は許可しない。オリジナル手の選択肢は内部ID・名前・選択可能かを表す値だけを渡す。
 
 ### 1.5 共通Modelと基本画面
 
@@ -66,10 +66,11 @@ GET /roomsは①のみ表示し、username・userState・roomEnterFormと、次�
 - `canEditOriginalHand`：編集可能か。①ではtrue。
 - `hasOriginalHand`：現在のオリジナル手が作成済みか。
 - `originalHandName`：現在の手名。未作成なら空文字。
+- `currentOriginalHand`：本人の保存済み設定の表示用コピー。handId・handName・vsRock・vsScissors・vsPaper・vsOriginalを持ち、未作成ならnull。フォーム外の相性要約に使用する。
 - `originalHandForm`・`originalHandDeleteForm`：本人の現在設定をコピーした保存用・削除用フォーム。
 - `originalHandFormOpen`：フォームの初期展開状態。通常GETはfalse、許可された入力エラーの再表示はtrue。
 
-`/rooms`と`/room`では`currentOriginalHand`というModel名を使用せず、上記の表示値とフォームを利用する。ModelはHTMLへ渡す画面用データであり、状態JSONの項目とは区別する。
+`/rooms`と`/room`でも`currentOriginalHand`を利用する。入力不正時はoriginalHandFormに入力値を再設定しても、currentOriginalHand・originalHandName・hasOriginalHandは保存済みの本人設定から生成する。ModelはHTMLへ渡す画面用データであり、状態JSONの項目とは区別する。これらの本人相性をroom.membersや他ユーザー向けのModelへ追加しない。
 
 各画面の送信用内部IDはサーバーが検証済みModelからhidden項目等へ設定し、利用者向けの表示・入力にしない。
 
@@ -233,14 +234,16 @@ ROOM_FULL
 - `isHost`
 - `userState`
 - `matchRunning`
-- `canEditOriginalHand`・`hasOriginalHand`・`originalHandName`・`originalHandFormOpen`（1.5節）
+- `canEditOriginalHand`・`hasOriginalHand`・`originalHandName`・`currentOriginalHand`・`originalHandFormOpen`（1.5節）
 - `roomActionForm`（roomId）
 - `roomRuleForm`（roomIdと現在ルール）
 - `originalHandForm`・`originalHandDeleteForm`（returnPage=ROOM、roomId）
 
 ②・③だけを表示対象とし、他状態は29節へ誘導する。進行中対戦があっても②・③を自動的に観戦へ移動しない。
 
-membersは入室順のusername・host・ready・playingを持つ表示用コピー。readyMembers・playingMembersはその状態で絞り込んだ一覧とする。②はcanEditOriginalHand=true、③はfalseで、編集フォームの操作を許可しない。初期③の画面に編集部分がない場合、②への変化後にJavaScriptが既存のGET /roomから編集部分を取得する。新しいエンドポイントは設けない。
+membersは入室順のusername・host・ready・playingを持つ表示用コピー。readyMembers・playingMembersはその状態で絞り込んだ一覧とする。②はcanEditOriginalHand=true、③はfalseで、編集フォームの操作を許可しない。③でも本人の保存済み手名・相性要約は表示する。
+
+ルーム画面の②では正常な状態確認を契機に、既存のGET /roomのHTMLから本人の保存済み設定と導線を確認する。編集部分がない場合は取得した部分を挿入する。既存部分がある場合は要約・作成／編集文言・削除導線を更新し、フォームの入力値と開閉状態は保持する。閉じているフォームも上書きしない。現在の状態と所属に加え、取得HTMLのroomId・userStateが表示対象と一致する場合だけ適用する。取得失敗は次回状態確認で再試行し、HTML取得同士を重ねない。GET /api/statusのJSON項目や新しいエンドポイントは追加しない。
 
 ## 8. `POST /room/leave`
 
@@ -675,6 +678,8 @@ scoresはMatchParticipantから共通ロック内で表示用にコピーする�
 - `originalHandForm`・`originalHandDeleteForm`（returnPage=MATCH_RESULT、roomId・resultMatchId=表示中のmatchId）
 
 ②では1.5節の編集用Modelも渡し、フォームのresultMatchIdを表示対象へ固定する。③ではcanEditOriginalHand=false・originalHandFormOpen=falseとし、編集フォームと編集部分を生成しない。currentOriginalHandは現在の手のhandId・handName・相性4項目を持つコピーで、未作成ならnull。
+
+②の共通編集部品ではcurrentOriginalHandを本人の保存済み相性要約にも利用する。入力エラー時のフォーム値と分離し、originalHandAffinitiesが保持する過去対戦の相性を置き換えない。ルーム画面のGET /roomによる自動取得は結果画面には適用しない。
 
 結果データはMatchResultSnapshotだけから取得する。現在のGameMatchや過去参加者のGameUserで名前を復元しない。
 
