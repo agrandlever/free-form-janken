@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"><body>
 <section th:fragment="editor" class="original-hand card card-body bg-body-tertiary">
-<h2 class="h5 fw-bold">オリジナル手</h2>
+<h2 class="h5 fw-bold" th:text="${originalHandForm.returnPage == 'ROOMS' ? 'オリジナル手の作成（入室前は任意）' : 'オリジナル手の設定'}">オリジナル手の設定</h2>
+<p class="text-body-secondary">自分だけの手を作り、グー・チョキ・パーなどの手との勝ち負けを設定できます。</p>
+<p class="original-hand-note">入室前の作成は任意です。対戦に参加するには、準備完了までに作成してください。</p>
 <p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
 <p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
 <button class="btn btn-outline-primary" th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
@@ -16,7 +18,12 @@
 <input class="form-control" id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-errors">
 <ul class="list-unstyled app-list" id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
 <!-- 同じ相性の選択肢は共通の項目名でまとめ、1つだけ選べるようにする。 -->
-<fieldset class="mb-3">
+<div class="affinity-guide" id="affinity-guide">
+<p class="fw-bold">相性4項目をすべて選び、最低1項目は「負け」に設定してください。</p>
+<p>「勝ち」は自分の手が相手の手に勝つ、「負け」は自分の手が相手の手に負ける、「引き分け」は勝敗がつかない設定です。</p>
+<p class="small">他のオリジナル手との対戦では、お互いの設定を組み合わせて勝敗を判定します。</p>
+</div>
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">グーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -35,7 +42,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsRock')}" th:text="|無効な選択値：${originalHandRejectedValues['vsRock']}|"></p>
 <ul class="list-unstyled app-list" id="vsRock-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsRock']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">チョキへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -54,7 +61,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsScissors')}" th:text="|無効な選択値：${originalHandRejectedValues['vsScissors']}|"></p>
 <ul class="list-unstyled app-list" id="vsScissors-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsScissors']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">パーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -73,7 +80,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsPaper')}" th:text="|無効な選択値：${originalHandRejectedValues['vsPaper']}|"></p>
 <ul class="list-unstyled app-list" id="vsPaper-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsPaper']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">他のオリジナル手への相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -92,7 +99,6 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsOriginal')}" th:text="|無効な選択値：${originalHandRejectedValues['vsOriginal']}|"></p>
 <ul class="list-unstyled app-list" id="vsOriginal-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsOriginal']}" th:text="${message}"></li></ul>
 </fieldset>
-<p>相性4項目のうち最低1項目は負けにしてください。</p>
 <button class="btn btn-primary" type="submit">決定</button>
 <button class="btn btn-outline-secondary" id="close-original-hand" type="button">閉じる</button>
 </form>

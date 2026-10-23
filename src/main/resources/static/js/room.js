@@ -26,8 +26,7 @@
         const button = document.createElement('button');
         button.type = 'submit'; button.textContent = label;
         // 自動更新で作り直すボタンにも、初期HTMLと同じBootstrapの色を適用する。
-        button.className = url === '/room/ready' || url === '/room/start'
-            ? 'btn btn-success' : url === '/room/ready/cancel' ? 'btn btn-outline-secondary' : 'btn btn-primary';
+        button.className = url === '/room/ready/cancel' ? 'btn btn-outline-secondary' : 'btn btn-primary';
         form.append(hidden, button);
         return form;
     };
@@ -35,6 +34,10 @@
         let form = ruleEditor.querySelector('form');
         if (form) return form;
         form = actionForm('/room/rules', 'ルール変更', room.id);
+        const heading = document.createElement('p');
+        heading.className = 'fw-semibold';
+        heading.textContent = 'ルールの変更（ホストのみ・対戦中は変更不可）';
+        form.insertBefore(heading, form.children[0]);
         const label = document.createElement('label');
         label.textContent = '先取勝数'; label.className = 'form-label';
         const wins = document.createElement('input');
@@ -49,6 +52,11 @@
         form.insertBefore(label, form.lastChild); form.insertBefore(preventLabel, form.lastChild);
         ruleEditor.append(form);
         return form;
+    };
+    const updateStatusText = (id, text) => {
+        const element = document.getElementById(id);
+        // 同じ内容を2秒ごとに書き直すと、読み上げソフトが繰り返し通知するため避ける。
+        if (element.textContent !== text) element.textContent = text;
     };
     const syncEditor = async (status) => {
         const allowed = status.userState === 'ROOM_WAITING';
@@ -93,13 +101,20 @@
             for (const label of [
                 member.isHost ? '（ホスト）' : '',
                 member.userState === 'READY' ? '（準備完了）' : '',
-                member.userState === 'PLAYING' ? '（現在対戦中）' : ''
+                member.userState === 'PLAYING' ? '（現在対戦中）' : '',
+                member.userState === 'ROOM_WAITING' ? '（準備前）' : ''
             ]) {
                 if (!label) continue;
                 const mark = document.createElement('strong'); mark.textContent = label; row.append(mark);
             }
             return row;
         }));
+        // 既存の状態だけを表示に使い、準備・開始を許可する条件は変えない。
+        updateStatusText('room-status',
+            `参加者 ${room.members.length}人・準備完了 ${room.members.filter(m => m.userState === 'READY').length}人`);
+        updateStatusText('self-ready-status', status.userState === 'READY'
+            ? 'あなたは準備完了です。設定を変えるときは「準備取消」を押してください。'
+            : 'あなたは準備前です。下の「オリジナル手の設定」で手を作成・確認できます。');
         const ready = document.getElementById('ready-action');
         const nextReady = actionForm(status.userState === 'READY' ? '/room/ready/cancel' : '/room/ready',
                 status.userState === 'READY' ? '準備取消' : '準備完了', room.id);

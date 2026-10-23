@@ -55,7 +55,8 @@ function environment(kind, confirmed = false) {
     };
     for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
         'watch-match','rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
-        'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities']) {
+        'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities',
+        'room-status','self-ready-status']) {
         ids[id] = document.createElement('div'); ids[id].id = id;
     }
     ids['round-history'].hidden = true;

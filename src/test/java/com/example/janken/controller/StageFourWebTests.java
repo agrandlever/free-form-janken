@@ -144,7 +144,7 @@ class StageFourWebTests {
 
     @Test void actualBootHttpFlowRendersHtmlAndTransfersHostAndDeletesRoom() throws Exception {
         HttpClient a=browser(), b=browser();
-        assertTrue(http(a,"/",null).body().contains("ログイン"));
+        assertTrue(http(a,"/",null).body().contains("この名前ではじめる"));
         redirect(http(a,"/login","username=Host"),"/rooms");
         String roomName="共有<部屋>"; String encoded=URLEncoder.encode(roomName,StandardCharsets.UTF_8);
         redirect(http(a,"/rooms/enter","roomName="+encoded),"/room");

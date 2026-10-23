@@ -2,30 +2,38 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ルーム | 簡易自由律じゃんけん</title><link rel="icon" type="image/png" th:href="@{/favicon.png}"><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}"><link rel="stylesheet" th:href="@{/css/style.css}"><script defer th:src="@{/js/room.js}"></script><script defer th:src="@{/js/original-hand.js}"></script><script defer th:src="@{/js/status-polling.js}"></script></head>
 <body><header th:replace="~{rooms :: header}"></header>
-<main class="container app-main shadow-sm" data-page="room" th:attr="data-room-id=${roomId},data-self-user-id=${selfUserId},data-user-state=${userState}"><h1 class="h2 fw-bold page-title">ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
-<div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
-<section th:replace="~{fragments/original-hand :: editor}"></section>
-<button class="btn btn-outline-secondary" id="copy-room-name" type="button">ルーム名をコピー</button>
+<main class="container app-main shadow-sm" data-page="room" th:attr="data-room-id=${roomId},data-self-user-id=${selfUserId},data-user-state=${userState}">
+<div class="room-heading"><h1 class="h2 fw-bold page-title">ルーム：<span id="display-room-name" th:text="${roomName}"></span></h1>
+<button class="btn btn-outline-secondary" id="copy-room-name" type="button">ルーム名をコピー</button></div>
 <p id="copy-message" role="status" aria-live="polite"></p>
-<form class="app-form" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}">
-<input type="hidden" th:field="*{roomId}">
-<ul class="list-unstyled app-list" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomId']}" th:text="${message}"></li></ul>
-<button class="btn btn-outline-danger" type="submit">ルームを退出</button>
-</form>
+<div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
+<section class="room-members-section" aria-labelledby="members-title">
+<h2 class="h5 fw-bold" id="members-title">参加者一覧</h2>
+<p class="room-status" id="room-status" role="status" th:text="|参加者 ${members.size()}人・準備完了 ${readyMembers.size()}人|">参加者・準備状況</p>
+<ul class="list-unstyled app-list" id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong><strong th:if="${!member.ready and !member.playing}">（準備前）</strong></li></ul>
+</section>
+<section class="room-primary-actions" aria-labelledby="ready-title">
+<h2 class="h5 fw-bold" id="ready-title">対戦の準備</h2>
+<p>オリジナル手を設定したら「準備完了」を押しましょう。準備完了が2人以上になると、ホストが対戦を開始できます。</p>
+<p id="self-ready-status" role="status" th:text="${userState.name() == 'READY' ? 'あなたは準備完了です。設定を変えるときは「準備取消」を押してください。' : 'あなたは準備前です。下の「オリジナル手の設定」で手を作成・確認できます。'}"></p>
+<div class="room-action-buttons">
 <form class="app-form" id="ready-action" th:if="${userState.name() == 'ROOM_WAITING'}" method="post" th:action="@{/room/ready}" th:object="${roomActionForm}">
-<input type="hidden" th:field="*{roomId}"><button class="btn btn-success" type="submit">準備完了</button>
+<input type="hidden" th:field="*{roomId}"><button class="btn btn-primary" type="submit">準備完了</button>
 </form>
 <form class="app-form" id="ready-action" th:if="${userState.name() == 'READY'}" method="post" th:action="@{/room/ready/cancel}" th:object="${roomActionForm}">
 <input type="hidden" th:field="*{roomId}"><button class="btn btn-outline-secondary" type="submit">準備取消</button>
 </form>
-<div id="match-running" th:hidden="${!matchRunning}"><p>現在対戦中です</p><a class="btn btn-outline-primary" id="watch-match" th:href="${matchRunning} ? @{/play(matchId=${currentMatchId})} : null">対戦を見る</a></div>
 <div id="start-action"><form class="app-form" th:if="${isHost and !matchRunning and readyMembers.size() >= 2}" method="post" th:action="@{/room/start}">
-<input type="hidden" name="roomId" th:value="${roomId}"><button class="btn btn-success" type="submit">対戦開始</button>
+<input type="hidden" name="roomId" th:value="${roomId}"><button class="btn btn-primary" type="submit">対戦開始</button>
 </form></div>
+</div>
+<div id="match-running" th:hidden="${!matchRunning}"><p>現在対戦中です</p><a class="btn btn-outline-primary" id="watch-match" th:href="${matchRunning} ? @{/play(matchId=${currentMatchId})} : null">対戦を見る</a></div>
+</section>
 <section class="content-section"><h2 class="h5 fw-bold">対戦ルール</h2>
-<p>先取勝数：<span id="display-target-wins" th:text="${targetWins}"></span></p>
-<p>同一オリジナル手の連続使用を禁止する：<span id="display-prevent-consecutive" th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p>
+<div class="rule-summary"><p>先取勝数：<span id="display-target-wins" th:text="${targetWins}"></span></p>
+<p>同一オリジナル手の連続使用を禁止する：<span id="display-prevent-consecutive" th:text="${preventConsecutiveSameOriginalHand ? 'ON' : 'OFF'}"></span></p></div>
 <div id="rule-editor"><form class="app-form" th:if="${isHost and !matchRunning}" method="post" th:action="@{/room/rules}" th:object="${roomRuleForm}">
+<p class="fw-semibold">ルールの変更（ホストのみ・対戦中は変更不可）</p>
 <input type="hidden" th:field="*{roomId}">
 <label class="form-label" for="targetWins">先取勝数</label>
 <input class="form-control" type="text" inputmode="numeric" th:field="*{targetWins}" aria-describedby="targetWins-errors">
@@ -35,5 +43,12 @@
 </form></div>
 <p>通常のグー・チョキ・パーは連続して選択できます。</p>
 </section>
-<h2 class="h5 fw-bold">参加者一覧</h2><ul class="list-unstyled app-list" id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong></li></ul>
+<section th:replace="~{fragments/original-hand :: editor}"></section>
+<div class="room-leave">
+<form class="app-form" method="post" th:action="@{/room/leave}" th:object="${roomActionForm}">
+<input type="hidden" th:field="*{roomId}">
+<ul class="list-unstyled app-list" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomId']}" th:text="${message}"></li></ul>
+<button class="btn btn-outline-danger" type="submit">ルームを退出</button>
+</form>
+</div>
 </main></body></html>
