@@ -8,8 +8,8 @@
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <form class="app-form room-enter-form" method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">
 <label class="form-label" for="roomName">ルーム名</label>
-<p class="form-text" id="roomName-hint">1～20文字（前後の空白は除きます）</p>
 <input class="form-control" id="roomName" type="text" th:field="*{roomName}" aria-describedby="roomName-hint roomName-errors">
+<p class="form-text" id="roomName-hint">1～20文字（前後の空白は除きます）</p>
 <ul class="list-unstyled app-list" id="roomName-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomName']}" th:text="${message}"></li></ul>
 <button class="btn btn-primary" type="submit">ルームへ入る</button>
 </form>

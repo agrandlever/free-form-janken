@@ -1,22 +1,58 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"><body>
 <section th:fragment="editor" class="original-hand card card-body bg-body-tertiary">
-<h2 class="h5 fw-bold">オリジナル手</h2>
-<p th:if="${!hasOriginalHand}">オリジナル手が作成されていません</p>
-<p th:if="${hasOriginalHand}">オリジナル手：<span th:text="${originalHandName}"></span></p>
+<h2 class="h5 fw-bold" th:text="${originalHandForm.returnPage == 'ROOMS' ? 'オリジナル手の作成（入室前は任意）' : 'オリジナル手の設定'}">オリジナル手の設定</h2>
+<p class="text-body-secondary">自分だけの手を作り、グー・チョキ・パーなどの手との勝ち負けを設定できます。</p>
+<p id="original-hand-status" th:text="${hasOriginalHand ? '保存した手：' + originalHandName : 'オリジナル手が作成されていません'}"></p>
+<div id="saved-hand-summary" th:hidden="${!hasOriginalHand}">
+<p class="small text-body-secondary mb-2">保存した手から見た相性設定</p>
+<dl class="saved-hand-affinities" th:if="${currentOriginalHand != null}">
+<div><dt>対グー</dt><dd th:text="${currentOriginalHand.vsRock.name() == 'WIN' ? '勝ち' : (currentOriginalHand.vsRock.name() == 'LOSE' ? '負け' : '引き分け')}"></dd></div>
+<div><dt>対チョキ</dt><dd th:text="${currentOriginalHand.vsScissors.name() == 'WIN' ? '勝ち' : (currentOriginalHand.vsScissors.name() == 'LOSE' ? '負け' : '引き分け')}"></dd></div>
+<div><dt>対パー</dt><dd th:text="${currentOriginalHand.vsPaper.name() == 'WIN' ? '勝ち' : (currentOriginalHand.vsPaper.name() == 'LOSE' ? '負け' : '引き分け')}"></dd></div>
+<div><dt>対オリジナル</dt><dd th:text="${currentOriginalHand.vsOriginal.name() == 'WIN' ? '勝ち' : (currentOriginalHand.vsOriginal.name() == 'LOSE' ? '負け' : '引き分け')}"></dd></div>
+</dl>
+</div>
 <button class="btn btn-outline-primary" th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
-        th:text="${hasOriginalHand ? (originalHandForm.returnPage == 'MATCH_RESULT' ? '自分のオリジナル手を編集' : 'オリジナル手を編集') : 'オリジナル手を作成'}"></button>
+        th:text="${hasOriginalHand ? (originalHandForm.returnPage == 'MATCH_RESULT' ? '自分のオリジナル手を編集' : 'オリジナル手を編集') : 'オリジナル手を作る'}"></button>
 <div th:if="${canEditOriginalHand}" id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
 <section th:replace="~{login :: errors}"></section>
 <form class="app-form" method="post" th:action="@{/original-hand/save}" th:object="${originalHandForm}">
 <input id="original-save-returnPage" type="hidden" th:field="*{returnPage}">
 <input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
 <input th:if="${originalHandForm.resultMatchId != null}" id="original-save-resultMatchId" type="hidden" th:field="*{resultMatchId}">
-<label class="form-label" for="original-hand-name">名前（前後の空白を除いて1～20文字）</label>
-<input class="form-control" id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-errors">
+<label class="form-label" for="original-hand-name">オリジナル手の名前</label>
+<input class="form-control" id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-hint original-hand-name-errors">
+<p class="form-text" id="original-hand-name-hint">1～20文字（前後の空白は除きます）</p>
 <ul class="list-unstyled app-list" id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
 <!-- 同じ相性の選択肢は共通の項目名でまとめ、1つだけ選べるようにする。 -->
-<fieldset class="mb-3">
+<div class="affinity-guide" id="affinity-guide">
+<p class="fw-bold">相性4項目をすべて選び、最低1項目は「負け」に設定してください。</p>
+<p>「勝ち」は自分の手が相手の手に勝つ、「負け」は自分の手が相手の手に負ける、「引き分け」は勝敗がつかない設定です。</p>
+</div>
+<details class="affinity-help">
+<summary>相性の決まり方</summary>
+<p>通常のグー・チョキ・パーには、自分の設定をそのまま使います。異なるオリジナル手同士は、双方の「他のオリジナル手への相性」で決まります。</p>
+<p class="affinity-example">例：双方が「勝ち」なら引き分け、自分が「勝ち」で相手が「負け」なら自分の勝ちです。</p>
+<table class="table affinity-examples">
+<caption>異なるオリジナル手同士の結果（自分から見た勝敗）</caption>
+<thead><tr><th scope="col">自分の設定</th><th scope="col">相手の設定</th><th scope="col">結果</th></tr></thead>
+<tbody>
+<tr><th scope="row">勝ち</th><td>勝ち</td><td>引き分け</td></tr>
+<tr><th scope="row">勝ち</th><td>負け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">勝ち</th><td>引き分け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">負け</th><td>勝ち</td><td>自分の負け</td></tr>
+<tr><th scope="row">負け</th><td>負け</td><td>引き分け</td></tr>
+<tr><th scope="row">負け</th><td>引き分け</td><td>自分の負け</td></tr>
+<tr><th scope="row">引き分け</th><td>勝ち</td><td>自分の負け</td></tr>
+<tr><th scope="row">引き分け</th><td>負け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">引き分け</th><td>引き分け</td><td>引き分け</td></tr>
+</tbody></table>
+<p>全員が選べる同じオリジナル手を、お互いに選んだ場合は引き分けです。名前が同じでも、別々に作成された手には上の表を使います。</p>
+<p class="small">表は2つの手の比較です。3人以上では、勝つ相手が1人以上いて、負ける相手がいない人がそのラウンドの勝者です。</p>
+</details>
+<div class="affinity-fields">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">グーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -35,7 +71,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsRock')}" th:text="|無効な選択値：${originalHandRejectedValues['vsRock']}|"></p>
 <ul class="list-unstyled app-list" id="vsRock-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsRock']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">チョキへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -54,7 +90,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsScissors')}" th:text="|無効な選択値：${originalHandRejectedValues['vsScissors']}|"></p>
 <ul class="list-unstyled app-list" id="vsScissors-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsScissors']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">パーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -73,7 +109,7 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsPaper')}" th:text="|無効な選択値：${originalHandRejectedValues['vsPaper']}|"></p>
 <ul class="list-unstyled app-list" id="vsPaper-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsPaper']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3">
+<fieldset class="mb-3" aria-describedby="affinity-guide">
 <legend class="fs-6">他のオリジナル手への相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
@@ -92,11 +128,11 @@
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsOriginal')}" th:text="|無効な選択値：${originalHandRejectedValues['vsOriginal']}|"></p>
 <ul class="list-unstyled app-list" id="vsOriginal-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsOriginal']}" th:text="${message}"></li></ul>
 </fieldset>
-<p>相性4項目のうち最低1項目は負けにしてください。</p>
-<button class="btn btn-primary" type="submit">決定</button>
+</div>
+<button class="btn btn-primary" type="submit">この手を保存</button>
 <button class="btn btn-outline-secondary" id="close-original-hand" type="button">閉じる</button>
 </form>
-<form class="app-form" th:if="${hasOriginalHand}" method="post" th:action="@{/original-hand/delete}" th:object="${originalHandDeleteForm}">
+<form class="app-form" id="original-hand-delete-form" th:if="${hasOriginalHand}" method="post" th:action="@{/original-hand/delete}" th:object="${originalHandDeleteForm}">
 <input id="original-delete-returnPage" type="hidden" th:field="*{returnPage}">
 <input th:if="${originalHandDeleteForm.roomId != null}" id="original-delete-roomId" type="hidden" th:field="*{roomId}">
 <input th:if="${originalHandDeleteForm.resultMatchId != null}" id="original-delete-resultMatchId" type="hidden" th:field="*{resultMatchId}">

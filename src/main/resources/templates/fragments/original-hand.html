@@ -22,8 +22,8 @@
 <input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
 <input th:if="${originalHandForm.resultMatchId != null}" id="original-save-resultMatchId" type="hidden" th:field="*{resultMatchId}">
 <label class="form-label" for="original-hand-name">オリジナル手の名前</label>
-<p class="form-text" id="original-hand-name-hint">1～20文字（前後の空白は除きます）</p>
 <input class="form-control" id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-hint original-hand-name-errors">
+<p class="form-text" id="original-hand-name-hint">1～20文字（前後の空白は除きます）</p>
 <ul class="list-unstyled app-list" id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
 <!-- 同じ相性の選択肢は共通の項目名でまとめ、1つだけ選べるようにする。 -->
 <div class="affinity-guide" id="affinity-guide">

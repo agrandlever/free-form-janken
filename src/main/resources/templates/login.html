@@ -14,8 +14,8 @@
 </section>
 <form class="app-form" method="post" th:action="@{/login}" th:object="${loginForm}">
 <label class="form-label" for="username">遊ぶときの名前</label>
-<p class="form-text" id="username-hint">1～20文字（前後の空白は除きます）</p>
 <input class="form-control" id="username" type="text" th:field="*{username}" autocomplete="nickname" aria-describedby="username-hint username-errors">
+<p class="form-text" id="username-hint">1～20文字（前後の空白は除きます）</p>
 <ul class="list-unstyled app-list" id="username-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['username']}" th:text="${message}"></li></ul>
 <button class="btn btn-primary btn-lg w-100" type="submit">この名前ではじめる</button>
 </form>
