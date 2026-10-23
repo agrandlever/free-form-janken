@@ -243,6 +243,10 @@ public class ScreenService {
         model.put("canEditOriginalHand", user.getState() == UserState.ROOM_NONE || user.getState() == UserState.ROOM_WAITING);
         model.put("hasOriginalHand", hand != null);
         model.put("originalHandName", hand == null ? "" : hand.getName());
+        // エラー再表示で編集Formが差し替わっても、要約は保存済みの本人設定を表示する。
+        // 既存の相性表示用コピーを再利用し、変更可能なDomainをHTMLへ渡さない。
+        model.put("currentOriginalHand", hand == null ? null : new MatchResultService.AffinityView(
+                hand.getId(), hand.getName(), hand.getVsRock(), hand.getVsScissors(), hand.getVsPaper(), hand.getVsOriginal()));
         model.put("originalHandForm", form);
         model.put("originalHandDeleteForm", delete);
         model.put("originalHandFormOpen", false);

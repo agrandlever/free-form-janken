@@ -123,7 +123,7 @@ class StageSixWebTests {
     void readyUi(String html) {
         assertTrue(html.contains("準備取消")); assertFalse(html.contains("action=\"/room/ready\""));
         assertTrue(html.contains("（準備完了）"));
-        for (String text : List.of("オリジナル手を作成", "オリジナル手を編集", "オリジナル手を削除", "/original-hand/save", "/original-hand/delete", "/api/status")) {
+        for (String text : List.of("id=\"open-original-hand\"", "オリジナル手を編集", "オリジナル手を削除", "/original-hand/save", "/original-hand/delete", "/api/status")) {
             assertFalse(html.contains(text), text);
         }
     }
@@ -219,5 +219,52 @@ class StageSixWebTests {
         assertFalse(openingTag(html, "create-original-hand").contains("hidden"));
         assertTrue(openingTag(html, "ready-action").contains("hidden"));
         redirect(http(a, "/logout", ""), "/");
+    }
+    String savedAffinities(String html) {
+        var summary = java.util.regex.Pattern.compile("(?s)<dl class=\"saved-hand-affinities\">.*?</dl>").matcher(html);
+        assertTrue(summary.find(), html); return summary.group();
+    }
+    @Test void savedHandSummaryUsesPersistedValuesAcrossInvalidEditReadyAndDelete() throws Exception {
+        var a = browser(); redirect(http(a, "/login", "username=Host"), "/rooms");
+        String roomsHtml = http(a, "/rooms", null).body();
+        assertTrue(roomsHtml.contains("aria-describedby=\"roomName-hint roomName-errors\""));
+        assertTrue(roomsHtml.contains("aria-describedby=\"original-hand-name-hint original-hand-name-errors\""));
+        assertTrue(roomsHtml.indexOf("例：双方が") < roomsHtml.indexOf("<table class=\"table affinity-examples\""));
+        redirect(http(a, "/rooms/enter", "roomName=Summary"), "/room");
+        String html = http(a, "/room", null).body(); String id = hiddenRoom(html);
+        assertTrue(openingTag(html, "saved-hand-summary").contains("hidden"));
+        redirect(http(a, "/original-hand/save", saveBody(id, "保存した名前")), "/room");
+        html = http(a, "/room", null).body();
+        String saved = savedAffinities(html);
+        assertTrue(saved.contains("<dt>対グー</dt><dd>負け</dd>"));
+        assertTrue(saved.contains("<dt>対チョキ</dt><dd>勝ち</dd>"));
+        assertTrue(saved.contains("<dt>対パー</dt><dd>引き分け</dd>"));
+        assertTrue(saved.contains("<dt>対オリジナル</dt><dd>負け</dd>"));
+        assertFalse(openingTag(html, "saved-hand-summary").contains("hidden"));
+        assertTrue(openingTag(html, "original-hand-panel").contains("hidden"));
+        // 不正な編集入力はフォームに戻すが、保存済み要約には採用しない。
+        String invalidBody = saveBody(id, "グー").replace("vsRock=LOSE", "vsRock=DRAW");
+        var invalid = http(a, "/original-hand/save", invalidBody);
+        assertEquals(400, invalid.statusCode()); assertEquals(saved, savedAffinities(invalid.body()));
+        assertTrue(invalid.body().contains("保存した手：保存した名前"));
+        assertTrue(invalid.body().contains("value=\"グー\""));
+        redirect(http(a, "/original-hand/save", saveBody(id, "更新した名前").replace("vsRock=LOSE", "vsRock=DRAW")), "/room");
+        html = http(a, "/room", null).body();
+        String updated = savedAffinities(html);
+        assertTrue(updated.contains("<dt>対グー</dt><dd>引き分け</dd>"));
+        assertTrue(html.contains("保存した手：更新した名前"));
+        redirect(http(a, "/room/ready", "roomId=" + id), "/room");
+        assertEquals(updated, savedAffinities(http(a, "/room", null).body()));
+        var b = browser(); redirect(http(b, "/login", "username=Other"), "/rooms");
+        redirect(http(b, "/rooms/enter", "roomName=Summary"), "/room");
+        String otherHtml = http(b, "/room", null).body();
+        assertTrue(openingTag(otherHtml, "saved-hand-summary").contains("hidden"));
+        assertFalse(otherHtml.contains("更新した名前"));
+        redirect(http(a, "/room/ready/cancel", "roomId=" + id), "/room");
+        redirect(http(a, "/original-hand/delete", "returnPage=ROOM&roomId=" + id), "/room");
+        html = http(a, "/room", null).body();
+        assertTrue(openingTag(html, "saved-hand-summary").contains("hidden"));
+        assertFalse(html.contains("saved-hand-affinities"));
+        redirect(http(a, "/logout", ""), "/"); redirect(http(b, "/logout", ""), "/");
     }
 }

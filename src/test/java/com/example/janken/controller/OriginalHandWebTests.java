@@ -219,11 +219,13 @@ class OriginalHandWebTests {
             String path=inRoom?"/room":"/rooms", page=inRoom?"ROOM":"ROOMS"; String id=null;
             if(inRoom) {redirect(http(a,"/rooms/enter","roomName=Room"),"/room");id=hiddenRoom(http(a,path,null).body());}
             String initial=http(a,path,null).body(); assertTrue(initial.contains("オリジナル手が作成されていません"));
-            assertTrue(initial.contains("オリジナル手を作成")); assertFalse(initial.contains("オリジナル手を編集"));
+            assertTrue(initial.contains("オリジナル手を作る")); assertFalse(initial.contains("オリジナル手を編集"));
             relationRadios(initial,Map.of());
             redirect(http(a,"/original-hand/save",body("　初期<手>\t ",page,id)),path);
             String created=http(a,path,null).body(); assertTrue(created.contains("初期&lt;手&gt;")); assertTrue(created.contains("オリジナル手を編集"));
-            assertFalse(created.contains("オリジナル手を作成")); assertTrue(created.contains("オリジナル手を削除"));
+            // ルーム上部には非表示の作成導線もあるため、共通部品の表示文言を確認する。
+            assertFalse(created.matches("(?s).*id=\"open-original-hand\"[^>]*>オリジナル手を作る</button>.*"));
+            assertTrue(created.contains("オリジナル手を削除"));
             var selected=Map.of("vsRock","WIN","vsScissors","LOSE","vsPaper","DRAW","vsOriginal","DRAW");
             relationRadios(created,selected);
             redirect(http(a,"/original-hand/save",body(" 更新名 ",page,id)),path);
@@ -244,7 +246,7 @@ class OriginalHandWebTests {
                 assertTrue(updated.contains("ルームを退出")); assertTrue(updated.contains("（ホスト）")); assertTrue(updated.contains("参加者一覧"));
             }
             redirect(http(a,"/original-hand/delete","returnPage="+page+(id==null?"":"&roomId="+id)),path);
-            String deleted=http(a,path,null).body(); assertTrue(deleted.contains("オリジナル手が作成されていません")); assertTrue(deleted.contains("オリジナル手を作成"));
+            String deleted=http(a,path,null).body(); assertTrue(deleted.contains("オリジナル手が作成されていません")); assertTrue(deleted.contains("オリジナル手を作る"));
             assertFalse(deleted.contains("オリジナル手を編集")); assertFalse(deleted.contains("オリジナル手を削除"));
         }
         redirect(http(a,"/logout",""),"/");

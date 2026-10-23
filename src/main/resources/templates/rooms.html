@@ -7,8 +7,9 @@
 <p class="text-body-secondary">手は入室後に作れます。対戦までに1つ作成してください。</p>
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <form class="app-form room-enter-form" method="post" th:action="@{/rooms/enter}" th:object="${roomEnterForm}">
-<label class="form-label" for="roomName">ルーム名（前後の空白を除いて1～20文字）</label>
-<input class="form-control" id="roomName" type="text" th:field="*{roomName}" aria-describedby="roomName-errors">
+<label class="form-label" for="roomName">ルーム名</label>
+<p class="form-text" id="roomName-hint">1～20文字（前後の空白は除きます）</p>
+<input class="form-control" id="roomName" type="text" th:field="*{roomName}" aria-describedby="roomName-hint roomName-errors">
 <ul class="list-unstyled app-list" id="roomName-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['roomName']}" th:text="${message}"></li></ul>
 <button class="btn btn-primary" type="submit">ルームへ入る</button>
 </form>

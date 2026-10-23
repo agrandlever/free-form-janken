@@ -8,7 +8,7 @@ function editor(){const e=environment('match-result');
     e.ids['original-hand-panel'].hidden=true;e.ids['original-hand-affinities'].hidden=true;
     e.ids['open-original-hand'].focus=function(){this.focused=true;};e.load('match-result.js');e.load('original-hand.js');return e;
 }
-for(const label of ['自分のオリジナル手を編集','オリジナル手を作成'])test(label+'は相性表内で開閉し入力値を保持する',()=>{
+for(const label of ['自分のオリジナル手を編集','オリジナル手を作る'])test(label+'は相性表内で開閉し入力値を保持する',()=>{
     const e=editor();e.ids['open-original-hand'].textContent=label;e.ids['toggle-affinities'].emit('click');e.ids['open-original-hand'].emit('click');
     assert.equal(e.ids['original-hand-affinities'].hidden,false);assert.equal(e.ids['original-hand-panel'].hidden,false);assert.equal(e.ids['original-hand-name'].focused,true);
     e.ids['original-hand-name'].value='編集中';e.ids['close-original-hand'].emit('click');assert.equal(e.ids['original-hand-panel'].hidden,true);

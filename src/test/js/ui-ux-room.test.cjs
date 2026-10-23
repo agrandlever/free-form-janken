@@ -39,8 +39,10 @@ function renderedRoom(created, roomId = 'R') {
     const server = environment('room');
     server.page.dataset.roomId = roomId;
     server.ids['create-original-hand'].hidden = created;
-    server.ids['open-original-hand'].textContent = created ? 'オリジナル手を編集' : 'オリジナル手を作成';
-    server.ids['original-hand-status'].textContent = created ? 'オリジナル手：にじ' : 'オリジナル手が作成されていません';
+    server.ids['open-original-hand'].textContent = created ? 'オリジナル手を編集' : 'オリジナル手を作る';
+    server.ids['original-hand-status'].textContent = created ? '保存した手：にじ' : 'オリジナル手が作成されていません';
+    server.ids['saved-hand-summary'].hidden = !created;
+    server.ids['saved-hand-summary'].textContent = created ? '対グー：負け・対チョキ：勝ち・対パー：引き分け・対オリジナル：負け' : '';
     return {
         querySelector: selector => selector.startsWith('main') ? server.page
             : { querySelector: () => server.ids['original-hand-panel'] },
@@ -58,13 +60,28 @@ test('別タブでの作成・削除を既存HTMLから同期し、編集中の�
     assert.equal(e.ids['ready-action'].hidden, false);
     assert.equal(e.ids['create-original-hand'].hidden, true);
     assert.equal(e.ids['self-ready-status'].textContent, '手を確認したら、準備完了を押しましょう。');
-    assert.equal(e.ids['original-hand-status'].textContent, 'オリジナル手：にじ');
+    assert.equal(e.ids['original-hand-status'].textContent, '保存した手：にじ');
+    assert.equal(e.ids['saved-hand-summary'].hidden, false);
+    assert.match(e.ids['saved-hand-summary'].textContent, /対グー：負け/);
     assert.equal(e.controls[0].value, '未保存の入力');
     assert.equal(e.ids['original-hand-panel'].hidden, false);
     e.emit(roomStatus()); await e.replyHtml(renderedRoom(false));
     assert.equal(e.ids['ready-action'].hidden, true);
     assert.equal(e.ids['create-original-hand'].hidden, false);
     assert.equal(e.controls[0].value, '未保存の入力');
+    assert.equal(e.ids['saved-hand-summary'].hidden, true);
+});
+
+test('別タブの再保存で要約だけ更新し、未保存の入力を要約に混ぜない', async () => {
+    const e = environment('room'); e.load('room.js');
+    e.controls[0].value = '未保存の名前';
+    e.emit(roomStatus()); await e.replyHtml(renderedRoom(true));
+    const updated = renderedRoom(true);
+    updated.getElementById('saved-hand-summary').textContent = '対グー：引き分け・対チョキ：負け・対パー：勝ち・対オリジナル：引き分け';
+    e.emit(roomStatus()); await e.replyHtml(updated);
+    assert.match(e.ids['saved-hand-summary'].textContent, /対グー：引き分け/);
+    assert.equal(e.controls[0].value, '未保存の名前');
+    assert.ok(!e.ids['saved-hand-summary'].textContent.includes('未保存の名前'));
 });
 
 test('HTML取得が重ならず、READY化・別ルームの応答で主操作を戻さない', async () => {

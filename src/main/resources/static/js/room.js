@@ -112,6 +112,12 @@
             } else {
                 open.textContent = parsed.getElementById('open-original-hand').textContent;
                 document.getElementById('original-hand-status').textContent = parsed.getElementById('original-hand-status').textContent;
+                const summary = document.getElementById('saved-hand-summary');
+                const savedSummary = parsed.getElementById('saved-hand-summary');
+                // 保存済みの要約だけを同期し、開いている編集フォームの下書きは触らない。
+                if (summary.hidden !== savedSummary.hidden || summary.textContent !== savedSummary.textContent) {
+                    summary.replaceWith(document.importNode(savedSummary, true));
+                }
                 const savedDelete = parsed.getElementById('original-hand-delete-form');
                 const currentDelete = document.getElementById('original-hand-delete-form');
                 if (savedDelete && !currentDelete) panel.append(document.importNode(savedDelete, true));

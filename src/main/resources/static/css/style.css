@@ -114,7 +114,8 @@ label.form-label:has(input:checked) { background: #e9f2ff; border-color: #0d6efd
 .affinity-guide { background: #edf5ff; border-left: 4px solid #0d6efd; border-radius: .5rem; padding: 1rem; margin: 1.25rem 0; }
 .affinity-guide p { margin-bottom: .5rem; }
 .affinity-guide p:last-child { margin-bottom: 0; }
-.affinity-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 1rem 0; }
+/* 実際のフォーム幅で列数を決め、各グループの文字と操作領域を確保する。 */
+.affinity-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr)); gap: 1rem; margin: 1rem 0; }
 .affinity-fields fieldset { margin-bottom: 0 !important; }
 /* detailsの標準マーカーと開閉状態を残し、キーボード・読み上げでも利用できる。 */
 #rule-editor, .affinity-help { margin: 1rem 0; border: 1px solid #a6b8d1; border-radius: .75rem; padding: .25rem 1rem; }
@@ -124,15 +125,17 @@ summary { min-height: 48px; padding: .75rem 0; color: #173664; font-weight: 700;
 .affinity-examples caption { caption-side: top; color: #334d73; }
 #ready-waiting-message:empty { display: none; }
 #original-hand-name { scroll-margin-block: 2rem; }
-@media (min-width: 768px) {
-    .affinity-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
+.saved-hand-affinities { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; }
+.saved-hand-affinities > div { display: flex; flex-wrap: wrap; gap: .35rem; padding: .4rem .65rem; border: 1px solid #c6d5e9; border-radius: .65rem; background: #f5f8ff; }
+.saved-hand-affinities dt { font-weight: 600; }
+.saved-hand-affinities dd { margin: 0; }
+.affinity-example { padding: .75rem; border-left: 3px solid #0d6efd; background: #edf5ff; border-radius: .5rem; }
 .original-hand fieldset { min-width: 0; padding: 1rem; border: 1px solid #a6b8d1; border-radius: .75rem; background: #fff; }
 .original-hand legend { float: none; width: auto; padding: 0 .25rem; font-weight: 700; }
 /* ラベル全体を押せる枠にし、既存のfor/idとラジオのキーボード操作をそのまま使う。 */
-.original-hand .form-check { position: relative; display: flex; padding: 0; margin: 0; min-width: 7rem; flex: 1 1 7rem; }
-.original-hand .form-check-input { position: absolute; left: .85rem; top: 50%; margin: 0; transform: translateY(-50%); }
-.original-hand .form-check-label { width: 100%; min-height: 48px; padding: .75rem .75rem .75rem 2.65rem; border: 2px solid #7d8da6; border-radius: .65rem; cursor: pointer; }
+.original-hand .form-check { position: relative; display: flex; padding: 0; margin: 0; min-width: max-content; flex: 1 1 auto; }
+.original-hand .form-check-input { position: absolute; left: .65rem; top: 50%; margin: 0; transform: translateY(-50%); }
+.original-hand .form-check-label { width: 100%; min-height: 48px; padding: .75rem .5rem .75rem 2.25rem; border: 2px solid #7d8da6; border-radius: .65rem; cursor: pointer; white-space: nowrap; }
 .original-hand .form-check-input:checked + .form-check-label { background: #e9f2ff; border-color: #0d6efd; font-weight: 700; }
 .original-hand .form-check-input:focus-visible + .form-check-label { outline: 3px solid #173664; outline-offset: 3px; }
 @media (forced-colors: active) {

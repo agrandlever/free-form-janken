@@ -54,12 +54,13 @@ function environment(kind, confirmed = false) {
         dispatchEvent: event => { for (const fn of listeners[event.type] ?? []) fn(event); },
         createElement: tag => { const e = new Element(tag); e.owner = document; return e; },
         createTextNode: text => { const e = new Element('#text'); e.textContent = text; return e; },
+        importNode: node => node,
         ids
     };
     for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
         'watch-match','rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
         'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities',
-        'room-status','self-ready-status','create-original-hand','ready-waiting-message','original-hand-status']) {
+        'room-status','self-ready-status','create-original-hand','ready-waiting-message','original-hand-status','saved-hand-summary']) {
         ids[id] = document.createElement('div'); ids[id].id = id;
     }
     ids['round-history'].hidden = true;
