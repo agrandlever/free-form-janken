@@ -1,6 +1,19 @@
 /* Bootstrapの部品を使い、配色・余白・ゲーム固有の表示だけを調整する。 */
 :root { --bs-body-font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; --bs-body-color: #26334a; --bs-body-bg: #f3f6fc; }
-body { min-height: 100vh; }
+body {
+    min-height: 100vh;
+    /* 読み込み失敗時は従来の淡い背景色を表示する。URLはこのCSSからの相対パス。 */
+    background-color: #f3f6fc;
+    background-image: url("../images/background-mobile.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* ページ全体に1枚を表示し、スマートフォンでも固定表示による揺れを避ける。 */
+    background-attachment: scroll;
+}
+@media (min-width: 768px) {
+    body { background-image: url("../images/background-pc.png"); }
+}
 .app-header { background: #fff; padding: 1rem 0; }
 .app-header-inner { max-width: 960px; gap: 1rem; }
 .navbar-brand { color: #224d9b; font-size: 1.1rem; white-space: normal; }
@@ -52,7 +65,7 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .table th { background: #f0f4fb; color: #334d73; white-space: nowrap; }
 .table td { min-width: 7rem; overflow-wrap: anywhere; }
 .affinity-table { min-width: 580px; }
-.login-page { display: grid; place-items: center; padding: 1.25rem; background: radial-gradient(ellipse at top, #e5edff, #f3f6fc 70%); }
+.login-page { display: grid; place-items: center; padding: 1.25rem; }
 .login-card { max-width: 520px; margin: 2rem auto; }
 .login-title { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin: 0 0 1.25rem; }
 /* アイコンの高さに上限を設け、下のロゴと入力フォームの場所も確保する。 */
