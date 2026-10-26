@@ -1,0 +1,159 @@
+設計書と実装の照合結果
+確認日: 2026-10-26（日本時間）
+対象: C:\exPractice\free-form-janken
+
+結論
+
+静的照合と既存自動テストの範囲では、ゲームの主要機能に重大な設計差異は確認されなかった。
+ただし、APIのエラー一覧と実装の対応、および設計書の責務・構成・確認範囲の記載に、以下の不整合がある。
+この報告は、全画面・全条件の実ブラウザー確認を完了したという意味ではない。
+ソースコード・設計書は変更していない。今回追加したのは確認報告とテスト実行ログだけである。
+
+確認対象
+
+- docs/01_要件定義書_簡易自由律じゃんけん.md
+- docs/02_機能仕様書_簡易自由律じゃんけん.md
+- docs/03_API設計書_簡易自由律じゃんけん.md
+- docs/04_画面設計書_簡易自由律じゃんけん.md
+- docs/05_テスト仕様書_簡易自由律じゃんけん.md
+- docs/06_実装設計書_簡易自由律じゃんけん.md
+- src/mainのJava、HTML、JavaScript、CSS、設定、build.gradle、Dockerfile
+- 関連する既存Java・JavaScriptテストと過去の検証報告
+
+指摘1: APIのエラー一覧に、実装で生成していないコードがある
+優先度: 中（応答仕様の整理が必要）
+
+設計:
+03_API設計書:849に「404 / ROOM_NOT_FOUND」、:855に「500 / INTERNAL_ERROR」がある。
+
+実装:
+src/main全体を検索した結果、この2つのコードの定義・生成箇所はなかった。
+ルームの不存在・所属不一致は、RoomServiceなどでGameOperationException.invalidState()を使用しており、409 / INVALID_STATEとなる。
+HtmlErrorHandlerとStatusApiControllerの例外処理もGameOperationExceptionだけを対象とし、予期しない例外をINTERNAL_ERRORへ変換する処理はない。
+
+根拠:
+- src/main/java/com/example/janken/service/RoomService.java:87、:232
+- src/main/java/com/example/janken/service/GameOperationException.java:43
+- src/main/java/com/example/janken/controller/HtmlErrorHandler.java:19
+- src/main/java/com/example/janken/controller/StatusApiController.java:25
+
+影響・対応案:
+設計の一覧を前提にすると、実際には返らないエラーを待つテストや処理を書いてしまう。
+404については、設計書の各操作の節も主に409を指定しているため、現状の409に合わせて一覧を整理するのが自然である。
+500については、INTERNAL_ERRORを共通応答として保証するか、現状の実装範囲外として明記するかを決める必要がある。
+今回、実行中のサーバーへ意図的な障害を注入して500を発生させる検証は行っていない。500の指摘はコード上の変換処理の不存在に基づく。
+
+指摘2: 名前の入力検証を担当するクラスが、実装設計書と異なる
+優先度: 低（責務の記載差異。検証機能の欠落ではない）
+
+設計:
+06_実装設計書:627、:629、:948は、OriginalHandFormとServiceの双方で文字数・禁止名を検証する記載となっている。
+同書:45も、各Formが整形・文字数判定基準を使用する説明である。
+
+実装:
+OriginalHandForm、LoginForm、RoomEnterFormは、入力値の格納と取得だけを行うクラスである。
+文字数・前後空白の処理はNameInput、禁止名はOriginalHandService.validate()で判定している。
+Formクラス自体の検証処理や、Controllerでそれを実行する@Validはない。
+
+根拠:
+- src/main/java/com/example/janken/form/OriginalHandForm.java:5
+- src/main/java/com/example/janken/form/LoginForm.java:3
+- src/main/java/com/example/janken/form/RoomEnterForm.java:3
+- src/main/java/com/example/janken/service/NameInput.java:7
+- src/main/java/com/example/janken/service/OriginalHandService.java:114
+
+影響・対応案:
+利用者向けの入力条件はService側で満たしている。Form単体の検証や修正先を誤解する可能性がある。
+現状に合わせて「Formは入力値を保持し、状態・対象を確認した後にServiceとNameInputで検証する」と説明をそろえる。
+状態不一致の409を入力不正の400より先に返す既存仕様を維持するためにも、記載を合わせる目的だけでForm側へ検証を追加する必要はない。
+
+指摘3: 実装設計書のファイル構成とメソッド引数に更新漏れがある
+優先度: 低（参照情報の更新漏れ）
+
+差異A:
+06_実装設計書:167のJavaScript構成一覧にform-feedback.jsがない。
+実際にはsrc/main/resources/static/js/form-feedback.jsがあり、全6画面が読み込んでいる。
+同書:189の責務説明には既に記載されているため、構成一覧だけが古い。
+
+差異B:
+06_実装設計書:533のjudgeRound()には、先頭のroundNumber引数がない。
+実装はjudgeRound(int roundNumber, activeParticipants, selections, originalHands, decidedAt)である。
+
+根拠:
+- src/main/resources/static/js/form-feedback.js:1
+- src/main/resources/templates/login.html:3ほか全6テンプレート
+- src/main/java/com/example/janken/service/RoundJudgeService.java:12
+- src/main/java/com/example/janken/service/MatchService.java:152
+
+対応案:
+構成一覧へform-feedback.jsを追加し、judgeRoundの引数一覧を実装に合わせる。
+
+指摘4: 追加テストの範囲・一覧が、末尾の詳細ケースに追従していない
+優先度: 低（設計書内の不整合）
+
+現状:
+05_テスト仕様書:75は追加範囲をTC-131～TC-140としている。
+3節のテストケース一覧も:220のTC-140で終わる。
+一方、同書:1728以降にはTC-141～TC-144があり、今回の画面改善・エラー表示・本人識別・回帰確認が定義されている。
+関連実装とテストも存在するため、範囲の説明と一覧に更新漏れがある。
+
+対応案:
+追加範囲をTC-131～TC-144へそろえ、一覧にTC-141～TC-144を追加する。
+これは各TCの未実装・未実施を意味しない。自動テストの成功件数だけから、各TCの全条件を実施済みと判断することもできない。
+
+既知の設定コメント不一致
+
+Dockerfile:41は「application.propertiesのPORT設定に従う」と説明し、:42にEXPOSE 10000がある。
+application.propertiesにはserver.portやPORTを参照する指定がない。
+この点は06_実装設計書:67に既知事項として正確に記載済みであり、今回新たに発見した設計差異ではない。
+Dockerfileのコメントは引き続き修正対象となる。外部のSERVER_PORTや起動引数等の配置設定は今回確認していない。
+
+主要項目の照合結果
+
+- 名前の前後空白除去、Unicodeコードポイントによる1～20文字判定、通常手名の禁止: 整合。
+- 同名ルームの扱い、8人上限、同時入室、最古参へのホスト移譲: 整合。
+- ③のユーザーだけとの名前・手名重複確認、両重複時のエラー: 整合。
+- ②のホストによる開始、③が2人以上という条件、開始ボタンの表示・無効化: 整合。
+- 対戦開始時の参加者・ルール・全オリジナル手の固定: 整合。
+- 古い対戦・ラウンドの拒否、二重確定拒否、本人だけの確定手表示: 整合。
+- 通常手・オリジナル手の勝敗判定、複数勝者、勝数加算: 整合。
+- 同一オリジナル手の連続使用制限と通常手の例外: 整合。
+- 勝者なし5秒、勝者あり・最終10秒、500ms間隔の自動遷移: 整合。
+- 2秒間隔の状態確認、30秒の切断期限、1秒間隔の切断監視: 整合。
+- 途中退出時の継続・中止、最終勝者確定後の正常結果保護: 整合。
+- 退出者を含む履歴・最終勝数・固定相性の保持: 整合。
+- 同一ルームの観戦条件、手選択不可、観戦からの復帰: 整合。
+- タブごとの結果ID固定、終了済み結果の閲覧権限: 整合。
+- 現在の手の編集と過去相性の分離、③から②へ戻った結果画面での再読み込み条件: 整合。
+- 保存済み手の要約と入力中の値の分離、ルームでの別タブ同期: 整合。
+- 画面順、通常手とオリジナル手の区分、本人ラベル、エラー表示・フォーカス処理: ソース上は整合。
+
+以前の確認報告にあった画面用Modelの名前と、結果画面の編集導線を再読み込みで復帰させる条件は、現在の設計書に反映済みである。
+これらを未解消の差異として重ねて指摘していない。
+
+今回実行した検証
+
+1. Java
+   .\gradlew.bat -g .gradle-user-home test --offline --console=plain --rerun-tasks
+   Gradle出力: BUILD SUCCESSFUL、4タスク実行。
+   build/test-results/test/TEST-*.xmlの集計: 39スイート、1,083件、失敗0、エラー0、スキップ0。
+   ログ: reports/design-review-2026-10-26-gradle.log
+   PowerShellはJVMの共有クラスに関する標準エラー警告をNativeCommandErrorとして記録したが、Gradle本体の成功出力とJUnit XMLの全件成功を確認した。
+
+2. JavaScript
+   node --test src/test/js/*.test.cjs
+   72件成功、失敗0、スキップ0。
+
+確認の限界
+
+- 今回は実ブラウザーでの再操作、実機スマートフォン、200%拡大、Windowsのコントラストテーマ、スクリーンリーダーの確認を実施していない。
+- 過去のreports/ui-ux4-completion.txtは参考にしたが、その報告の未確認項目を今回の成功として扱っていない。
+- 公開環境やDocker配置の実設定を確認していない。
+- テスト仕様書TC-001～TC-144の手動手順を全件再実行したものではない。
+
+推奨する対応順
+
+1. APIエラー一覧で保証する応答を、各操作の節と実装に合わせて整理する。
+2. FormとServiceの検証責務の説明を実装へ合わせる。
+3. ファイル構成・メソッド引数・追加テスト一覧の記載を更新する。
+4. 画面確認が必要な条件は、既存の未確認事項を含めて別途実施記録を残す。
