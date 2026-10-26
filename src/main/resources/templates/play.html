@@ -36,7 +36,7 @@
 <h2 class="h5 fw-bold">対戦開始時の参加者</h2><ul class="list-unstyled app-list"><li th:each="participant : ${participants}"><span th:text="${participant.username}"></span>：<span th:text="${participant.score}"></span>勝</li></ul>
 </details>
 <section class="content-section">
-<button class="btn btn-outline-primary" id="toggle-round-history" type="button" aria-controls="round-history" aria-expanded="false">ラウンド履歴を表示</button>
+<button class="btn btn-outline-primary disclosure-button" id="toggle-round-history" type="button" aria-controls="round-history" aria-expanded="false">ラウンド履歴を表示</button>
 <div id="round-history" hidden>
 <h2 class="h5 fw-bold">ラウンド履歴</h2>
 <p th:if="${#lists.isEmpty(roundHistory)}">確定済みのラウンドはありません</p>

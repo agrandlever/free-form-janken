@@ -14,7 +14,7 @@
 </tr></tbody></table></div>
 <p th:unless="${hasRoundWinner}">このラウンドの勝者はいません</p>
 <a class="btn btn-outline-primary" th:unless="${matchParticipant}" th:href="@{/room}">ルームへ戻る</a>
-<details class="card card-body my-4"><summary class="fw-semibold text-primary">ラウンド履歴を表示</summary>
+<details class="play-details"><summary>ラウンド履歴を表示</summary>
 <h2 class="h5 fw-bold">ラウンド履歴</h2>
 <section th:each="round : ${roundHistory}">
 <h3 class="h6 fw-bold">第<span th:text="${round.roundNumber}"></span>ラウンド</h3>

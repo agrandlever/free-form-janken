@@ -5,7 +5,7 @@
 <main class="container app-main shadow-sm" data-page="match-result" th:attr="data-match-id=${matchId},data-room-id=${roomId},data-user-state=${userState}">
 <div th:if="${!originalHandFormOpen}"><section th:replace="~{login :: errors}"></section></div>
 <h1 class="h2 fw-bold page-title">対戦終了</h1>
-<section th:if="${endType.name() == 'NORMAL'}"><h2 class="h5 fw-bold">勝者</h2><ul class="list-unstyled app-list"><li th:each="winner : ${winners}" th:text="${winner.username}"></li></ul></section>
+<section th:if="${endType.name() == 'NORMAL'}"><h2 class="h5 fw-bold">勝者</h2><ul class="list-unstyled app-list match-winners"><li th:each="winner : ${winners}" th:text="${winner.username}"></li></ul></section>
 <section th:if="${endType.name() == 'ABORTED'}"><p>参加人数が不足したため対戦を終了しました</p><p>勝者はいません</p></section>
 <h2 class="h5 fw-bold">最終結果</h2><ul class="list-unstyled app-list"><li th:each="score : ${finalScores}"><span th:text="${score.username}"></span><strong class="self-label" th:if="${score.userId.toString() == selfUserId}">あなた</strong>：<span th:text="${score.score}"></span>勝</li></ul>
 <h2 class="h5 fw-bold">ラウンド履歴</h2>
@@ -15,7 +15,7 @@
 <ul class="list-unstyled app-list"><li th:each="entry : ${round.results}" th:classappend="${entry.wonRound ? 'round-winner' : ''}"><span th:text="${entry.username}"></span><strong class="self-label" th:if="${entry.userId.toString() == selfUserId}">あなた</strong>：<span th:text="${entry.handName}"></span> <strong th:if="${entry.wonRound}">勝利</strong></li></ul>
 <p th:unless="${round.hasRoundWinner}">このラウンドの勝者はいません</p>
 </section>
-<button class="btn btn-outline-primary" id="toggle-affinities" type="button" aria-controls="original-hand-affinities" th:attr="aria-expanded=${originalHandFormOpen}" th:text="${originalHandFormOpen ? 'オリジナル手の相性を非表示' : 'オリジナル手の相性を表示'}">オリジナル手の相性を表示</button>
+<button class="btn btn-outline-primary disclosure-button" id="toggle-affinities" type="button" aria-controls="original-hand-affinities" th:attr="aria-expanded=${originalHandFormOpen}" th:text="${originalHandFormOpen ? 'オリジナル手の相性を非表示' : 'オリジナル手の相性を表示'}">オリジナル手の相性を表示</button>
 <div id="original-hand-affinities" th:hidden="${!originalHandFormOpen}">
 <div class="table-scroll table-responsive" tabindex="0" role="region" aria-label="終了した対戦のオリジナル手の相性表（横にスクロールできます）"><table class="affinity-table table table-hover align-middle"><thead><tr><th scope="col">オリジナル手</th><th scope="col">グー</th><th scope="col">チョキ</th><th scope="col">パー</th><th scope="col">他のオリジナル手</th></tr></thead>
 <tbody><tr th:each="hand : ${originalHandAffinities}"><th scope="row" th:text="${hand.handName}"></th>

@@ -17,7 +17,7 @@
 <div><dt>対オリジナル</dt><dd th:text="${currentOriginalHand.vsOriginal.name() == 'WIN' ? '勝ち' : (currentOriginalHand.vsOriginal.name() == 'LOSE' ? '負け' : '引き分け')}"></dd></div>
 </dl>
 </div>
-<button class="btn btn-outline-primary" th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
+<button class="btn btn-outline-primary disclosure-button" th:if="${canEditOriginalHand}" id="open-original-hand" type="button" aria-controls="original-hand-panel" th:attr="aria-expanded=${originalHandFormOpen}"
         th:text="${hasOriginalHand ? (originalHandForm.returnPage == 'MATCH_RESULT' ? '自分のオリジナル手を編集' : 'オリジナル手を編集') : 'オリジナル手を作る'}"></button>
 <div th:if="${canEditOriginalHand}" id="original-hand-panel" th:hidden="${!originalHandFormOpen}">
 <section th:replace="~{login :: errors}"></section>
