@@ -176,6 +176,8 @@ class StageElevenWebTests {
         assertEquals(handA.equals(handB),html.contains("このラウンドの勝者はいません"));
         assertEquals(!handA.equals(handB),html.contains(">勝利</strong>"));
         assertTrue(html.contains(finalRound?"対戦結果まで":"次のラウンドまで"));
+        assertTrue(html.contains("勝利なし")); assertFalse(html.contains(">—</span>"));
+        assertTrue(html.contains("class=\"self-label\">あなた</strong>"));
         assertTrue(html.contains("ルームを退出"));assertFalse(html.contains("ルームへ戻る"));
         assertFalse(html.contains("vsRock"));assertFalse(html.contains("vsOriginal"));
         var j=json(http(a,"/api/status?matchId="+mid,null));assertEquals("ROUND_RESULT",j.get("matchState").asString());
@@ -210,7 +212,7 @@ class StageElevenWebTests {
             ps.forEach(p->p.setScore(7));m.setCurrentRound(new com.example.janken.domain.Round(3,java.time.Instant.EPOCH));
         }
         String html=http(a,"/play?matchId="+mid,null).body();
-        String history=html.substring(html.indexOf("<div id=\"round-history\""),html.indexOf(">手を選択</h2>"));
+        String history=html.substring(html.indexOf("<div id=\"round-history\""),html.indexOf("</div>",html.indexOf("<div id=\"round-history\"")));
         assertTrue(history.contains("hidden"));assertTrue(html.contains("ラウンド履歴を表示"));assertTrue(history.contains("第<span>1</span>ラウンド"));assertTrue(history.contains("第<span>2</span>ラウンド"));
         assertTrue(history.contains("Alice"));assertTrue(history.contains("Bob"));assertTrue(history.contains("履歴手"));assertEquals(2,count(history,">勝利</strong>"));
         assertTrue(history.contains("このラウンドの勝者はいません"));assertFalse(history.contains("7"));assertFalse(history.contains("score"));assertFalse(history.contains("vsOriginal"));

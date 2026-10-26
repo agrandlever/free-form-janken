@@ -172,7 +172,7 @@ class StageFourWebTests {
         for(String path:List.of("/rooms","/room")) redirect(http(a,path,null),"/");
         for(String path:List.of("/logout","/rooms/enter","/room/leave")) {
             HttpResponse<String> response=http(a,path,"roomName=logout&roomId="+UUID.randomUUID());
-            assertEquals(401,response.statusCode()); assertTrue(response.body().contains("LOGIN_REQUIRED"));
+            assertEquals(401,response.statusCode()); assertTrue(response.body().contains("操作を完了できませんでした"));
         }
         redirect(http(b,"/logout",""),"/"); synchronized(lock) { assertTrue(rooms.findByName("logout").isEmpty()); }
     }

@@ -149,7 +149,7 @@ class StageSixteenWebTests {
         posts.put("/match-result/return","roomId="+rid+"&matchId="+mid);posts.put("/logout","");
         for(var entry:posts.entrySet()){
             var response=raw.send(HttpRequest.newBuilder(URI.create("http://localhost:"+port+entry.getKey())).header("Cookie",cookie).header("Content-Type","application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(entry.getValue())).build(),HttpResponse.BodyHandlers.ofString());
-            assertEquals(401,response.statusCode(),entry.getKey()+response.body());assertTrue(response.body().contains("LOGIN_REQUIRED"));}
+            assertEquals(401,response.statusCode(),entry.getKey()+response.body());assertTrue(response.body().contains("操作を完了できませんでした"));}
         var response=raw.send(HttpRequest.newBuilder(URI.create("http://localhost:"+port+"/api/status")).header("Cookie",cookie).GET().build(),HttpResponse.BodyHandlers.ofString());
         assertEquals(401,response.statusCode());assertTrue(response.headers().firstValue("content-type").orElseThrow().contains("json"));assertTrue(response.body().contains("LOGIN_REQUIRED"));
         assertFalse(response.body().contains("userState"));assertEquals(200,http(other,"/api/status",null).statusCode());synchronized(lock){assertTrue(users.findById(u.getId()).isEmpty());}

@@ -11,6 +11,10 @@ import com.example.janken.service.ScreenService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class ScreenRenderer {
@@ -105,7 +109,52 @@ public class ScreenRenderer {
                 && canRedisplay(screen, delete.getReturnPage(), delete.getRoomId())) {
             model.addAttribute("originalHandFormOpen", true);
         }
+        errorPresentation(screen, form, error, model);
         return screen.template();
+    }
+
+    public record ErrorFieldLink(String inputId, String label) { }
+
+    private void errorPresentation(ScreenService.Screen screen, Object form,
+            GameOperationException error, Model model) {
+        // API用のコード・メッセージは保ち、HTMLでの案内だけを組み立てる。
+        String title = "VALIDATION_ERROR".equals(error.getCode())
+                ? "入力内容を確認してください" : "操作を完了できませんでした";
+        Map<String, ErrorFieldLink> fields = new LinkedHashMap<>();
+        if (form instanceof LoginForm && screen.template().equals("login")) {
+            fields.put("username", new ErrorFieldLink("username", "遊ぶときの名前"));
+        } else if (form instanceof RoomEnterForm && screen.template().equals("rooms")) {
+            fields.put("roomName", new ErrorFieldLink("roomName", "ルーム名"));
+        } else if (form instanceof RoomRuleForm && screen.template().equals("room")
+                && Boolean.TRUE.equals(model.getAttribute("isHost"))
+                && !Boolean.TRUE.equals(model.getAttribute("matchRunning"))) {
+            fields.put("targetWins", new ErrorFieldLink("targetWins", "先取勝数"));
+            fields.put("preventConsecutiveSameOriginalHand", new ErrorFieldLink("preventConsecutiveSameOriginalHand1", "オリジナル手の連続使用"));
+        } else if (form instanceof OriginalHandForm && Boolean.TRUE.equals(model.getAttribute("originalHandFormOpen"))) {
+            fields.put("name", new ErrorFieldLink("original-hand-name", "オリジナル手の名前"));
+            fields.put("vsRock", new ErrorFieldLink("vsRock-WIN", "グーへの相性"));
+            fields.put("vsScissors", new ErrorFieldLink("vsScissors-WIN", "チョキへの相性"));
+            fields.put("vsPaper", new ErrorFieldLink("vsPaper-WIN", "パーへの相性"));
+            fields.put("vsOriginal", new ErrorFieldLink("vsOriginal-WIN", "他のオリジナル手への相性"));
+        }
+        Map<String, List<String>> inline = new LinkedHashMap<>();
+        var links = new java.util.ArrayList<ErrorFieldLink>();
+        var messages = new LinkedHashSet<>(error.getErrorMessages());
+        messages.remove("入力内容を確認してください。");
+        fields.forEach((field, link) -> {
+            List<String> fieldMessages = error.getFieldErrors().get(field);
+            if (fieldMessages == null || fieldMessages.isEmpty()) return;
+            links.add(link);
+            // 長い同一文を上部と入力欄の両方へ重複表示しない。
+            messages.removeAll(fieldMessages);
+            inline.put(field, fieldMessages.stream().map(message ->
+                    message.equals("相性は勝ち・負け・引き分けから選択してください。")
+                            ? link.label() + "を選んでください。" : message).toList());
+        });
+        model.addAttribute("errorTitle", title);
+        model.addAttribute("errorSummaryMessages", List.copyOf(messages));
+        model.addAttribute("errorFieldLinks", List.copyOf(links));
+        model.addAttribute("uiFieldErrors", inline);
     }
 
     private boolean canRedisplay(ScreenService.Screen screen, String returnPage, String roomId) {

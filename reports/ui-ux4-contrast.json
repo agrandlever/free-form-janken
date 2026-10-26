@@ -1,0 +1,56 @@
+[
+  {
+    "state": "blue-normal",
+    "foreground": "0b5ed7",
+    "background": "f8f9fa",
+    "ratio": 5.539163310983865
+  },
+  {
+    "state": "blue-hover",
+    "foreground": "ffffff",
+    "background": "0b5ed7",
+    "ratio": 5.838896108048675
+  },
+  {
+    "state": "blue-active",
+    "foreground": "ffffff",
+    "background": "0a58ca",
+    "ratio": 6.438461061495277
+  },
+  {
+    "state": "primary",
+    "foreground": "ffffff",
+    "background": "0d6efd",
+    "ratio": 4.500782787406787
+  },
+  {
+    "state": "error-links",
+    "foreground": "084298",
+    "background": "f8d7da",
+    "ratio": 7.010158617166565
+  },
+  {
+    "state": "field-error",
+    "foreground": "b02a37",
+    "background": "f8f9fa",
+    "ratio": 6.163268600822532
+  },
+  {
+    "state": "secondary",
+    "foreground": "495057",
+    "background": "f8f9fa",
+    "ratio": 7.756631072165828
+  },
+  {
+    "state": "danger",
+    "foreground": "b02a37",
+    "background": "f8f9fa",
+    "ratio": 6.163268600822532
+  },
+  {
+    "state": "selected-label",
+    "foreground": "26334a",
+    "background": "e9f2ff",
+    "ratio": 11.245635652874052
+  }
+]

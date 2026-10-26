@@ -151,7 +151,7 @@ class StageSixWebTests {
         }
         for (String path : List.of("/original-hand/save", "/original-hand/delete")) {
             var response = http(a, path, path.endsWith("save") ? saveBody(id, "changed") : "returnPage=ROOM&roomId=" + id);
-            assertEquals(409, response.statusCode()); assertTrue(response.body().contains("INVALID_STATE"));
+            assertEquals(409, response.statusCode()); assertTrue(response.body().contains("操作を完了できませんでした"));
             readyUi(response.body()); assertTrue(response.body().contains("HA"));
         }
         redirect(http(a, "/room/ready/cancel", "roomId=" + id), "/room");
@@ -180,7 +180,7 @@ class StageSixWebTests {
         var a = browser(); redirect(http(a, "/login", "username=A"), "/rooms");
         redirect(http(a, "/rooms/enter", "roomName=R"), "/room"); String id = hiddenRoom(http(a, "/room", null).body());
         var response = http(a, "/room/rules", "roomId=" + id + "&targetWins=abc&preventConsecutiveSameOriginalHand=true");
-        assertEquals(400, response.statusCode()); assertTrue(response.body().contains("VALIDATION_ERROR"));
+        assertEquals(400, response.statusCode()); assertTrue(response.body().contains("入力内容を確認してください"));
         assertTrue(response.body().contains("value=\"abc\"")); assertTrue(response.body().contains("checked=\"checked\""));
         synchronized (lock) { var r = rooms.findById(UUID.fromString(id)).orElseThrow(); assertEquals(3, r.getTargetWins()); assertFalse(r.isPreventConsecutiveSameOriginalHand()); }
         redirect(http(a, "/logout", ""), "/");
@@ -211,7 +211,7 @@ class StageSixWebTests {
         assertTrue(invalid.body().contains("value=\"abc\""));
         redirect(http(a, "/room/ready", "roomId=" + id), "/room");
         html = http(a, "/room", null).body();
-        assertTrue(html.contains("相手の準備完了を待っています。"));
+        assertTrue(html.contains("参加者が2人必要です。ルーム名を共有して相手を招待してください。"));
         assertTrue(openingTag(html, "create-original-hand").contains("hidden"));
         redirect(http(a, "/room/ready/cancel", "roomId=" + id), "/room");
         redirect(http(a, "/original-hand/delete", "returnPage=ROOM&roomId=" + id), "/room");

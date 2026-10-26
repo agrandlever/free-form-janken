@@ -45,6 +45,8 @@ POSTのエラー画面はHTMLとし、次のModelを用いる。
 - `form`：再表示可能な入力値。
 - 当該画面の通常Model。
 
+上記の既存ModelとHTTPステータスは維持する。HTML表示に限り、errorTitle（日本語見出し）、errorSummaryMessages（欄の下へ表示しないメッセージ）、errorFieldLinks（inputId・label）、uiFieldErrors（表示用項目メッセージ）をScreenRendererで作る。内部コードをHTMLへ表示せず、項目メッセージの重複を避ける。状態APIのJSON契約や業務検証には追加・変更しない。
+
 入力不正では許可された元画面を同じHTTPステータスで再表示し、フォームを展開したまま入力値とエラーを表示する。returnPage等が不正で元画面を確定できない場合、または状態・所属が変わり元画面を表示できない場合は、現在の正規画面を同じエラーステータスで表示し、変更を行わない。
 
 formは再表示する対象フォームの値を表す共通名であり、各テンプレートでは下記の個別フォーム名にも同じ再表示用入力値を設定する。
@@ -73,6 +75,8 @@ GET /roomsは①のみ表示し、username・userState・roomEnterFormと、次�
 `/rooms`と`/room`でも`currentOriginalHand`を利用する。入力不正時はoriginalHandFormに入力値を再設定しても、currentOriginalHand・originalHandName・hasOriginalHandは保存済みの本人設定から生成する。ModelはHTMLへ渡す画面用データであり、状態JSONの項目とは区別する。これらの本人相性をroom.membersや他ユーザー向けのModelへ追加しない。
 
 各画面の送信用内部IDはサーバーが検証済みModelからhidden項目等へ設定し、利用者向けの表示・入力にしない。
+
+ログイン後の画面用selfUserIdはセッションから決定する本人ID。対戦・ラウンド結果・終了済み結果の「あなた」は結果行のuserIdと照合し、表示名で照合しない。状態JSONの項目追加や公開範囲変更は行わない。
 
 ### 1.6 文字列の共通判定基準
 

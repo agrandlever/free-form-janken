@@ -207,12 +207,13 @@ class StageFifteenWebTests {
         String body="matchId="+matchId+"&roundNumber=1&type="+type+"&normalHand=ROCK&originalHandId="+matches.findById(matchId).orElseThrow().getOriginalHands().getFirst().getHandId();
         if(type.equals("NORMAL"))submit(a,"ROCK");else mvc.perform(post("/play").session(a).param("matchId",matchId.toString()).param("roundNumber","1").param("type","ORIGINAL").param("originalHandId",matches.findById(matchId).orElseThrow().getOriginalHands().getFirst().getHandId().toString()));
         String html=http(c,"/play?matchId="+matchId,null).body();String json=http(c,"/api/status?matchId="+matchId,null).body();
-        assertTrue(html.contains("観戦中です"));assertTrue(html.contains("ルームへ戻る"));assertTrue(html.contains("Alice"));assertTrue(html.contains("Bob"));
+        assertTrue(html.contains("観戦中"));assertTrue(html.contains("ルームへ戻る"));assertTrue(html.contains("Alice"));assertTrue(html.contains("Bob"));
         for(String secret:List.of("action=\"/play\"","ルームを退出","手を選択","self-hand-status","グー","チョキ","パー","HA","HB","同じオリジナル手"))assertFalse(html.contains(secret),secret);
         for(String secret:List.of("vsRock","vsScissors","vsPaper","vsOriginal","selections","ROCK","\"HA\"","\"HB\"","グー")){assertFalse(html.contains(secret),secret);assertFalse(json.contains(secret),secret);}
         var j=tools.jackson.databind.json.JsonMapper.builder().build().readTree(json);assertEquals(state.name(),j.get("userState").asString());assertTrue(j.get("selfHandConfirmed").isNull());assertTrue(j.get("selfSelectedHand").isNull());
         assertEquals(409,http(c,"/play",body).statusCode());submit(b,"ROCK");redirect(http(c,"/play?matchId="+matchId,null),"/round-result?matchId="+matchId);
         html=http(c,"/round-result?matchId="+matchId,null).body();assertTrue(html.contains(type.equals("NORMAL")?"グー":"HA"));assertTrue(html.contains("ルームへ戻る"));assertFalse(html.contains("ルームを退出"));assertTrue(html.contains("ラウンド履歴"));
+        assertFalse(html.contains("class=\"self-label\">あなた</strong>"));
         for(String secret:List.of("vsRock","vsScissors","vsPaper","vsOriginal"))assertFalse(html.contains(secret));
         assertEquals(200,http(c,"/room",null).statusCode());assertEquals(state.name(),tools.jackson.databind.json.JsonMapper.builder().build().readTree(http(c,"/api/status",null).body()).get("userState").asString());
     }

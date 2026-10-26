@@ -59,6 +59,7 @@ public class ScreenService {
                 return screen("/", "login", model);
             }
             model.put("username", user.getUsername());
+            model.put("selfUserId", user.getId().toString());
             model.put("userState", user.getState());
             if (user.getState() == UserState.ROOM_NONE) {
                 model.put("roomEnterForm", new RoomEnterForm());
@@ -128,6 +129,7 @@ public class ScreenService {
                     || match.getCurrentRound() == null) { return screen("/room", "", Map.of()); }
             Map<String, Object> model = new LinkedHashMap<>();
             model.put("username", user.getUsername());
+            model.put("selfUserId", user.getId().toString());
             model.put("userState", user.getState());
             model.put("roomId", room.getId().toString());
             model.put("matchId", id.toString());

@@ -224,7 +224,9 @@ class StageTwelveWebTests {
         assertTrue(json.contains("\"displayMatchState\":\"MATCH_RESULT\""));
         var result=http(ca,"/match-result?matchId="+mid,null);assertEquals(200,result.statusCode(),result.body());String html=result.body();
         for(String text:List.of("対戦終了","最終結果","Alice","Bob","ラウンド履歴","グー","チョキ","HA","HB","勝ち","負け","引き分け","他のオリジナル手","ルームへ戻る"))assertTrue(html.contains(text),text);
-        assertTrue(html.contains("id=\"original-hand-affinities\" class=\"table-scroll table-responsive\" hidden"));assertTrue(html.contains("/js/status-polling.js"));assertTrue(html.contains("/js/match-result.js"));
+        assertTrue(html.contains("id=\"original-hand-affinities\" hidden"));
+        assertTrue(html.contains("class=\"table-scroll table-responsive\" tabindex=\"0\""));
+        assertTrue(html.contains("/js/status-polling.js"));assertTrue(html.contains("/js/match-result.js"));
         // 第14段階で②向け編集を統合したため、終了済み結果の閲覧に加えて導線を確認する。
         assertTrue(html.contains("/original-hand/save"));assertTrue(html.contains("/original-hand/delete"));assertTrue(html.contains("自分のオリジナル手を編集"));
         if(mode.equals("aborted")){assertTrue(html.contains("参加人数が不足したため対戦を終了しました"));assertTrue(html.contains("勝者はいません"));}else assertTrue(html.contains(">勝者</h2>"));

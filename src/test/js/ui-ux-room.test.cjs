@@ -15,7 +15,8 @@ test('準備人数・本人の案内を状態同期し、ホスト移譲後も�
     assert.equal(e.ids['room-status'].textContent, '参加者 2人・準備完了 1人');
     assert.match(e.ids['room-members'].textContent, /自分（ホスト）（準備前）/);
     assert.match(e.ids['self-ready-status'].textContent, /自分の手を1つ作りましょう/);
-    assert.equal(e.ids['start-action'].textContent, '');
+    assert.equal(e.ids['start-action'].textContent, '対戦開始');
+    assert.equal(e.ids['start-action'].querySelector('button').disabled, true);
     e.emit({ ...status, userState: 'READY', room: { ...status.room,
         members: status.room.members.map(m => ({ ...m, userState: 'READY' })) } });
     assert.equal(e.ids['room-status'].textContent, '参加者 2人・準備完了 2人');
@@ -42,6 +43,8 @@ function renderedRoom(created, roomId = 'R') {
     server.ids['open-original-hand'].textContent = created ? 'オリジナル手を編集' : 'オリジナル手を作る';
     server.ids['original-hand-status'].textContent = created ? '保存した手：にじ' : 'オリジナル手が作成されていません';
     server.ids['saved-hand-summary'].hidden = !created;
+    server.ids['ready-saved-hand'].hidden = !created;
+    server.ids['ready-saved-hand'].textContent = created ? '保存した手：にじ' : '';
     server.ids['saved-hand-summary'].textContent = created ? '対グー：負け・対チョキ：勝ち・対パー：引き分け・対オリジナル：負け' : '';
     return {
         querySelector: selector => selector.startsWith('main') ? server.page
@@ -61,6 +64,7 @@ test('別タブでの作成・削除を既存HTMLから同期し、編集中の�
     assert.equal(e.ids['create-original-hand'].hidden, true);
     assert.equal(e.ids['self-ready-status'].textContent, '手を確認したら、準備完了を押しましょう。');
     assert.equal(e.ids['original-hand-status'].textContent, '保存した手：にじ');
+    assert.equal(e.ids['ready-saved-hand'].textContent, '保存した手：にじ');
     assert.equal(e.ids['saved-hand-summary'].hidden, false);
     assert.match(e.ids['saved-hand-summary'].textContent, /対グー：負け/);
     assert.equal(e.controls[0].value, '未保存の入力');
@@ -103,6 +107,8 @@ test('READYの待機案内は人数・ホスト・対戦中の既存状態に従
     const e = environment('room'); e.load('room.js');
     const status = roomStatus({ userState: 'READY' });
     e.emit(status);
+    assert.equal(e.ids['ready-waiting-message'].textContent, '参加者が2人必要です。ルーム名を共有して相手を招待してください。');
+    e.emit({ ...status, room: { ...status.room, members: [{ userState: 'READY' }, { userState: 'ROOM_WAITING' }] } });
     assert.equal(e.ids['ready-waiting-message'].textContent, '相手の準備完了を待っています。');
     const room = { ...status.room, members: [{ userState: 'READY' }, { userState: 'READY' }] };
     e.emit({ ...status, room });
@@ -154,4 +160,29 @@ test('ルールのエラー再表示は最初の定期更新でも入力を上�
     e.emit(roomStatus());
     assert.equal(wins.value, 'abc');
     assert.equal(e.ids['display-target-wins'].textContent, '3');
+});
+
+test('同じ状態の準備ボタンは定期更新で作り直さずフォーカスを保持する', () => {
+    const e = environment('room'); e.load('room.js'); e.emit(roomStatus());
+    const form = e.ids['ready-action'];
+    const button = form.querySelector('button'); button.focus();
+    e.emit(roomStatus());
+    assert.equal(e.ids['ready-action'], form);
+    assert.equal(e.ids['ready-action'].querySelector('button'), button);
+    assert.equal(button.focused, true);
+});
+
+test('エラー再表示は最初の入力へ、入力がない業務エラーは概要へフォーカスする', () => {
+    const fs = require('node:fs'); const vm = require('node:vm'); const path = require('node:path');
+    for (const hasInput of [true, false]) {
+        const invalid = { focus() { this.focused = true; } };
+        const link = { getAttribute: () => '#vsRock-WIN', addEventListener: (_, fn) => { link.click = fn; } };
+        const summary = { focus() { this.focused = true; }, querySelectorAll: () => [link] };
+        const document = { querySelector: selector => selector === '.errors' ? summary : hasInput ? invalid : null,
+            getElementById: () => invalid };
+        vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js/form-feedback.js'), 'utf8'), { document });
+        assert.equal(hasInput ? invalid.focused : summary.focused, true);
+        let prevented = false; link.click({ preventDefault() { prevented = true; } });
+        assert.equal(invalid.focused, true); assert.equal(prevented, true);
+    }
 });

@@ -1,0 +1,120 @@
+簡易自由律じゃんけん UI/UX改善 完了報告
+作業日: 2026-10-26（日本時間）
+対象: 既存リポジトリの修正・設計書更新・検証。デプロイは実施していません。
+
+1. 現状確認と変更内容
+
+リポジトリ内のAGENTS.mdは見つからず、チャットで指定された作業指示と.antigravityrulesを確認しました。docs/01～06、関連テンプレート・CSS・JavaScript・Controller・画面用Service・既存テストを照合しました。
+公開サイトではログイン空欄時のVALIDATION_ERROR表示・長文の重複と、灰色パネル上の青文字が#0d6efdであることをブラウザーで再確認しました。確認用ログインはログアウトしています。
+対戦画面の参加者・履歴が選択より先にあることは実装で確認しました。
+既に実装されていた小画面2列・44px以上のボタン・保存済み本人相性の要約・準備中の編集制限・相性の詳細説明と開閉・入力保持は活用し、重複実装していません。
+
+A: 対戦画面をラウンドと簡潔なスコア→選択／待機→参加者詳細・履歴・ルール→退出へ変更。通常手とオリジナル手を見出しで区別。押すと確定・変更できないことと、全員の固定手を選べることを案内。制限中の手には「連続使用不可」を表示。
+B: 共通設定欄に全員で選べる／他人の相性は終了後／4項目必須・最低1項目が負け、の3点を常時表示。詳細は既存の開閉説明を維持。
+C: 画面の見出しを日本語化。概要の項目リンクと欄の下のメッセージへ分け、同じ長文の重複を解消。相性は対象名付きの案内に変更。aria-invalid、既存のaria-describedby、初期フォーカスとリンクからの移動を実装。既存errorCode・errorMessages・fieldErrors・HTTP・JSONの契約は維持。
+D: 青文字を#0b5ed7へ調整。灰色背景との比は4.270:1→5.539:1。灰色・赤い枠線ボタンやエラーリンクも調整し、既存のフォーカス枠を維持。
+E: 非勝者の「—」を「勝利なし」に変更。結果・履歴・最終勝数で内部ユーザーIDによる「あなた」を表示。同名の観戦者には付けない。自動遷移案内を追加。結果表・終了済み相性表のスクロール領域に名前とキーボード操作用のtabindexを設定。終了済み相性表と編集欄のスクロール領域を分離。
+F: 準備操作の近くに保存済み手名と既存設定へのリンクを表示。入力値は要約へ使わず、既存HTML同期で保存値だけ反映。対戦中・人数不足・準備待ち・ホスト待ちの理由を表示。定期更新で同じ準備フォームを作り直さずフォーカスを保持。
+G: 利用者向けのルールを「オリジナル手の連続使用：可能／不可」に統一。禁止OFF→可能、ON→同じ手の連続使用不可。通常手は制限しないことを説明。
+
+2. 変更ファイルと役割（すべてリポジトリ直下からの相対パス）
+
+実装:
+src/main/resources/templates/play.html: 対戦の表示順・通常手／オリジナル手・詳細開閉・確定案内。
+src/main/resources/templates/round-result.html: 勝利なし・本人ラベル・自動遷移案内・表の操作補助。
+src/main/resources/templates/match-result.html: 本人ラベル・エラー概要の重複回避・相性表だけのスクロール領域。
+src/main/resources/templates/room.html: 保存済み手名・開始理由・用語・入力エラーの関連付け。
+src/main/resources/templates/rooms.html: 入室エラーの関連付け・共通フォーカス処理の読み込み。
+src/main/resources/templates/login.html: 共通エラー部品・ログイン入力の関連付け。
+src/main/resources/templates/fragments/original-hand.html: 常時ルール・相性入力のエラー関連付け。
+src/main/resources/static/css/style.css: 文字色・既存の操作領域／フォーカス・本人ラベル・詳細領域の調整。
+src/main/resources/static/js/form-feedback.js: 新規。エラー時と概要リンクのフォーカス移動。
+src/main/resources/static/js/room.js: 保存済み手名・開始理由の同期と準備フォームのフォーカス保持。
+src/main/java/com/example/janken/controller/ScreenRenderer.java: 既存の業務エラーを変えず、HTML表示専用の見出し・概要・リンク・項目文を生成。
+src/main/java/com/example/janken/service/ScreenService.java: 対戦・結果・履歴で照合する本人IDを画面用Modelへ設定。
+src/main/java/com/example/janken/service/MatchResultService.java: 終了済み結果で照合する本人IDを画面用Modelへ設定。
+
+テスト:
+src/test/java/com/example/janken/controller/OriginalHandWebTests.java: 日本語見出し・全項目エラー・重複回避・既存Model契約の回帰確認を追加。
+src/test/java/com/example/janken/controller/StageFourWebTests.java
+src/test/java/com/example/janken/controller/StageSixWebTests.java
+src/test/java/com/example/janken/controller/StageEightWebTests.java
+src/test/java/com/example/janken/controller/StageNineWebTests.java
+src/test/java/com/example/janken/controller/StageTenWebTests.java
+src/test/java/com/example/janken/controller/StageElevenWebTests.java
+src/test/java/com/example/janken/controller/StageTwelveWebTests.java
+src/test/java/com/example/janken/controller/StageFifteenWebTests.java
+src/test/java/com/example/janken/controller/StageSixteenWebTests.java
+上記既存WebテストのHTML上の旧文言・旧配置を更新。HTTPステータス・内部Model・状態API・非公開条件の確認は維持し、本人ラベルの確認も追加。
+src/test/js/sync-test-support.cjs: 既存の簡易DOMに、実装が使用するroomId付きinputセレクターと準備用要約の要素を反映。
+src/test/js/ui-ux-room.test.cjs: 保存済み表示・開始理由・ホストの無効ボタン・フォーカス保持とエラー時のフォーカスを確認。
+reports/ui-ux4-http-check.cjs: 既存と同じNode標準APIで実HTTPの対戦回帰検証を実施。大規模なテスト基盤や依存関係は追加していません。
+
+3. 設計書への反映
+
+docs/02_機能仕様書_簡易自由律じゃんけん.md: 常時説明、準備要約と理由、選択の表示順、用語、結果・エラーの表示条件を追記。
+docs/03_API設計書_簡易自由律じゃんけん.md: 既存エラー契約を維持する表示専用Modelと、本人照合用の画面Modelを説明。状態JSONは変更なし。
+docs/04_画面設計書_簡易自由律じゃんけん.md: 表示順、常時説明、エラーとフォーカス、色、保存済み要約、開始理由、用語、結果・表の操作補助を反映。
+docs/05_テスト仕様書_簡易自由律じゃんけん.md: TC-136・137を整合し、TC-141～144に今回の配置・コントラスト・エラー・準備・対戦回帰条件を追加。
+docs/06_実装設計書_簡易自由律じゃんけん.md: 表示専用エラー生成、form-feedback.js、本人ID照合、準備HTML同期とフォーカス保持の責務を反映。
+docs/01_要件定義書_簡易自由律じゃんけん.mdのゲーム要件は変更していません。関係しない設計・学習進捗管理ファイルは変更していません。
+
+4. 検証結果
+
+実行: .\gradlew.bat -g .gradle-user-home build --offline --console=plain
+結果: BUILD SUCCESSFUL。Javaテスト1,083件、失敗0・エラー0。
+実行: node --test src/test/js/*.test.cjs
+結果: 72件成功、失敗0。
+実行: node reports/ui-ux4-http-check.cjs（通常起動のローカルサーバーを使用）
+結果: PASS。独立した2参加者＋同名の観戦者で確認。
+実行: git diff --check（src・docs）
+結果: 空白エラーなし。
+
+変更前のJavaScriptテストには、現在の開始ボタン・実装セレクターとテスト補助の不一致による失敗がありました。実画面の開始条件を維持してテスト補助・期待値を整合しました。途中のJavaテストは内部コードや旧配置がHTMLへ出る前提の確認で失敗したため、表示の確認だけを更新し、最終全件は成功しています。
+Gradleの既定キャッシュでは配布物のダウンロードが必要でしたがネットワークに接続できなかったため、既存の.gradle-user-homeとオフライン実行を使用しました。ビルド設定・依存関係は変更していません。
+
+実HTTPで成功した確認:
+- 複数エラーの全項目・名前入力保持・保存済み手名と未保存入力の分離。
+- 全固定オリジナル手の選択肢・他人の作成手の選択・二重確定409・連続使用拒否400・通常手の連続使用。
+- 確定前の相手の選択と公開前相性がHTML・JSONに含まれないこと。
+- 勝者なし5秒、勝者あり未決着10秒、最終10秒。結果取得時の残りは4998ms・9996ms・9997msで、通常Schedulerによる次ラウンド／正常終了を確認。
+- 勝利なし・本人ラベル。同名の観戦者に本人ラベルが付かないこと。
+- 結果で現在の手を編集しても終了済み相性表が不変であること。
+- 最終結果・ルーム復帰・退出後の保存手維持・ログアウト。
+既存Java／JavaScriptテストでもゲーム判定・勝数・開始時固定・途中退出・アクセス条件・5/10秒境界・カウント0だけでは遷移しないことを確認。
+
+ブラウザーで成功した確認（Chrome・ローカル）:
+- 1440px: clientWidth=1425、scrollWidth=1425。通常3列。
+- 768px: clientWidth=753、scrollWidth=753。通常3列。
+- 390px: clientWidth=390、scrollWidth=390。2列、手ボタン80px高、文字16px、間隔12px。縦スクロール時にclientWidth=375となる状態でもscrollWidth=375。
+- 720px幅の代替リフロー確認: clientWidth=705、scrollWidth=705。編集フォームのラジオラベルは約51.2px高で、文字の欠落・ページの横はみ出しなし。
+- 長いユーザー名と手名、ログイン・入室・手の作成・保存・準備、他人の手の確定と別タブへの無効化同期、勝者なし結果、次ラウンドでの連続使用制限。
+- Tab／Shift+Tab／Enter、相性ラジオの矢印キー、選択済みの太字・枠・丸印、濃いキーボードフォーカス枠。
+- 空欄・相性全未入力後の展開・名前欄へのフォーカス・全項目リンク・aria-invalid。
+- 結果表は領域内clientWidth=310に対しscrollWidth=448。ページ全体はclientWidth=scrollWidthで、表だけが横スクロールする。
+- 中止結果でも本人ラベルと履歴なし表示を確認。終了済み相性表はclientWidth=310に対しscrollWidth=711で、右矢印キーによりscrollLeftが増加。ページ全体は375pxのまま。中止結果からルームへ戻り、退出後も保存済み手が維持されることをブラウザーで確認。
+- 青文字の実色と背景、ホバー・アクティブのCSS変数を取得。通常・ホバー・アクティブ、エラーリンク・項目エラー・灰色／赤ボタン・選択済み文字は計算上4.5:1以上。詳細はui-ux4-contrast.json。
+
+5. 未確認・残課題
+
+- 実際のブラウザー200%拡大は、操作APIから拡大状態を確認できなかったため未確認。720px幅の代替確認を200%拡大の成功とは扱っていません。
+- 実機スマートフォン、Chrome以外、スクリーンリーダーの音声出力、全画面・全状態・最大8候補の目視確認は未実施。
+- ブラウザー接続のタイムアウト中にテスト用参加者が通信切断扱いとなったため、正常終了・結果編集までの連続ブラウザー操作は未完了。中止結果からの復帰・退出はブラウザーで確認し、正常終了・結果編集・復帰・退出は独立セッションの実HTTPと既存テストで成功しています。
+- ホバー・アクティブの色はCSS変数とコントラスト計算で確認。すべての操作部品のホバーを個別に目視確認したものではありません。
+- WCAG全項目の適合やスコアを保証する検証は行っていません。
+- 公開前の全相性表示は追加していません。公開範囲やゲームルールの変更が必要な提案は今回実装していません。
+
+6. 資料
+
+reports/ui-ux4-gradle-test.log
+reports/ui-ux4-javascript-test.log
+reports/ui-ux4-http-test.log
+reports/ui-ux4-http-observations.json
+reports/ui-ux4-contrast.json
+reports/ui-ux4-preview.log
+reports/ui-ux4-play-1440.jpg
+reports/ui-ux4-play-768.jpg
+reports/ui-ux4-play-390.jpg
+reports/ui-ux4-round-390.jpg
+
+既存の空・虹背景、キャラクター、ロゴ、白いパネルと青い主要ボタンを維持しています。勝敗判定・連続使用制限・加算・参加／観戦／退出条件・自動遷移と公開範囲は変更していません。コミット・デプロイは行っていません。

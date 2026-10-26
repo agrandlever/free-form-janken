@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"><body>
-<section th:fragment="editor" class="original-hand card card-body bg-body-tertiary">
+<section th:fragment="editor" id="original-hand-settings" class="original-hand card card-body bg-body-tertiary">
 <h2 class="h5 fw-bold" th:text="${originalHandForm.returnPage == 'ROOMS' ? 'オリジナル手の作成（入室前は任意）' : 'オリジナル手の設定'}">オリジナル手の設定</h2>
-<p class="text-body-secondary">自分だけの手を作り、グー・チョキ・パーなどの手との勝ち負けを設定できます。</p>
+<ul class="original-hand-guide" id="original-hand-guide">
+<li>作った手は、対戦参加者全員が選べます。</li>
+<li>他の人の相性は、対戦終了後に確認できます。</li>
+<li>相性4項目は必須です。最低1項目は「負け」にしてください。</li>
+</ul>
 <p id="original-hand-status" th:text="${hasOriginalHand ? '保存した手：' + originalHandName : 'オリジナル手が作成されていません'}"></p>
 <div id="saved-hand-summary" th:hidden="${!hasOriginalHand}">
 <p class="small text-body-secondary mb-2">保存した手から見た相性設定</p>
@@ -22,12 +26,11 @@
 <input th:if="${originalHandForm.roomId != null}" id="original-save-roomId" type="hidden" th:field="*{roomId}">
 <input th:if="${originalHandForm.resultMatchId != null}" id="original-save-resultMatchId" type="hidden" th:field="*{resultMatchId}">
 <label class="form-label" for="original-hand-name">オリジナル手の名前</label>
-<input class="form-control" id="original-hand-name" type="text" th:field="*{name}" aria-describedby="original-hand-name-hint original-hand-name-errors">
+<input class="form-control" id="original-hand-name" type="text" th:field="*{name}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('name') ? 'true' : null}" aria-describedby="original-hand-name-hint original-hand-name-errors">
 <p class="form-text" id="original-hand-name-hint">1～20文字（前後の空白は除きます）</p>
-<ul class="list-unstyled app-list" id="original-hand-name-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['name']}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" id="original-hand-name-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['name']}" th:text="${message}"></li></ul>
 <!-- 同じ相性の選択肢は共通の項目名でまとめ、1つだけ選べるようにする。 -->
 <div class="affinity-guide" id="affinity-guide">
-<p class="fw-bold">相性4項目をすべて選び、最低1項目は「負け」に設定してください。</p>
 <p>「勝ち」は自分の手が相手の手に勝つ、「負け」は自分の手が相手の手に負ける、「引き分け」は勝敗がつかない設定です。</p>
 </div>
 <details class="affinity-help">
@@ -52,81 +55,81 @@
 <p class="small">表は2つの手の比較です。3人以上では、勝つ相手が1人以上いて、負ける相手がいない人がそのラウンドの勝者です。</p>
 </details>
 <div class="affinity-fields">
-<fieldset class="mb-3" aria-describedby="affinity-guide">
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
 <legend class="fs-6">グーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsRock-WIN" type="radio" th:field="*{vsRock}" value="WIN" aria-describedby="vsRock-errors">
+<input class="form-check-input" id="vsRock-WIN" type="radio" th:field="*{vsRock}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsRock') ? 'true' : null}" value="WIN" aria-describedby="vsRock-errors">
 <label class="form-check-label" for="vsRock-WIN">勝ち</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsRock-LOSE" type="radio" th:field="*{vsRock}" value="LOSE" aria-describedby="vsRock-errors">
+<input class="form-check-input" id="vsRock-LOSE" type="radio" th:field="*{vsRock}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsRock') ? 'true' : null}" value="LOSE" aria-describedby="vsRock-errors">
 <label class="form-check-label" for="vsRock-LOSE">負け</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsRock-DRAW" type="radio" th:field="*{vsRock}" value="DRAW" aria-describedby="vsRock-errors">
+<input class="form-check-input" id="vsRock-DRAW" type="radio" th:field="*{vsRock}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsRock') ? 'true' : null}" value="DRAW" aria-describedby="vsRock-errors">
 <label class="form-check-label" for="vsRock-DRAW">引き分け</label>
 </div>
 </div>
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsRock')}" th:text="|無効な選択値：${originalHandRejectedValues['vsRock']}|"></p>
-<ul class="list-unstyled app-list" id="vsRock-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsRock']}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" id="vsRock-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['vsRock']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3" aria-describedby="affinity-guide">
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
 <legend class="fs-6">チョキへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsScissors-WIN" type="radio" th:field="*{vsScissors}" value="WIN" aria-describedby="vsScissors-errors">
+<input class="form-check-input" id="vsScissors-WIN" type="radio" th:field="*{vsScissors}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsScissors') ? 'true' : null}" value="WIN" aria-describedby="vsScissors-errors">
 <label class="form-check-label" for="vsScissors-WIN">勝ち</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsScissors-LOSE" type="radio" th:field="*{vsScissors}" value="LOSE" aria-describedby="vsScissors-errors">
+<input class="form-check-input" id="vsScissors-LOSE" type="radio" th:field="*{vsScissors}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsScissors') ? 'true' : null}" value="LOSE" aria-describedby="vsScissors-errors">
 <label class="form-check-label" for="vsScissors-LOSE">負け</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsScissors-DRAW" type="radio" th:field="*{vsScissors}" value="DRAW" aria-describedby="vsScissors-errors">
+<input class="form-check-input" id="vsScissors-DRAW" type="radio" th:field="*{vsScissors}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsScissors') ? 'true' : null}" value="DRAW" aria-describedby="vsScissors-errors">
 <label class="form-check-label" for="vsScissors-DRAW">引き分け</label>
 </div>
 </div>
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsScissors')}" th:text="|無効な選択値：${originalHandRejectedValues['vsScissors']}|"></p>
-<ul class="list-unstyled app-list" id="vsScissors-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsScissors']}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" id="vsScissors-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['vsScissors']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3" aria-describedby="affinity-guide">
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
 <legend class="fs-6">パーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsPaper-WIN" type="radio" th:field="*{vsPaper}" value="WIN" aria-describedby="vsPaper-errors">
+<input class="form-check-input" id="vsPaper-WIN" type="radio" th:field="*{vsPaper}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsPaper') ? 'true' : null}" value="WIN" aria-describedby="vsPaper-errors">
 <label class="form-check-label" for="vsPaper-WIN">勝ち</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsPaper-LOSE" type="radio" th:field="*{vsPaper}" value="LOSE" aria-describedby="vsPaper-errors">
+<input class="form-check-input" id="vsPaper-LOSE" type="radio" th:field="*{vsPaper}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsPaper') ? 'true' : null}" value="LOSE" aria-describedby="vsPaper-errors">
 <label class="form-check-label" for="vsPaper-LOSE">負け</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsPaper-DRAW" type="radio" th:field="*{vsPaper}" value="DRAW" aria-describedby="vsPaper-errors">
+<input class="form-check-input" id="vsPaper-DRAW" type="radio" th:field="*{vsPaper}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsPaper') ? 'true' : null}" value="DRAW" aria-describedby="vsPaper-errors">
 <label class="form-check-label" for="vsPaper-DRAW">引き分け</label>
 </div>
 </div>
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsPaper')}" th:text="|無効な選択値：${originalHandRejectedValues['vsPaper']}|"></p>
-<ul class="list-unstyled app-list" id="vsPaper-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsPaper']}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" id="vsPaper-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['vsPaper']}" th:text="${message}"></li></ul>
 </fieldset>
-<fieldset class="mb-3" aria-describedby="affinity-guide">
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
 <legend class="fs-6">他のオリジナル手への相性</legend>
 <div class="d-flex flex-wrap gap-2">
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsOriginal-WIN" type="radio" th:field="*{vsOriginal}" value="WIN" aria-describedby="vsOriginal-errors">
+<input class="form-check-input" id="vsOriginal-WIN" type="radio" th:field="*{vsOriginal}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsOriginal') ? 'true' : null}" value="WIN" aria-describedby="vsOriginal-errors">
 <label class="form-check-label" for="vsOriginal-WIN">勝ち</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsOriginal-LOSE" type="radio" th:field="*{vsOriginal}" value="LOSE" aria-describedby="vsOriginal-errors">
+<input class="form-check-input" id="vsOriginal-LOSE" type="radio" th:field="*{vsOriginal}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsOriginal') ? 'true' : null}" value="LOSE" aria-describedby="vsOriginal-errors">
 <label class="form-check-label" for="vsOriginal-LOSE">負け</label>
 </div>
 <div class="form-check form-check-inline">
-<input class="form-check-input" id="vsOriginal-DRAW" type="radio" th:field="*{vsOriginal}" value="DRAW" aria-describedby="vsOriginal-errors">
+<input class="form-check-input" id="vsOriginal-DRAW" type="radio" th:field="*{vsOriginal}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('vsOriginal') ? 'true' : null}" value="DRAW" aria-describedby="vsOriginal-errors">
 <label class="form-check-label" for="vsOriginal-DRAW">引き分け</label>
 </div>
 </div>
 <p class="text-danger mb-1" th:if="${originalHandRejectedValues != null and originalHandRejectedValues.containsKey('vsOriginal')}" th:text="|無効な選択値：${originalHandRejectedValues['vsOriginal']}|"></p>
-<ul class="list-unstyled app-list" id="vsOriginal-errors" th:if="${fieldErrors != null}"><li th:each="message : ${fieldErrors['vsOriginal']}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" id="vsOriginal-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['vsOriginal']}" th:text="${message}"></li></ul>
 </fieldset>
 </div>
 <button class="btn btn-primary" type="submit">この手を保存</button>

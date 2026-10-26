@@ -213,6 +213,37 @@ class OriginalHandWebTests {
             assertEquals(selected.containsKey(field)?1:0,checked,field);
         }
     }
+    @Test void userFacingErrorsKeepContractsAndEveryCorrectionWithoutDuplicateMessages() throws Exception {
+        var a=browser();
+        var loginError=http(a,"/login","username=");
+        assertEquals(400,loginError.statusCode());
+        assertFalse(loginError.body().contains("VALIDATION_ERROR"));
+        assertTrue(loginError.body().contains("入力内容を確認してください"));
+        assertEquals(1,loginError.body().split("ユーザー名は前後の空白を除いて1～20文字で入力してください。",-1).length-1);
+        assertTrue(loginError.body().contains("aria-invalid=\"true\""));
+        assertTrue(loginError.body().contains("href=\"#username\""));
+        redirect(http(a,"/login","username=UI"),"/rooms");
+        var invalid=http(a,"/original-hand/save","name=&returnPage=ROOMS");
+        assertEquals(400,invalid.statusCode()); panelOpen(invalid.body());
+        assertFalse(invalid.body().contains("VALIDATION_ERROR"));
+        for(String label:List.of("グーへの相性","チョキへの相性","パーへの相性","他のオリジナル手への相性")) {
+            assertTrue(invalid.body().contains(label+"を選んでください。"));
+        }
+        for(String field:List.of("vsRock","vsScissors","vsPaper","vsOriginal")) {
+            assertTrue(invalid.body().contains("href=\"#"+field+"-WIN\""));
+        }
+        assertEquals(1,invalid.body().split("id=\"error-title\"",-1).length-1);
+        assertTrue(invalid.body().contains("作った手は、対戦参加者全員が選べます。"));
+        assertTrue(invalid.body().contains("他の人の相性は、対戦終了後に確認できます。"));
+        // 表示専用の案内を追加しても、既存Modelのコードと全項目エラーを保つ。
+        var s=login();
+        var m=mvc.perform(post("/original-hand/save").session(s).param("returnPage","ROOMS"))
+                .andExpect(status().isBadRequest()).andExpect(model().attribute("errorCode","VALIDATION_ERROR"))
+                .andReturn().getModelAndView().getModel();
+        assertEquals(5,((Map<?,?>)m.get("fieldErrors")).size());
+        assertEquals(5,((Map<?,?>)m.get("uiFieldErrors")).size());
+    }
+
     @Test void actualSpringBootCreateEditDeleteInBothScreensAndSameFormErrors() throws Exception {
         HttpClient a=browser(); redirect(http(a,"/login","username=User"),"/rooms");
         for(boolean inRoom:List.of(false,true)) {

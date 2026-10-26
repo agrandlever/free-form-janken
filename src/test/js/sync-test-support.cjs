@@ -35,6 +35,7 @@ class Element {
         const all = this.children.flatMap(c => [c, ...c.querySelectorAll('*')]);
         const parts = selector.split(',').map(p => p.trim());
         return all.filter(c => parts.some(p => p === '*' || p === c.tagName
+            || (p === 'input[name="roomId"]' && c.tagName === 'input' && c.name === 'roomId')
             || (p.startsWith('[name=') && c.name === p.slice(7, -2))
             || (p === '[type="checkbox"]' && c.type === 'checkbox')));
     }
@@ -60,7 +61,7 @@ function environment(kind, confirmed = false) {
     for (const id of ['round-history','toggle-round-history','self-hand-status','transition-count','copy-room-name','copy-message',
         'watch-match','rule-editor','display-room-name','room-members','ready-action','match-running','start-action',
         'display-target-wins','display-prevent-consecutive','open-original-hand','original-hand-panel','toggle-affinities','original-hand-affinities',
-        'room-status','self-ready-status','create-original-hand','ready-waiting-message','original-hand-status','saved-hand-summary']) {
+        'room-status','self-ready-status','create-original-hand','ready-waiting-message','original-hand-status','saved-hand-summary','ready-saved-hand']) {
         ids[id] = document.createElement('div'); ids[id].id = id;
     }
     ids['round-history'].hidden = true;

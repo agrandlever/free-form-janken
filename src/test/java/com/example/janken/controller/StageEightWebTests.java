@@ -114,9 +114,9 @@ class StageEightWebTests {
             for(var path:List.of("/play",play)) {
                 var response=http(client,path,null); assertEquals(200,response.statusCode(),response.body());
                 String html=response.body(); assertTrue(html.contains("第<span>1</span>ラウンド"));
-                assertTrue(html.contains("先取勝数：<span>5</span>")); assertTrue(html.contains("現在の勝数：<span>0</span>"));
-                assertTrue(html.contains("あなたは対戦参加者です。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
-                assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("ON"));
+                assertTrue(html.contains("<span>5</span>勝先取")); assertTrue(html.contains("あなた <strong>0</strong>勝"));
+                assertTrue(html.contains("ボタンを押すと確定します。確定後は変更できません。")); assertTrue(html.contains("HA")); assertTrue(html.contains("HB"));
+                assertTrue(html.contains("Alice")); assertTrue(html.contains("Bob")); assertTrue(html.contains("オリジナル手の連続使用：<strong>不可</strong>"));
                 for(var forbidden:List.of("/api/status","vsRock","/original-hand/save")) {
                     assertFalse(html.contains(forbidden),forbidden);
                 }
@@ -136,7 +136,7 @@ class StageEightWebTests {
             // 非ホストのstart/rulesは状態判定よりホスト権限確認が先。
             int expected=!hostReady && (path.equals("/room/start")||path.equals("/room/rules"))?403:409;
             assertEquals(expected,response.statusCode(),response.body());
-            assertTrue(response.body().contains(expected==403?"FORBIDDEN":"INVALID_STATE"));
+            assertTrue(response.body().contains("操作を完了できませんでした"));
         }
         synchronized(lock) { assertEquals(1,matches.findAll().size()); assertEquals(matchId,matches.findAll().getFirst().getId().toString()); }
         assertEquals(400,http(a,"/play","matchId="+matchId).statusCode());

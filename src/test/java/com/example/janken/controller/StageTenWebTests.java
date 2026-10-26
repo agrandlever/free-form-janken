@@ -117,7 +117,7 @@ class StageTenWebTests {
         assertPrivate(html);
         if (confirmed) {
             var retry = http(a, "/play", originalBody(mid, 1, idA));
-            assertEquals(409, retry.statusCode()); assertTrue(retry.body().contains("INVALID_STATE"));
+            assertEquals(409, retry.statusCode()); assertTrue(retry.body().contains("操作を完了できませんでした"));
         }
     }
     @ParameterizedTest @ValueSource(strings = {"ROCK", "SCISSORS", "PAPER", "otherOriginal"})
@@ -130,7 +130,7 @@ class StageTenWebTests {
             m.setCurrentRound(new Round(2, java.time.Instant.now()));
         }
         var rejected = http(a, "/play", originalBody(mid, 2, idA));
-        assertEquals(400, rejected.statusCode()); assertTrue(rejected.body().contains("VALIDATION_ERROR"));
+        assertEquals(400, rejected.statusCode()); assertTrue(rejected.body().contains("入力内容を確認してください"));
         assertTrue(rejected.body().contains("前のラウンドと同じオリジナル手は選択できません。")); assertPrivate(rejected.body());
         synchronized (lock) {
             var m = match(mid); assertTrue(m.getCurrentRound().getSelections().isEmpty());
@@ -166,7 +166,7 @@ class StageTenWebTests {
         if (kind.equals("duplicate")) { redirect(http(a, "/play", normalBody(mid, "ROCK")), "/play?matchId=" + mid); }
         var response = http(a, "/play", originalBody(mid, 1, id));
         assertEquals(kind.equals("unknownId") ? 400 : 409, response.statusCode());
-        assertTrue(response.body().contains(kind.equals("unknownId") ? "VALIDATION_ERROR" : "INVALID_STATE"));
+        assertTrue(response.body().contains(kind.equals("unknownId") ? "入力内容を確認してください" : "操作を完了できませんでした"));
         if (kind.equals("unknownId")) {
             assertTrue(response.body().contains("対戦開始時に固定された手を選択してください。"));
             synchronized (lock) { assertTrue(match(mid).getCurrentRound().getSelections().isEmpty()); }

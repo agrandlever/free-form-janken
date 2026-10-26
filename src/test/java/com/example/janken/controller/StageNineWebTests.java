@@ -97,7 +97,7 @@ class StageNineWebTests {
         redirect(http(a,"/play",normalBody(mid,"ROCK")),play);
         String self=http(a,play,null).body(); assertTrue(self.contains("確定済みの手：<strong>グー</strong>")); assertTrue(self.contains("他の参加者の確定を待っています")); assertEquals(5,count(self,"disabled=\"disabled\""));
         String other=http(b,play,null).body(); assertFalse(other.contains("確定済みの手：")); assertFalse(other.contains("disabled"));
-        for(String hand:List.of("ROCK","PAPER","bad")) {var res=http(a,"/play",normalBody(mid,hand)); assertEquals(409,res.statusCode()); assertTrue(res.body().contains("INVALID_STATE"));}
+        for(String hand:List.of("ROCK","PAPER","bad")) {var res=http(a,"/play",normalBody(mid,hand)); assertEquals(409,res.statusCode()); assertTrue(res.body().contains("操作を完了できませんでした"));}
         redirect(http(b,"/play",normalBody(mid,"SCISSORS")),play);
         synchronized(lock) {
             var m=matches.findById(UUID.fromString(mid)).orElseThrow(); assertEquals(com.example.janken.domain.enums.MatchState.ROUND_RESULT,m.getState()); assertEquals(1,m.getRoundHistory().size());
@@ -139,10 +139,10 @@ class StageNineWebTests {
     @Test void rawInputErrorsAndStaleTargetsThroughHttp() throws Exception {
         var a=browser(); var b=browser(); String mid=startHttp(a,b)[1];
         for(String body:List.of("", "matchId=bad&roundNumber=1", "matchId="+mid+"&roundNumber=bad",normalBody(mid,"bad"),"matchId="+mid+"&roundNumber=1&type=ORIGINAL&originalHandId=bad")){
-            var res=http(a,"/play",body);assertEquals(400,res.statusCode(),res.body());assertTrue(res.body().contains("VALIDATION_ERROR"));
+            var res=http(a,"/play",body);assertEquals(400,res.statusCode(),res.body());assertTrue(res.body().contains("入力内容を確認してください"));
         }
         for(String body:List.of(normalBody(UUID.randomUUID().toString(),"bad"),"matchId="+mid+"&roundNumber=2&type=bad")){
-            var res=http(a,"/play",body);assertEquals(409,res.statusCode());assertTrue(res.body().contains("INVALID_STATE"));
+            var res=http(a,"/play",body);assertEquals(409,res.statusCode());assertTrue(res.body().contains("操作を完了できませんでした"));
         }
         synchronized(lock){assertTrue(matches.findById(UUID.fromString(mid)).orElseThrow().getCurrentRound().getSelections().isEmpty());}
     }

@@ -49,7 +49,7 @@
         const prevent = document.createElement('input');
         prevent.className = 'form-check-input me-2';
         prevent.type = 'checkbox'; prevent.name = 'preventConsecutiveSameOriginalHand'; prevent.value = 'true';
-        preventLabel.append(prevent, document.createTextNode('同一オリジナル手の連続使用を禁止する'));
+        preventLabel.append(prevent, document.createTextNode('同じオリジナル手の連続使用を不可にする'));
         form.insertBefore(label, form.lastChild); form.insertBefore(preventLabel, form.lastChild);
         ruleEditor.append(form);
         return form;
@@ -67,10 +67,13 @@
         updateStatusText('self-ready-status', status.userState === 'READY'
             ? 'あなたは準備完了です。設定を変えるときは「準備取消」を押してください。'
             : create.hidden ? '手を確認したら、準備完了を押しましょう。' : '対戦前に、自分の手を1つ作りましょう。');
-        const waiting = status.userState !== 'READY' ? '' : status.roomState === 'PLAYING'
+        const waiting = status.roomState === 'PLAYING'
             ? '現在の対戦が終わるのを待っています。'
+            : status.room.members.length < 2
+                ? '参加者が2人必要です。ルーム名を共有して相手を招待してください。'
             : status.room.members.filter(m => m.userState === 'READY').length < 2
-                ? '相手の準備完了を待っています。'
+                ? status.userState === 'READY' ? '相手の準備完了を待っています。'
+                    : '準備完了が2人必要です。手を保存して準備完了を押してください。'
                 : status.room.hostUserId === page.dataset.selfUserId
                     ? '対戦を開始できます。' : 'ホストの対戦開始を待っています。';
         updateStatusText('ready-waiting-message', waiting);
@@ -103,6 +106,12 @@
                     || parsedPage.dataset.userState !== 'ROOM_WAITING') return;
             const editor = parsed.querySelector('.original-hand');
             if (!editor?.querySelector('#original-hand-panel')) return;
+            const savedPreview = parsed.getElementById('ready-saved-hand');
+            const preview = document.getElementById('ready-saved-hand');
+            // 入力欄ではなく、サーバーが描画した保存済みの手名だけを準備欄へ反映する。
+            if (preview.hidden !== savedPreview.hidden || preview.textContent !== savedPreview.textContent) {
+                preview.replaceWith(document.importNode(savedPreview, true));
+            }
             // APIに独自フラグを追加せず、既存のhasOriginalHandで描画された表示を使う。
             // 作成状態の確認だけでは、本人が入力中のフォームを置換しない。
             document.getElementById('create-original-hand').hidden = parsed.getElementById('create-original-hand').hidden;
@@ -154,9 +163,12 @@
         updateStatusText('room-status',
             `参加者 ${room.members.length}人・準備完了 ${room.members.filter(m => m.userState === 'READY').length}人`);
         const ready = document.getElementById('ready-action');
-        const nextReady = actionForm(status.userState === 'READY' ? '/room/ready/cancel' : '/room/ready',
-                status.userState === 'READY' ? '準備取消' : '準備完了', room.id);
-        nextReady.id = 'ready-action'; ready.replaceWith(nextReady);
+        const readyUrl = status.userState === 'READY' ? '/room/ready/cancel' : '/room/ready';
+        // 同じ状態の定期更新ではフォームを作り直さず、Tab操作中のフォーカスを保つ。
+        if (!ready.action || !ready.action.endsWith(readyUrl)) {
+            const nextReady = actionForm(readyUrl, status.userState === 'READY' ? '準備取消' : '準備完了', room.id);
+            nextReady.id = 'ready-action'; ready.replaceWith(nextReady);
+        }
         updatePreparation(status);
         const running = status.roomState === 'PLAYING';
         document.getElementById('match-running').hidden = !running;

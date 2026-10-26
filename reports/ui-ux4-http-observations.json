@@ -1,0 +1,35 @@
+{
+  "result": "PASS",
+  "observations": [
+    {
+      "check": "複数エラー・入力保持・保存済み手名の分離"
+    },
+    {
+      "check": "全員の固定手を選択可能・二重確定拒否・他人の未確定手と相性の非公開"
+    },
+    {
+      "check": "ラウンド自動遷移",
+      "round": 1,
+      "expectedSeconds": 5,
+      "remainingMilliseconds": 4998,
+      "destination": "SELECTING_HAND"
+    },
+    {
+      "check": "ラウンド自動遷移",
+      "round": 2,
+      "expectedSeconds": 10,
+      "remainingMilliseconds": 9996,
+      "destination": "SELECTING_HAND"
+    },
+    {
+      "check": "ラウンド自動遷移",
+      "round": 3,
+      "expectedSeconds": 10,
+      "remainingMilliseconds": 9997,
+      "destination": "MATCH_RESULT"
+    },
+    {
+      "check": "最終結果・同名観戦者の本人ラベルなし・過去相性の不変・ルーム復帰と退出"
+    }
+  ]
+}

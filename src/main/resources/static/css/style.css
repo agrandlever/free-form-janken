@@ -1,5 +1,10 @@
 /* Bootstrapの部品を使い、配色・余白・ゲーム固有の表示だけを調整する。 */
 :root { --bs-body-font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; --bs-body-color: #26334a; --bs-body-bg: #f3f6fc; }
+/* 淡い灰色のパネル上でも通常サイズの青文字を読める濃さにする。 */
+:root { --bs-link-color: #0b5ed7; --bs-link-color-rgb: 11, 94, 215; --bs-primary-rgb: 11, 94, 215; }
+.btn-outline-primary { --bs-btn-color: #0b5ed7; --bs-btn-border-color: #0b5ed7; --bs-btn-hover-bg: #0b5ed7; --bs-btn-hover-border-color: #0b5ed7; --bs-btn-active-bg: #0a58ca; --bs-btn-active-border-color: #0a58ca; }
+.btn-outline-secondary { --bs-btn-color: #495057; --bs-btn-border-color: #495057; --bs-btn-hover-bg: #495057; --bs-btn-hover-border-color: #495057; }
+.btn-outline-danger { --bs-btn-color: #b02a37; --bs-btn-border-color: #b02a37; --bs-btn-hover-bg: #b02a37; --bs-btn-hover-border-color: #b02a37; }
 body {
     min-height: 100vh;
     /* 読み込み失敗時は従来の淡い背景色を表示する。URLはこのCSSからの相対パス。 */
@@ -39,7 +44,7 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .btn { border-radius: .65rem; padding: .65rem 1.1rem; }
 .btn-sm { padding: .4rem .8rem; }
 .app-list > li { padding: .8rem 1rem; margin-bottom: .5rem; background: #f3f6fc; border-radius: .65rem; overflow-wrap: anywhere; }
-.app-list[id$="errors"] { color: var(--bs-danger); font-size: .9rem; }
+.app-list[id$="errors"] { color: #b02a37; font-size: .9rem; }
 .app-list[id$="errors"] > li { background: transparent; padding: 0; }
 .errors > p { font-weight: 600; }
 .errors ul { margin-bottom: 0; }
@@ -78,7 +83,7 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .btn { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
 .app-user-controls .btn { min-height: 44px; }
 .btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible,
-.form-check-input:focus-visible, a:focus-visible, summary:focus-visible {
+.form-check-input:focus-visible, a:focus-visible, summary:focus-visible, .table-scroll:focus-visible {
     outline: 3px solid #173664; outline-offset: 3px; box-shadow: 0 0 0 6px #fff;
 }
 label.form-label:has(input[type="checkbox"]) {
@@ -138,6 +143,20 @@ summary { min-height: 48px; padding: .75rem 0; color: #173664; font-weight: 700;
 .original-hand .form-check-label { width: 100%; min-height: 48px; padding: .75rem .5rem .75rem 2.25rem; border: 2px solid #7d8da6; border-radius: .65rem; cursor: pointer; white-space: nowrap; }
 .original-hand .form-check-input:checked + .form-check-label { background: #e9f2ff; border-color: #0d6efd; font-weight: 700; }
 .original-hand .form-check-input:focus-visible + .form-check-label { outline: 3px solid #173664; outline-offset: 3px; }
+.play-score { color: #334d73; margin-bottom: 1rem; }
+.hand-selection > h2 { margin-top: 0; }
+.play-details { margin: 1rem 0; padding: .25rem 1rem; border: 1px solid #a6b8d1; border-radius: .75rem; }
+.hand-restriction { display: block; font-size: 1rem; margin-top: .4rem; }
+.self-label { display: inline-block; margin: .2rem .4rem; padding: .1rem .4rem; color: #173664; background: #edf5ff; border: 1px solid #476386; border-radius: .4rem; font-size: .875rem; }
+.original-hand-guide { padding-left: 1.25rem; line-height: 1.8; color: #334d73; }
+.error-field-links { margin-bottom: 0; }
+.error-field-links a { display: inline-block; padding-block: .4rem; }
+.errors a { color: #084298; }
+.original-hand .text-danger { color: #b02a37 !important; }
+[aria-invalid="true"] { border-color: #b02a37; }
+.original-hand .form-check-input[aria-invalid="true"] + .form-check-label { border-color: #b02a37; }
+.original-hand .form-check-input[aria-invalid="true"]:checked + .form-check-label { border-width: 3px; font-weight: 700; }
+#original-hand-settings, input[aria-invalid="true"] { scroll-margin-block: 2rem; }
 @media (forced-colors: active) {
     .original-hand .form-check-input:checked + .form-check-label { border: 3px solid Highlight; }
 }

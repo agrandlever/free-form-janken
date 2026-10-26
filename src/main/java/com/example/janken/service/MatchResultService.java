@@ -84,6 +84,7 @@ public class MatchResultService {
             if (matchId == null) { return redirect(url); }
             Map<String, Object> model = new LinkedHashMap<>(displayModel(snapshot));
             model.put("username", user.getUsername()); model.put("userState", user.getState());
+            model.put("selfUserId", user.getId().toString());
             // 編集値は現在のGameUserからコピーし、過去相性はdisplayModelのまま保つ。
             if (user.getState() == UserState.ROOM_WAITING) {
                 ScreenService.originalHandModel(user, "MATCH_RESULT", room.getId().toString(), model);
