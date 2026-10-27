@@ -35,8 +35,8 @@ body {
 /* ボタンを低くしても、ヘッダー自体は縮まないよう操作欄の高さを保つ。 */
 .app-user-controls { min-width: 0; max-width: 100%; min-height: calc(1.3125rem + .8rem + 2 * var(--bs-border-width)); }
 .app-user-controls .user-name { font-size: 1.25rem; white-space: normal; }
-/* ユーザー名と同じ行高・上下余白にし、枠線の分だけ余白を差し引いて高さを揃える。 */
-.app-user-controls .btn { font-size: 1.25rem; line-height: 1; padding: calc(.35em - var(--bs-border-width)) 1.1rem; }
+/* 補助操作の文字を16pxに抑え、44px以上の押せる高さは維持する。 */
+.app-user-controls .btn { font-size: 1rem; line-height: 1.5; padding: .5rem 1.1rem; }
 .user-name { font-size: .9rem; max-width: 100%; overflow-wrap: anywhere; }
 .app-main { max-width: 920px; margin: 2rem auto; padding: clamp(1.25rem, 4vw, 2.5rem); background: #fff; border: 1px solid #e3e9f3; border-radius: 1.25rem; }
 .page-title { margin-bottom: 1.25rem; color: #173664; overflow-wrap: anywhere; }
@@ -67,7 +67,12 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .hand-options .app-form { margin: 0; }
 .hand-options .btn { width: 100%; min-height: 5rem; font-size: 1.2rem; font-weight: 700; overflow-wrap: anywhere; }
 #round-history { margin-top: 1rem; }
-#room-members strong { display: inline-block; color: #176943; font-size: .85rem; margin-left: .5rem; }
+#room-members strong { display: inline-block; font-size: .85rem; margin-left: .25rem; padding: .15rem .4rem; border: 1px solid currentColor; border-radius: .4rem; }
+#room-members .member-role { color: #495057; background: #e9ecef; font-weight: 500; }
+#room-members .member-state { font-weight: 700; }
+#room-members .member-waiting { color: #495057; background: #e9ecef; }
+#room-members .member-ready { color: #146c43; background: #e7f6ee; }
+#room-members .member-playing { color: #084298; background: #e9f2ff; }
 /* hiddenは既存JavaScriptによる開閉に必要。Bootstrapの表示指定より優先する。 */
 [hidden] { display: none !important; }
 .round-winner { font-weight: 700; --bs-table-bg: #e7f6ee; --bs-table-hover-bg: #d9efe3; }
@@ -91,7 +96,8 @@ p { line-height: 1.75; overflow-wrap: anywhere; }
 .btn { min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
 .app-user-controls .btn { min-height: 44px; }
 .btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible,
-.form-check-input:focus-visible, a:focus-visible, summary:focus-visible, .table-scroll:focus-visible {
+.form-check-input:focus-visible, a:focus-visible, summary:focus-visible, .table-scroll:focus-visible,
+.affinity-fields:focus, .errors:focus {
     outline: 3px solid #173664; outline-offset: 3px; box-shadow: 0 0 0 6px #fff;
 }
 label.form-label:has(input[type="checkbox"]) {
@@ -168,7 +174,20 @@ details[open] > summary::before, .disclosure-button[aria-expanded="true"]::befor
 [aria-invalid="true"] { border-color: #b02a37; }
 .original-hand .form-check-input[aria-invalid="true"] + .form-check-label { border-color: #b02a37; }
 .original-hand .form-check-input[aria-invalid="true"]:checked + .form-check-label { border-width: 3px; font-weight: 700; }
-#original-hand-settings, input[aria-invalid="true"] { scroll-margin-block: 2rem; }
+#original-hand-settings, #affinity-fields, input[aria-invalid="true"] { scroll-margin-block: 2rem; }
+/* PCのルームだけ説明周りを整え、小画面の余白・操作領域へ影響させない。 */
+@media (min-width: 768px) {
+    .app-main[data-page="room"] { padding: 2rem; }
+    [data-page="room"] > .content-section, [data-page="room"] > .room-primary-actions,
+    [data-page="room"] > .original-hand { margin-block: 1rem; }
+    [data-page="room"] .rule-summary { display: flex; flex-wrap: wrap; gap: .5rem 2rem; }
+    [data-page="room"] .rule-summary p { min-width: 0; margin: 0; }
+    [data-page="room"] .original-hand { padding: 1.25rem; }
+    [data-page="room"] .original-hand h2, [data-page="room"] .original-hand-guide,
+    [data-page="room"] .saved-hand-affinities { margin-bottom: .75rem; }
+    [data-page="room"] #original-hand-status { margin-bottom: .5rem; }
+    [data-page="room"] #original-hand-panel { margin-top: .75rem; padding-top: .75rem; }
+}
 @media (forced-colors: active) {
     .original-hand .form-check-input:checked + .form-check-label { border: 3px solid Highlight; }
 }
@@ -181,9 +200,9 @@ details[open] > summary::before, .disclosure-button[aria-expanded="true"]::befor
     .app-header-icon { width: 60px; }
     .app-header-logo { max-width: calc(100% - 72px); }
     .app-user-controls { width: 100%; justify-content: flex-end; }
-    /* 狭い画面でもユーザー名とボタンの文字サイズを揃える。 */
+    /* ユーザー名は従来の大きさを保ち、ログアウトは全幅共通の16pxとする。 */
     .app-user-controls .user-name { font-size: 1.15rem; }
-    .app-user-controls .btn { font-size: 1.15rem; padding-inline: .9rem; }
+    .app-user-controls .btn { padding-inline: .9rem; }
     .hand-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .hand-options .btn { font-size: 1rem; }
     .original-hand { padding: 1rem; }

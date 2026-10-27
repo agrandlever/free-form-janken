@@ -1,0 +1,52 @@
+{
+  "groupFocus": {
+    "describedby": "original-hand-guide affinity-guide affinity-group-error",
+    "focus": "affinity-fields",
+    "outline": "rgb(23, 54, 100) solid 2.4px",
+    "rect": {
+      "bottom": 800.2875366210938,
+      "height": 280,
+      "left": 279.6000061035156,
+      "right": 1068.3999938964844,
+      "top": 520.2875366210938,
+      "width": 788.7999877929688,
+      "x": 279.6000061035156,
+      "y": 520.2875366210938
+    },
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ]
+  },
+  "mixedFocus": {
+    "focus": "original-hand-name",
+    "groupMessage": "相性4項目のうち最低1項目は負けにしてください。",
+    "invalid": [
+      "original-hand-name"
+    ],
+    "saved": "保存した手：手手手手手手手手手手手手手手手手手手手手"
+  },
+  "ruleError": {
+    "describedby": "targetWins-hint targetWins-errors",
+    "error": "先取勝数は1～99の整数で入力してください。",
+    "focus": "targetWins",
+    "hint": "1～99の整数",
+    "open": true,
+    "summary": "3",
+    "value": "abc"
+  },
+  "resultUrl": "http://localhost.:18080/match-result?matchId=bfae190e-e6f5-4e95-b725-90b1c41f6441",
+  "scroll": {
+    "client": 305,
+    "scroll": 305,
+    "tableLeft": 0,
+    "width": 320
+  },
+  "scrollObservationNote": "scroll???????????????????????????scrollLeft=40????????????????",
+  "observedAfterKeyAnimation": {
+    "tableLeft": 40,
+    "width": 320
+  }
+}

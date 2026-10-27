@@ -10,7 +10,7 @@
 <section class="room-members-section" aria-labelledby="members-title">
 <h2 class="h5 fw-bold" id="members-title">参加者一覧</h2>
 <p class="room-status" id="room-status" role="status" th:text="|参加者 ${members.size()}人・準備完了 ${readyMembers.size()}人|">参加者・準備状況</p>
-<ul class="list-unstyled app-list" id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong th:if="${member.host}">（ホスト）</strong><strong th:if="${member.ready}">（準備完了）</strong><strong th:if="${member.playing}">（現在対戦中）</strong><strong th:if="${!member.ready and !member.playing}">（準備前）</strong></li></ul>
+<ul class="list-unstyled app-list" id="room-members"><li th:each="member : ${members}"><span th:text="${member.username}"></span><strong class="member-role" th:if="${member.host}">（ホスト）</strong><strong class="member-state member-waiting" th:if="${!member.ready and !member.playing}">（準備前）</strong><strong class="member-state member-ready" th:if="${member.ready}">（準備完了）</strong><strong class="member-state member-playing" th:if="${member.playing}">（現在対戦中）</strong></li></ul>
 </section>
 <section class="room-primary-actions" aria-labelledby="ready-title">
 <h2 class="h5 fw-bold" id="ready-title">対戦の準備</h2>
@@ -42,7 +42,8 @@
 <p class="fw-semibold">ルールの変更（ホストのみ・対戦中は変更不可）</p>
 <input type="hidden" th:field="*{roomId}">
 <label class="form-label" for="targetWins">先取勝数</label>
-<input class="form-control" type="text" inputmode="numeric" th:field="*{targetWins}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('targetWins') ? 'true' : null}" aria-describedby="targetWins-errors">
+<input class="form-control" type="text" inputmode="numeric" th:field="*{targetWins}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('targetWins') ? 'true' : null}" aria-describedby="targetWins-hint targetWins-errors">
+<p class="form-text" id="targetWins-hint">1～99の整数</p>
 <ul class="list-unstyled app-list" id="targetWins-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['targetWins']}" th:text="${message}"></li></ul>
 <label class="form-label"><input class="form-check-input me-2" type="checkbox" th:field="*{preventConsecutiveSameOriginalHand}" th:attr="aria-invalid=${uiFieldErrors != null and uiFieldErrors.containsKey('preventConsecutiveSameOriginalHand') ? 'true' : null}" aria-describedby="prevent-consecutive-errors">同じオリジナル手の連続使用を不可にする</label>
 <ul class="list-unstyled app-list" id="prevent-consecutive-errors" th:if="${uiFieldErrors != null}"><li th:each="message : ${uiFieldErrors['preventConsecutiveSameOriginalHand']}" th:text="${message}"></li></ul>

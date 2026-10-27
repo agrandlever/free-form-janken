@@ -1,0 +1,20 @@
+[
+  {
+    "label": "host/waiting",
+    "fg": "#495057",
+    "bg": "#e9ecef",
+    "contrast": 6.895122767366718
+  },
+  {
+    "label": "ready",
+    "fg": "#146c43",
+    "bg": "#e7f6ee",
+    "contrast": 5.7787923301563895
+  },
+  {
+    "label": "playing",
+    "fg": "#084298",
+    "bg": "#e9f2ff",
+    "contrast": 8.296698185732541
+  }
+]

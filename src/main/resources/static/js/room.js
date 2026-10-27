@@ -40,17 +40,20 @@
         heading.textContent = 'ルールの変更（ホストのみ・対戦中は変更不可）';
         form.insertBefore(heading, form.children[0]);
         const label = document.createElement('label');
-        label.textContent = '先取勝数'; label.className = 'form-label';
+        label.textContent = '先取勝数'; label.className = 'form-label'; label.htmlFor = 'targetWins';
         const wins = document.createElement('input');
-        wins.className = 'form-control'; wins.name = 'targetWins'; wins.type = 'text'; wins.inputMode = 'numeric';
-        label.append(wins);
+        wins.className = 'form-control'; wins.id = 'targetWins'; wins.name = 'targetWins'; wins.type = 'text'; wins.inputMode = 'numeric';
+        wins.setAttribute('aria-describedby', 'targetWins-hint');
+        const winsHint = document.createElement('p');
+        winsHint.id = 'targetWins-hint'; winsHint.className = 'form-text'; winsHint.textContent = '1～99の整数';
         const preventLabel = document.createElement('label');
         preventLabel.className = 'form-label';
         const prevent = document.createElement('input');
         prevent.className = 'form-check-input me-2';
         prevent.type = 'checkbox'; prevent.name = 'preventConsecutiveSameOriginalHand'; prevent.value = 'true';
         preventLabel.append(prevent, document.createTextNode('同じオリジナル手の連続使用を不可にする'));
-        form.insertBefore(label, form.lastChild); form.insertBefore(preventLabel, form.lastChild);
+        form.insertBefore(label, form.lastChild); form.insertBefore(wins, form.lastChild);
+        form.insertBefore(winsHint, form.lastChild); form.insertBefore(preventLabel, form.lastChild);
         ruleEditor.append(form);
         return form;
     };
@@ -148,14 +151,15 @@
             const row = document.createElement('li');
             const name = document.createElement('span');
             name.textContent = member.username; row.append(name);
-            for (const label of [
-                member.isHost ? '（ホスト）' : '',
-                member.userState === 'READY' ? '（準備完了）' : '',
-                member.userState === 'PLAYING' ? '（現在対戦中）' : '',
-                member.userState === 'ROOM_WAITING' ? '（準備前）' : ''
+            // 初期HTMLと同じ役割・状態クラスを使い、定期更新でも見た目を揃える。
+            for (const [label, className] of [
+                [member.isHost ? '（ホスト）' : '', 'member-role'],
+                [member.userState === 'ROOM_WAITING' ? '（準備前）' : '', 'member-state member-waiting'],
+                [member.userState === 'READY' ? '（準備完了）' : '', 'member-state member-ready'],
+                [member.userState === 'PLAYING' ? '（現在対戦中）' : '', 'member-state member-playing']
             ]) {
                 if (!label) continue;
-                const mark = document.createElement('strong'); mark.textContent = label; row.append(mark);
+                const mark = document.createElement('strong'); mark.textContent = label; mark.className = className; row.append(mark);
             }
             return row;
         }));

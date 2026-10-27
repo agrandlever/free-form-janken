@@ -1,0 +1,122 @@
+[
+  {
+    "buttonMin": "44px",
+    "client": 1425,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 1425,
+    "width": 1440
+  },
+  {
+    "buttonMin": "44px",
+    "client": 1348,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 1348,
+    "width": 1363
+  },
+  {
+    "buttonMin": "44px",
+    "client": 1009,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 1009,
+    "width": 1024
+  },
+  {
+    "buttonMin": "44px",
+    "client": 753,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 753,
+    "width": 768
+  },
+  {
+    "buttonMin": "44px",
+    "client": 752,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 752,
+    "width": 767
+  },
+  {
+    "buttonMin": "44px",
+    "client": 754,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 754,
+    "width": 770
+  },
+  {
+    "buttonMin": "44px",
+    "client": 561,
+    "gap": "16px",
+    "header": "row",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 561,
+    "width": 576
+  },
+  {
+    "buttonMin": "44px",
+    "client": 560,
+    "gap": "16px",
+    "header": "column",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 560,
+    "width": 575
+  },
+  {
+    "buttonMin": "44px",
+    "client": 375,
+    "gap": "16px",
+    "header": "column",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 375,
+    "width": 390
+  },
+  {
+    "buttonMin": "44px",
+    "client": 305,
+    "gap": "16px",
+    "header": "column",
+    "logout": "16px",
+    "overflow": false,
+    "page": "rooms-open",
+    "radioMin": "48px",
+    "scroll": 305,
+    "width": 320
+  }
+]

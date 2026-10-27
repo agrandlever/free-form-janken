@@ -11,7 +11,7 @@
 <p class="text-body-secondary mb-4">名前を決めて、みんなでじゃんけんを楽しもう。</p>
 <section th:fragment="errors" th:if="${errorCode != null}" role="alert" class="errors alert alert-danger" tabindex="-1" aria-labelledby="error-title">
 <h2 class="h5 fw-bold mt-0" id="error-title" th:text="${errorTitle}"></h2>
-<ul class="list-unstyled app-list" th:if="${!#lists.isEmpty(errorSummaryMessages)}"><li th:each="message : ${errorSummaryMessages}" th:text="${message}"></li></ul>
+<ul class="list-unstyled app-list" th:if="${!#lists.isEmpty(errorSummaryMessages)}"><li th:each="message : ${errorSummaryMessages}" th:attr="id=${affinityGroupError != null and message == affinityGroupError ? 'affinity-group-error' : null}" th:text="${message}"></li></ul>
 <ul class="error-field-links" th:if="${!#lists.isEmpty(errorFieldLinks)}"><li th:each="field : ${errorFieldLinks}"><a th:href="|#${field.inputId}|" th:text="|${field.label}を確認する|"></a></li></ul>
 </section>
 <form class="app-form" method="post" th:action="@{/login}" th:object="${loginForm}">

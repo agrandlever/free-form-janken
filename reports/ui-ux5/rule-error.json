@@ -1,0 +1,9 @@
+{
+  "describedby": "targetWins-hint targetWins-errors",
+  "error": "先取勝数は1～99の整数で入力してください。",
+  "focus": "targetWins",
+  "hint": "1～99の整数",
+  "open": true,
+  "summary": "3",
+  "value": "abc"
+}

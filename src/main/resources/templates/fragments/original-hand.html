@@ -54,7 +54,9 @@
 <p>全員が選べる同じオリジナル手を、お互いに選んだ場合は引き分けです。名前が同じでも、別々に作成された手には上の表を使います。</p>
 <p class="small">表は2つの手の比較です。3人以上では、勝つ相手が1人以上いて、負ける相手がいない人がそのラウンドの勝者です。</p>
 </details>
-<div class="affinity-fields">
+<!-- 全体条件は個別のラジオを不正にせず、この共通領域と概要内の文を関連付ける。 -->
+<div class="affinity-fields" id="affinity-fields" role="group" aria-label="相性4項目" tabindex="-1"
+     th:attr="aria-describedby=${affinityGroupError != null ? 'original-hand-guide affinity-guide affinity-group-error' : 'original-hand-guide affinity-guide'}">
 <fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
 <legend class="fs-6">グーへの相性</legend>
 <div class="d-flex flex-wrap gap-2">

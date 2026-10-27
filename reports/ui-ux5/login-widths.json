@@ -1,0 +1,47 @@
+[
+  {
+    "buttonMin": "44px",
+    "client": 1440,
+    "inputMin": "48px",
+    "overflow": false,
+    "page": "login",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "buttonMin": "44px",
+    "client": 1024,
+    "inputMin": "48px",
+    "overflow": false,
+    "page": "login",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "buttonMin": "44px",
+    "client": 768,
+    "inputMin": "48px",
+    "overflow": false,
+    "page": "login",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "buttonMin": "44px",
+    "client": 390,
+    "inputMin": "48px",
+    "overflow": false,
+    "page": "login",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "buttonMin": "44px",
+    "client": 320,
+    "inputMin": "48px",
+    "overflow": false,
+    "page": "login",
+    "scroll": 320,
+    "width": 320
+  }
+]

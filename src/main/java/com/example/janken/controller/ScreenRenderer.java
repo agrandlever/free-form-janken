@@ -18,6 +18,7 @@ import java.util.Map;
 
 @Component
 public class ScreenRenderer {
+    private static final String AFFINITY_GROUP_ERROR = "相性4項目のうち最低1項目は負けにしてください。";
     private final ScreenService screens;
     private final com.example.janken.service.MatchResultService results;
     public ScreenRenderer(ScreenService screens, com.example.janken.service.MatchResultService results) {
@@ -140,10 +141,18 @@ public class ScreenRenderer {
         Map<String, List<String>> inline = new LinkedHashMap<>();
         var links = new java.util.ArrayList<ErrorFieldLink>();
         var messages = new LinkedHashSet<>(error.getErrorMessages());
+        var affinityErrors = new LinkedHashSet<String>();
         messages.remove("入力内容を確認してください。");
         fields.forEach((field, link) -> {
             List<String> fieldMessages = error.getFieldErrors().get(field);
             if (fieldMessages == null || fieldMessages.isEmpty()) return;
+            // 既存契約では全体条件もvsOriginalに入る。キーと文の両方で識別し、
+            // 同じキーにある未選択・不正値などの個別メッセージは残す。
+            if (form instanceof OriginalHandForm && "vsOriginal".equals(field)) {
+                fieldMessages.stream().filter(AFFINITY_GROUP_ERROR::equals).forEach(affinityErrors::add);
+                fieldMessages = fieldMessages.stream().filter(message -> !AFFINITY_GROUP_ERROR.equals(message)).toList();
+            }
+            if (fieldMessages.isEmpty()) return;
             links.add(link);
             // 長い同一文を上部と入力欄の両方へ重複表示しない。
             messages.removeAll(fieldMessages);
@@ -151,6 +160,11 @@ public class ScreenRenderer {
                     message.equals("相性は勝ち・負け・引き分けから選択してください。")
                             ? link.label() + "を選んでください。" : message).toList());
         });
+        if (!affinityErrors.isEmpty()) {
+            messages.addAll(affinityErrors);
+            links.add(new ErrorFieldLink("affinity-fields", "相性4項目"));
+        }
+        model.addAttribute("affinityGroupError", affinityErrors.isEmpty() ? null : AFFINITY_GROUP_ERROR);
         model.addAttribute("errorTitle", title);
         model.addAttribute("errorSummaryMessages", List.copyOf(messages));
         model.addAttribute("errorFieldLinks", List.copyOf(links));

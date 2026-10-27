@@ -1,0 +1,42 @@
+[
+  {
+    "requested": 575.98,
+    "error": "Error: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"integer\",\n    \"received\": \"float\",\n    \"message\": \"Expected integer, received float\",\n    \"path\": [\n      \"width\"\n    ]\n  }\n]"
+  },
+  {
+    "requested": 576,
+    "header": "row",
+    "pc": false,
+    "small": false,
+    "width": 576
+  },
+  {
+    "requested": 767,
+    "header": "row",
+    "pc": false,
+    "small": false,
+    "width": 767
+  },
+  {
+    "requested": 768,
+    "header": "row",
+    "pc": true,
+    "small": false,
+    "width": 768
+  },
+  {
+    "requested": 768.5,
+    "error": "Error: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"integer\",\n    \"received\": \"float\",\n    \"message\": \"Expected integer, received float\",\n    \"path\": [\n      \"width\"\n    ]\n  }\n]"
+  },
+  {
+    "requested": 768.8,
+    "error": "Error: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"integer\",\n    \"received\": \"float\",\n    \"message\": \"Expected integer, received float\",\n    \"path\": [\n      \"width\"\n    ]\n  }\n]"
+  },
+  {
+    "requested": 769,
+    "header": "row",
+    "pc": true,
+    "small": false,
+    "width": 770
+  }
+]

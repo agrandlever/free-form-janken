@@ -47,6 +47,10 @@ POSTのエラー画面はHTMLとし、次のModelを用いる。
 
 上記の既存ModelとHTTPステータスは維持する。HTML表示に限り、errorTitle（日本語見出し）、errorSummaryMessages（欄の下へ表示しないメッセージ）、errorFieldLinks（inputId・label）、uiFieldErrors（表示用項目メッセージ）をScreenRendererで作る。内部コードをHTMLへ表示せず、項目メッセージの重複を避ける。状態APIのJSON契約や業務検証には追加・変更しない。
 
+オリジナル手の編集フォームを再表示できる場合、`fieldErrors.vsOriginal`内の文が厳密に「相性4項目のうち最低1項目は負けにしてください。」に一致するものだけを全体条件へ分類する。項目キーだけ、入力値からの推測、未選択用の文との共通部分では分類しない。現行サーバーは4項目すべてが有効でLOSEがない場合にこの文を格納し、未選択・型変換不正には「相性は勝ち・負け・引き分けから選択してください。」を個別キーへ格納する。
+
+全体条件の文を`uiFieldErrors`から除き、`errorSummaryMessages`へ重複なく1回残す。HTML専用の`affinityGroupError`へ同文を設定し、概要内の要素IDと共通領域のaria-describedbyを結び付ける。`errorFieldLinks`へ`inputId=affinity-fields`・`label=相性4項目`を追加する。その他の項目メッセージは従来どおり表示し、同じキーに個別文と全体文が併存しても双方を保持する。修正欄が表示できない場合は従来どおり概要に全メッセージを残す。元のerrorCode・errorMessages・fieldErrorsを変更せず、JSONへ表示専用項目を追加しない。
+
 入力不正では許可された元画面を同じHTTPステータスで再表示し、フォームを展開したまま入力値とエラーを表示する。returnPage等が不正で元画面を確定できない場合、または状態・所属が変わり元画面を表示できない場合は、現在の正規画面を同じエラーステータスで表示し、変更を行わない。
 
 formは再表示する対象フォームの値を表す共通名であり、各テンプレートでは下記の個別フォーム名にも同じ再表示用入力値を設定する。

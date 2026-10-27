@@ -1,0 +1,254 @@
+[
+  {
+    "client": 1425,
+    "handPadding": "20px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "32px",
+    "page": "room-closed",
+    "ruleLayout": "flex",
+    "ruleRows": [
+      786.9874877929688,
+      786.9874877929688
+    ],
+    "scroll": 1425,
+    "width": 1440
+  },
+  {
+    "client": 1348,
+    "handPadding": "20px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "32px",
+    "page": "room-closed",
+    "ruleLayout": "flex",
+    "ruleRows": [
+      786.9874877929688,
+      786.9874877929688
+    ],
+    "scroll": 1348,
+    "width": 1363
+  },
+  {
+    "client": 1009,
+    "handPadding": "20px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "32px",
+    "page": "room-closed",
+    "ruleLayout": "flex",
+    "ruleRows": [
+      783.1625366210938,
+      783.1625366210938
+    ],
+    "scroll": 1009,
+    "width": 1024
+  },
+  {
+    "client": 753,
+    "handPadding": "20px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "32px",
+    "page": "room-closed",
+    "ruleLayout": "flex",
+    "ruleRows": [
+      834.8375244140625,
+      834.8375244140625
+    ],
+    "scroll": 753,
+    "width": 768
+  },
+  {
+    "client": 752,
+    "handPadding": "24px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "30.688px",
+    "page": "room-closed",
+    "ruleLayout": "block",
+    "ruleRows": [
+      849.5,
+      893.5
+    ],
+    "scroll": 752,
+    "width": 767
+  },
+  {
+    "client": 561,
+    "handPadding": "24px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "23.04px",
+    "page": "room-closed",
+    "ruleLayout": "block",
+    "ruleRows": [
+      865.75,
+      909.75
+    ],
+    "scroll": 561,
+    "width": 576
+  },
+  {
+    "client": 560,
+    "handPadding": "16px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "23.008px",
+    "page": "room-closed",
+    "ruleLayout": "block",
+    "ruleRows": [
+      849.4625244140625,
+      893.4625244140625
+    ],
+    "scroll": 560,
+    "width": 575
+  },
+  {
+    "client": 375,
+    "handPadding": "16px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "20px",
+    "page": "room-closed",
+    "ruleLayout": "block",
+    "ruleRows": [
+      1052.6375732421875,
+      1096.6375732421875
+    ],
+    "scroll": 375,
+    "width": 390
+  },
+  {
+    "client": 305,
+    "handPadding": "16px",
+    "labels": [
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-role",
+        "color": "rgb(73, 80, 87)",
+        "text": "（ホスト）"
+      },
+      {
+        "bg": "rgb(233, 236, 239)",
+        "class": "member-state member-waiting",
+        "color": "rgb(73, 80, 87)",
+        "text": "（準備前）"
+      }
+    ],
+    "overflow": false,
+    "padding": "20px",
+    "page": "room-closed",
+    "ruleLayout": "block",
+    "ruleRows": [
+      1181.2000732421875,
+      1225.2000732421875
+    ],
+    "scroll": 305,
+    "width": 320
+  }
+]

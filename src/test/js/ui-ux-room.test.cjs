@@ -175,9 +175,9 @@ test('同じ状態の準備ボタンは定期更新で作り直さずフォー�
 test('エラー再表示は最初の入力へ、入力がない業務エラーは概要へフォーカスする', () => {
     const fs = require('node:fs'); const vm = require('node:vm'); const path = require('node:path');
     for (const hasInput of [true, false]) {
-        const invalid = { focus() { this.focused = true; } };
+        const invalid = { focus() { this.focused = true; }, scrollIntoView() {} };
         const link = { getAttribute: () => '#vsRock-WIN', addEventListener: (_, fn) => { link.click = fn; } };
-        const summary = { focus() { this.focused = true; }, querySelectorAll: () => [link] };
+        const summary = { focus() { this.focused = true; }, scrollIntoView() {}, querySelectorAll: () => [link] };
         const document = { querySelector: selector => selector === '.errors' ? summary : hasInput ? invalid : null,
             getElementById: () => invalid };
         vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js/form-feedback.js'), 'utf8'), { document });
@@ -185,4 +185,49 @@ test('エラー再表示は最初の入力へ、入力がない業務エラー�
         let prevented = false; link.click({ preventDefault() { prevented = true; } });
         assert.equal(invalid.focused, true); assert.equal(prevented, true);
     }
+});
+
+test('全体条件の初期フォーカスは概要で、リンクは共通領域へフォーカス・スクロールする', () => {
+    const fs = require('node:fs'); const vm = require('node:vm'); const path = require('node:path');
+    const group = { focus(options) { this.focused = options; }, scrollIntoView(options) { this.scrolled = options; } };
+    const link = { getAttribute: () => '#affinity-fields', addEventListener: (_, fn) => { link.click = fn; } };
+    const summary = { focus() { this.focused = true; }, scrollIntoView() {}, querySelectorAll: () => [link] };
+    const document = { querySelector: selector => selector === '.errors' ? summary : null,
+        getElementById: id => id === 'affinity-fields' ? group : null };
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../main/resources/static/js/form-feedback.js'), 'utf8'), { document });
+    assert.equal(summary.focused, true);
+    link.click({ preventDefault() {} });
+    assert.equal(group.focused.preventScroll, true);
+    assert.equal(group.scrolled.block, 'center');
+});
+
+test('参加者の役割と各状態を別クラスにし、更新後も文字を保持する', () => {
+    const e = environment('room'); e.load('room.js');
+    const status = roomStatus();
+    status.room.members = [
+        { username: 'A', isHost: true, userState: 'ROOM_WAITING' },
+        { username: 'B', userState: 'READY' }, { username: 'C', userState: 'PLAYING' }
+    ];
+    for (let i = 0; i < 2; i++) {
+        e.emit(status);
+        const rows = e.ids['room-members'].children;
+        assert.equal(rows[0].children[1].className, 'member-role');
+        assert.equal(rows[0].children[1].textContent, '（ホスト）');
+        assert.equal(rows[0].children[2].className, 'member-state member-waiting');
+        assert.equal(rows[1].children[1].className, 'member-state member-ready');
+        assert.equal(rows[2].children[1].className, 'member-state member-playing');
+    }
+});
+
+test('ホスト移譲で生成する先取勝数にも補足と入力の関連付けがある', () => {
+    const e = environment('room');
+    e.ids['rule-editor'].replaceChildren();
+    e.load('room.js'); e.emit(roomStatus());
+    const editor = e.ids['rule-editor'];
+    const wins = editor.querySelector('[name="targetWins"]');
+    assert.equal(wins.id, 'targetWins');
+    assert.equal(wins.attributes['aria-describedby'], 'targetWins-hint');
+    const hint = editor.querySelectorAll('p').find(p => p.id === 'targetWins-hint');
+    assert.equal(hint.textContent, '1～99の整数');
+    assert.equal(wins.value, 3);
 });

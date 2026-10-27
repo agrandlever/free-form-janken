@@ -1,0 +1,82 @@
+[
+  {
+    "client": 1425,
+    "gap": "16px",
+    "invalid": 0,
+    "overflow": false,
+    "page": "match-result-error",
+    "resultId": "<redacted>",
+    "scroll": 1425,
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ],
+    "width": 1440
+  },
+  {
+    "client": 1009,
+    "gap": "16px",
+    "invalid": 0,
+    "overflow": false,
+    "page": "match-result-error",
+    "resultId": "<redacted>",
+    "scroll": 1009,
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ],
+    "width": 1024
+  },
+  {
+    "client": 753,
+    "gap": "16px",
+    "invalid": 0,
+    "overflow": false,
+    "page": "match-result-error",
+    "resultId": "<redacted>",
+    "scroll": 753,
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ],
+    "width": 768
+  },
+  {
+    "client": 375,
+    "gap": "16px",
+    "invalid": 0,
+    "overflow": false,
+    "page": "match-result-error",
+    "resultId": "<redacted>",
+    "scroll": 375,
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ],
+    "width": 390
+  },
+  {
+    "client": 305,
+    "gap": "16px",
+    "invalid": 0,
+    "overflow": false,
+    "page": "match-result-error",
+    "resultId": "<redacted>",
+    "scroll": 305,
+    "selected": [
+      "vsRock-WIN",
+      "vsScissors-WIN",
+      "vsPaper-WIN",
+      "vsOriginal-WIN"
+    ],
+    "width": 320
+  }
+]

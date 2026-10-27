@@ -1,0 +1,137 @@
+[
+  {
+    "client": 1425,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 1425,
+    "table": [
+      {
+        "client": 838,
+        "overflow": "auto",
+        "scroll": 838
+      }
+    ],
+    "width": 1440
+  },
+  {
+    "client": 1348,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 1348,
+    "table": [
+      {
+        "client": 838,
+        "overflow": "auto",
+        "scroll": 838
+      }
+    ],
+    "width": 1363
+  },
+  {
+    "client": 1009,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 1009,
+    "table": [
+      {
+        "client": 838,
+        "overflow": "auto",
+        "scroll": 838
+      }
+    ],
+    "width": 1024
+  },
+  {
+    "client": 753,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 753,
+    "table": [
+      {
+        "client": 690,
+        "overflow": "auto",
+        "scroll": 690
+      }
+    ],
+    "width": 768
+  },
+  {
+    "client": 752,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 752,
+    "table": [
+      {
+        "client": 689,
+        "overflow": "auto",
+        "scroll": 689
+      }
+    ],
+    "width": 767
+  },
+  {
+    "client": 561,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 561,
+    "table": [
+      {
+        "client": 513,
+        "overflow": "auto",
+        "scroll": 580
+      }
+    ],
+    "width": 576
+  },
+  {
+    "client": 560,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 560,
+    "table": [
+      {
+        "client": 488,
+        "overflow": "auto",
+        "scroll": 580
+      }
+    ],
+    "width": 575
+  },
+  {
+    "client": 375,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 375,
+    "table": [
+      {
+        "client": 310,
+        "overflow": "auto",
+        "scroll": 580
+      }
+    ],
+    "width": 390
+  },
+  {
+    "client": 305,
+    "logout": "16px",
+    "overflow": false,
+    "page": "match-result",
+    "scroll": 305,
+    "table": [
+      {
+        "client": 239,
+        "overflow": "auto",
+        "scroll": 580
+      }
+    ],
+    "width": 320
+  }
+]

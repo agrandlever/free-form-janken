@@ -1,0 +1,42 @@
+[
+  {
+    "client": 1440,
+    "logout": "16px",
+    "overflow": false,
+    "page": "round-result",
+    "scroll": 1440,
+    "width": 1440
+  },
+  {
+    "client": 1024,
+    "logout": "16px",
+    "overflow": false,
+    "page": "round-result",
+    "scroll": 1024,
+    "width": 1024
+  },
+  {
+    "client": 768,
+    "logout": "16px",
+    "overflow": false,
+    "page": "round-result",
+    "scroll": 768,
+    "width": 768
+  },
+  {
+    "client": 390,
+    "logout": "16px",
+    "overflow": false,
+    "page": "round-result",
+    "scroll": 390,
+    "width": 390
+  },
+  {
+    "client": 320,
+    "logout": "16px",
+    "overflow": false,
+    "page": "round-result",
+    "scroll": 320,
+    "width": 320
+  }
+]

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>対戦結果 | 簡易自由律じゃんけん</title><link rel="icon" type="image/png" href="/favicon.png"><!-- Bootstrapを先に読み込み、サイト独自の調整を後から適用する。 --><link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css"><link rel="stylesheet" href="/css/style.css"><script defer src="/js/status-polling.js"></script><script defer src="/js/match-result.js"></script><script defer src="/js/original-hand.js"></script><script defer src="/js/form-feedback.js"></script></head>
+<body><header class="navbar app-header border-bottom"><div class="container app-header-inner"><strong class="navbar-brand app-brand mb-0"><img class="app-header-icon" src="/images/icon.png" alt="" width="1312" height="1199"><img class="app-header-logo" src="/images/logo.png" alt="簡易自由律じゃんけん" width="381" height="37"></strong><div class="app-user-controls d-flex align-items-center gap-3 flex-wrap"><span class="badge text-bg-light user-name">同名の参加者</span><form class="m-0" method="post" action="/logout"><button class="btn btn-outline-secondary btn-sm" type="submit">ログアウト</button></form></div></div></header>
+<main class="container app-main shadow-sm" data-page="match-result" data-match-id="bfae190e-e6f5-4e95-b725-90b1c41f6441" data-room-id="b55e59b6-ccfa-4755-970a-792bf28e7181" data-user-state="ROOM_WAITING">
+
+<h1 class="h2 fw-bold page-title">対戦終了</h1>
+<section><h2 class="h5 fw-bold">勝者</h2><ul class="list-unstyled app-list match-winners"><li>同名の参加者</li></ul></section>
+
+<h2 class="h5 fw-bold">最終結果</h2><ul class="list-unstyled app-list"><li><span>同名の参加者</span><strong class="self-label">あなた</strong>：<span>2</span>勝</li><li><span>参加者B</span>：<span>0</span>勝</li></ul>
+<h2 class="h5 fw-bold">ラウンド履歴</h2>
+
+<section>
+<h3 class="h6 fw-bold">第<span>1</span>ラウンド</h3>
+<ul class="list-unstyled app-list"><li><span>同名の参加者</span><strong class="self-label">あなた</strong>：<span>手B</span> </li><li><span>参加者B</span>：<span>手B</span> </li></ul>
+<p>このラウンドの勝者はいません</p>
+</section>
+<section>
+<h3 class="h6 fw-bold">第<span>2</span>ラウンド</h3>
+<ul class="list-unstyled app-list"><li class="round-winner"><span>同名の参加者</span><strong class="self-label">あなた</strong>：<span>グー</span> <strong>勝利</strong></li><li><span>参加者B</span>：<span>チョキ</span> </li></ul>
+
+</section>
+<section>
+<h3 class="h6 fw-bold">第<span>3</span>ラウンド</h3>
+<ul class="list-unstyled app-list"><li class="round-winner"><span>同名の参加者</span><strong class="self-label">あなた</strong>：<span>グー</span> <strong>勝利</strong></li><li><span>参加者B</span>：<span>チョキ</span> </li></ul>
+
+</section>
+<button class="btn btn-outline-primary disclosure-button" id="toggle-affinities" type="button" aria-controls="original-hand-affinities" aria-expanded="true">オリジナル手の相性を非表示</button>
+<div id="original-hand-affinities">
+<div class="table-scroll table-responsive" tabindex="0" role="region" aria-label="終了した対戦のオリジナル手の相性表（横にスクロールできます）"><table class="affinity-table table table-hover align-middle"><thead><tr><th scope="col">オリジナル手</th><th scope="col">グー</th><th scope="col">チョキ</th><th scope="col">パー</th><th scope="col">他のオリジナル手</th></tr></thead>
+<tbody><tr><th scope="row">手A</th>
+<td>負け</td>
+<td>勝ち</td>
+<td>引き分け</td>
+<td>負け</td>
+</tr><tr><th scope="row">手B</th>
+<td>負け</td>
+<td>勝ち</td>
+<td>引き分け</td>
+<td>負け</td>
+</tr></tbody></table></div>
+<div id="result-original-hand-editor"><section id="original-hand-settings" class="original-hand card card-body bg-body-tertiary">
+<h2 class="h5 fw-bold">オリジナル手の設定</h2>
+<ul class="original-hand-guide" id="original-hand-guide">
+<li>作った手は、対戦参加者全員が選べます。</li>
+<li>他の人の相性は、対戦終了後に確認できます。</li>
+<li>相性4項目は必須です。最低1項目は「負け」にしてください。</li>
+</ul>
+<p id="original-hand-status">保存した手：保存済み</p>
+<div id="saved-hand-summary">
+<p class="small text-body-secondary mb-2">保存した手から見た相性設定</p>
+<dl class="saved-hand-affinities">
+<div><dt>対グー</dt><dd>負け</dd></div>
+<div><dt>対チョキ</dt><dd>勝ち</dd></div>
+<div><dt>対パー</dt><dd>勝ち</dd></div>
+<div><dt>対オリジナル</dt><dd>勝ち</dd></div>
+</dl>
+</div>
+<button class="btn btn-outline-primary disclosure-button" id="open-original-hand" type="button" aria-controls="original-hand-panel" aria-expanded="true">自分のオリジナル手を編集</button>
+<div id="original-hand-panel">
+<section role="alert" class="errors alert alert-danger" tabindex="-1" aria-labelledby="error-title">
+<h2 class="h5 fw-bold mt-0" id="error-title">入力内容を確認してください</h2>
+<ul class="list-unstyled app-list"><li id="affinity-group-error">相性4項目のうち最低1項目は負けにしてください。</li></ul>
+<ul class="error-field-links"><li><a href="#affinity-fields">相性4項目を確認する</a></li></ul>
+</section>
+<form class="app-form" method="post" action="/original-hand/save">
+<input id="original-save-returnPage" type="hidden" name="returnPage" value="MATCH_RESULT">
+<input id="original-save-roomId" type="hidden" name="roomId" value="b55e59b6-ccfa-4755-970a-792bf28e7181">
+<input id="original-save-resultMatchId" type="hidden" name="resultMatchId" value="bfae190e-e6f5-4e95-b725-90b1c41f6441">
+<label class="form-label" for="original-hand-name">オリジナル手の名前</label>
+<input class="form-control" id="original-hand-name" type="text" aria-describedby="original-hand-name-hint original-hand-name-errors" name="name" value="未保存入力">
+<p class="form-text" id="original-hand-name-hint">1～20文字（前後の空白は除きます）</p>
+<ul class="list-unstyled app-list" id="original-hand-name-errors"></ul>
+<!-- 同じ相性の選択肢は共通の項目名でまとめ、1つだけ選べるようにする。 -->
+<div class="affinity-guide" id="affinity-guide">
+<p>「勝ち」は自分の手が相手の手に勝つ、「負け」は自分の手が相手の手に負ける、「引き分け」は勝敗がつかない設定です。</p>
+</div>
+<details class="affinity-help">
+<summary>相性の決まり方</summary>
+<p>通常のグー・チョキ・パーには、自分の設定をそのまま使います。異なるオリジナル手同士は、双方の「他のオリジナル手への相性」で決まります。</p>
+<p class="affinity-example">例：双方が「勝ち」なら引き分け、自分が「勝ち」で相手が「負け」なら自分の勝ちです。</p>
+<table class="table affinity-examples">
+<caption>異なるオリジナル手同士の結果（自分から見た勝敗）</caption>
+<thead><tr><th scope="col">自分の設定</th><th scope="col">相手の設定</th><th scope="col">結果</th></tr></thead>
+<tbody>
+<tr><th scope="row">勝ち</th><td>勝ち</td><td>引き分け</td></tr>
+<tr><th scope="row">勝ち</th><td>負け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">勝ち</th><td>引き分け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">負け</th><td>勝ち</td><td>自分の負け</td></tr>
+<tr><th scope="row">負け</th><td>負け</td><td>引き分け</td></tr>
+<tr><th scope="row">負け</th><td>引き分け</td><td>自分の負け</td></tr>
+<tr><th scope="row">引き分け</th><td>勝ち</td><td>自分の負け</td></tr>
+<tr><th scope="row">引き分け</th><td>負け</td><td>自分の勝ち</td></tr>
+<tr><th scope="row">引き分け</th><td>引き分け</td><td>引き分け</td></tr>
+</tbody></table>
+<p>全員が選べる同じオリジナル手を、お互いに選んだ場合は引き分けです。名前が同じでも、別々に作成された手には上の表を使います。</p>
+<p class="small">表は2つの手の比較です。3人以上では、勝つ相手が1人以上いて、負ける相手がいない人がそのラウンドの勝者です。</p>
+</details>
+<!-- 全体条件は個別のラジオを不正にせず、この共通領域と概要内の文を関連付ける。 -->
+<div class="affinity-fields" id="affinity-fields" role="group" aria-label="相性4項目" tabindex="-1" aria-describedby="original-hand-guide affinity-guide affinity-group-error">
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
+<legend class="fs-6">グーへの相性</legend>
+<div class="d-flex flex-wrap gap-2">
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsRock-WIN" type="radio" value="WIN" aria-describedby="vsRock-errors" name="vsRock" checked="checked">
+<label class="form-check-label" for="vsRock-WIN">勝ち</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsRock-LOSE" type="radio" value="LOSE" aria-describedby="vsRock-errors" name="vsRock">
+<label class="form-check-label" for="vsRock-LOSE">負け</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsRock-DRAW" type="radio" value="DRAW" aria-describedby="vsRock-errors" name="vsRock">
+<label class="form-check-label" for="vsRock-DRAW">引き分け</label>
+</div>
+</div>
+
+<ul class="list-unstyled app-list" id="vsRock-errors"></ul>
+</fieldset>
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
+<legend class="fs-6">チョキへの相性</legend>
+<div class="d-flex flex-wrap gap-2">
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsScissors-WIN" type="radio" value="WIN" aria-describedby="vsScissors-errors" name="vsScissors" checked="checked">
+<label class="form-check-label" for="vsScissors-WIN">勝ち</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsScissors-LOSE" type="radio" value="LOSE" aria-describedby="vsScissors-errors" name="vsScissors">
+<label class="form-check-label" for="vsScissors-LOSE">負け</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsScissors-DRAW" type="radio" value="DRAW" aria-describedby="vsScissors-errors" name="vsScissors">
+<label class="form-check-label" for="vsScissors-DRAW">引き分け</label>
+</div>
+</div>
+
+<ul class="list-unstyled app-list" id="vsScissors-errors"></ul>
+</fieldset>
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
+<legend class="fs-6">パーへの相性</legend>
+<div class="d-flex flex-wrap gap-2">
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsPaper-WIN" type="radio" value="WIN" aria-describedby="vsPaper-errors" name="vsPaper" checked="checked">
+<label class="form-check-label" for="vsPaper-WIN">勝ち</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsPaper-LOSE" type="radio" value="LOSE" aria-describedby="vsPaper-errors" name="vsPaper">
+<label class="form-check-label" for="vsPaper-LOSE">負け</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsPaper-DRAW" type="radio" value="DRAW" aria-describedby="vsPaper-errors" name="vsPaper">
+<label class="form-check-label" for="vsPaper-DRAW">引き分け</label>
+</div>
+</div>
+
+<ul class="list-unstyled app-list" id="vsPaper-errors"></ul>
+</fieldset>
+<fieldset class="mb-3" aria-describedby="original-hand-guide affinity-guide">
+<legend class="fs-6">他のオリジナル手への相性</legend>
+<div class="d-flex flex-wrap gap-2">
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsOriginal-WIN" type="radio" value="WIN" aria-describedby="vsOriginal-errors" name="vsOriginal" checked="checked">
+<label class="form-check-label" for="vsOriginal-WIN">勝ち</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsOriginal-LOSE" type="radio" value="LOSE" aria-describedby="vsOriginal-errors" name="vsOriginal">
+<label class="form-check-label" for="vsOriginal-LOSE">負け</label>
+</div>
+<div class="form-check form-check-inline">
+<input class="form-check-input" id="vsOriginal-DRAW" type="radio" value="DRAW" aria-describedby="vsOriginal-errors" name="vsOriginal">
+<label class="form-check-label" for="vsOriginal-DRAW">引き分け</label>
+</div>
+</div>
+
+<ul class="list-unstyled app-list" id="vsOriginal-errors"></ul>
+</fieldset>
+</div>
+<button class="btn btn-primary" type="submit">この手を保存</button>
+<button class="btn btn-outline-secondary" id="close-original-hand" type="button">閉じる</button>
+</form>
+<form class="app-form" id="original-hand-delete-form" method="post" action="/original-hand/delete">
+<input id="original-delete-returnPage" type="hidden" name="returnPage" value="MATCH_RESULT">
+<input id="original-delete-roomId" type="hidden" name="roomId" value="b55e59b6-ccfa-4755-970a-792bf28e7181">
+<input id="original-delete-resultMatchId" type="hidden" name="resultMatchId" value="bfae190e-e6f5-4e95-b725-90b1c41f6441">
+<button class="btn btn-outline-danger" type="submit">オリジナル手を削除</button>
+</form>
+</div>
+</section></div>
+</div>
+<form class="app-form" method="post" action="/match-result/return"><input type="hidden" id="roomId" name="roomId" value="b55e59b6-ccfa-4755-970a-792bf28e7181"><input type="hidden" id="matchId" name="matchId" value="bfae190e-e6f5-4e95-b725-90b1c41f6441"><button class="btn btn-primary" type="submit">ルームへ戻る</button></form>
+</main></body></html>
